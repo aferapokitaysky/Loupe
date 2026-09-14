@@ -21,7 +21,14 @@
 
   <application xmlns="urn:schemas-microsoft-com:asm.v3">
     <windowsSettings>
-      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2019/WindowsSettings">PerMonitorV2</dpiAwareness>
+      <!--
+        The newer SMI/2019 dpiAwareness="PerMonitorV2" element isn't
+        registered on every Windows servicing branch and can make the whole
+        manifest fail to activate (seen as "side-by-side configuration is
+        incorrect"). The classic 2005 dpiAware element is universally
+        supported and "true/pm" still means per-monitor DPI aware.
+      -->
+      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true/pm</dpiAware>
     </windowsSettings>
   </application>
 </assembly>
