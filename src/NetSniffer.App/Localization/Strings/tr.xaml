@@ -40,6 +40,7 @@
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Npcap kurulumu tamamlanmadan kapatıldı. Tekrar denemek için Npcap Yükle'ye tıklayın.</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Packets">  |  Paket: {0}</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Bytes">  |  Bayt: {0:N0}</sys:String>
+    <sys:String x:Key="Pkt_EmptyState">Paketleri burada görmek için yakalamayı başlatın</sys:String>
 
     <sys:String x:Key="Proxy_Port">Port:</sys:String>
     <sys:String x:Key="Proxy_Start">Başlat</sys:String>
@@ -66,6 +67,7 @@
     <sys:String x:Key="Proxy_Status_Stopped">Durduruldu</sys:String>
     <sys:String x:Key="Proxy_Status_Error">Hata</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(henüz yanıt yok)</sys:String>
+    <sys:String x:Key="Proxy_EmptyState">Proxy'yi başlatın ve bir istemciyi buna yönlendirin, istekleri burada görün</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">127.0.0.1:{0} adresinde dinleniyor. İstemcinin proxy ayarlarını bu adrese yönlendirin.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Başlatılamadı: {0}</sys:String>
     <sys:String x:Key="Proxy_Status_CertInstalled">Kök sertifika, geçerli Windows kullanıcısı için güvenilir hale getirildi.</sys:String>

@@ -40,6 +40,7 @@
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Інсталятор Npcap закрито без завершення. Натисніть «Встановити Npcap», щоб спробувати ще раз.</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Packets">  |  Пакетів: {0}</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Bytes">  |  Байтів: {0:N0}</sys:String>
+    <sys:String x:Key="Pkt_EmptyState">Почніть захоплення, щоб побачити пакети тут</sys:String>
 
     <sys:String x:Key="Proxy_Port">Порт:</sys:String>
     <sys:String x:Key="Proxy_Start">Старт</sys:String>
@@ -66,6 +67,7 @@
     <sys:String x:Key="Proxy_Status_Stopped">Зупинено</sys:String>
     <sys:String x:Key="Proxy_Status_Error">Помилка</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(відповіді ще немає)</sys:String>
+    <sys:String x:Key="Proxy_EmptyState">Запустіть проксі та спрямуйте на нього клієнта, щоб побачити запити тут</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">Слухає 127.0.0.1:{0}. Вкажіть цю адресу в налаштуваннях проксі клієнта.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Не вдалося запустити: {0}</sys:String>
     <sys:String x:Key="Proxy_Status_CertInstalled">Кореневий сертифікат додано до довірених для поточного користувача Windows.</sys:String>
