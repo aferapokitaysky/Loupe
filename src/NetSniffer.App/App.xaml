@@ -1,0 +1,27 @@
+<Application x:Class="NetSniffer.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             StartupUri="Views/MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ui:ThemesDictionary Theme="Dark" />
+                <ui:ControlsDictionary />
+            </ResourceDictionary.MergedDictionaries>
+
+            <SolidColorBrush x:Key="StreamBrushClient" Color="#569CD6" />
+            <SolidColorBrush x:Key="StreamBrushServer" Color="#4EC9B0" />
+
+            <!-- Per-protocol row accents, in the spirit of Wireshark's coloring rules -->
+            <SolidColorBrush x:Key="ProtocolColorTls" Color="#2E4B3F" />
+            <SolidColorBrush x:Key="ProtocolColorHttp" Color="#3D3319" />
+            <SolidColorBrush x:Key="ProtocolColorDns" Color="#2E3B4B" />
+            <SolidColorBrush x:Key="ProtocolColorTcp" Color="#26262B" />
+            <SolidColorBrush x:Key="ProtocolColorUdp" Color="#242B2E" />
+            <SolidColorBrush x:Key="ProtocolColorArp" Color="#3A2E4B" />
+            <SolidColorBrush x:Key="ProtocolColorIcmp" Color="#4B2E2E" />
+            <SolidColorBrush x:Key="ProtocolColorDefault" Color="Transparent" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

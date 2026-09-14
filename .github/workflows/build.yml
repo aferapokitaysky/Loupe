@@ -1,0 +1,38 @@
+name: build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Download Npcap SDK
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://npcap.com/dist/npcap-sdk-1.13.zip" -OutFile npcap-sdk.zip
+          Expand-Archive -Path npcap-sdk.zip -DestinationPath third_party/npcap-sdk
+
+      - name: Build native capture engine
+        shell: cmd
+        env:
+          NPCAP_SDK_DIR: ${{ github.workspace }}\third_party\npcap-sdk
+        run: |
+          msbuild native\NetSniffer.Native\NetSniffer.Native.vcxproj /p:Configuration=Release /p:Platform=x64 /p:SolutionDir=%GITHUB_WORKSPACE%\ /v:minimal
+
+      - name: Build C# solution
+        run: dotnet build src\NetSniffer.App\NetSniffer.App.csproj -c Release
