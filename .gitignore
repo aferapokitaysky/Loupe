@@ -1,0 +1,26 @@
+# Build outputs
+[Bb]in/
+[Oo]bj/
+native/bin/
+native/obj/
+out/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Npcap SDK (license-restricted, download yourself - see build/NpcapSdk.props)
+third_party/npcap-sdk/
+
+# Captures and local artifacts
+*.pcap
+*.pcapng
+!samples/*.pcap
+
+# OS cruft
+Thumbs.db
+.DS_Store
