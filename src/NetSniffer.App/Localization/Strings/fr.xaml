@@ -40,6 +40,7 @@
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">L'installateur Npcap s'est fermé sans terminer. Cliquez sur Installer Npcap pour réessayer.</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Packets">  |  Paquets : {0}</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Bytes">  |  Octets : {0:N0}</sys:String>
+    <sys:String x:Key="Pkt_EmptyState">Démarrez la capture pour voir les paquets ici</sys:String>
 
     <sys:String x:Key="Proxy_Port">Port :</sys:String>
     <sys:String x:Key="Proxy_Start">Démarrer</sys:String>
@@ -66,6 +67,7 @@
     <sys:String x:Key="Proxy_Status_Stopped">Arrêté</sys:String>
     <sys:String x:Key="Proxy_Status_Error">Erreur</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(pas encore de réponse)</sys:String>
+    <sys:String x:Key="Proxy_EmptyState">Démarrez le proxy et pointez un client vers lui pour voir les requêtes ici</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">En écoute sur 127.0.0.1:{0}. Configurez le proxy du client avec cette adresse.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Échec du démarrage : {0}</sys:String>
     <sys:String x:Key="Proxy_Status_CertInstalled">Certificat racine approuvé pour l'utilisateur Windows actuel.</sys:String>

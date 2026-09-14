@@ -1,3 +1,5 @@
+using System.Windows;
+using System.Windows.Media.Animation;
 using NetSniffer.App.Localization;
 using Wpf.Ui.Controls;
 
@@ -23,18 +25,31 @@ public partial class MainWindow : FluentWindow
         LanguageComboBox.SelectedItem = LocalizationService.CurrentLanguage;
     }
 
-    private void OnPacketsNavChecked(object sender, System.Windows.RoutedEventArgs e)
+    private void OnPacketsNavChecked(object sender, RoutedEventArgs e)
     {
         if (PacketsPage is null || ProxyPageControl is null) return;
-        PacketsPage.Visibility = System.Windows.Visibility.Visible;
-        ProxyPageControl.Visibility = System.Windows.Visibility.Collapsed;
+        CrossFade(showPage: PacketsPage, hidePage: ProxyPageControl);
     }
 
-    private void OnProxyNavChecked(object sender, System.Windows.RoutedEventArgs e)
+    private void OnProxyNavChecked(object sender, RoutedEventArgs e)
     {
         if (PacketsPage is null || ProxyPageControl is null) return;
-        PacketsPage.Visibility = System.Windows.Visibility.Collapsed;
-        ProxyPageControl.Visibility = System.Windows.Visibility.Visible;
+        CrossFade(showPage: ProxyPageControl, hidePage: PacketsPage);
+    }
+
+    private static void CrossFade(FrameworkElement showPage, FrameworkElement hidePage)
+    {
+        if (showPage.Visibility == Visibility.Visible && hidePage.Visibility == Visibility.Collapsed)
+            return; // already showing - avoid re-triggering the animation, e.g. on startup
+
+        var easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
+
+        showPage.Visibility = Visibility.Visible;
+        showPage.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(220)) { EasingFunction = easeOut });
+
+        var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(160));
+        fadeOut.Completed += (_, _) => hidePage.Visibility = Visibility.Collapsed;
+        hidePage.BeginAnimation(UIElement.OpacityProperty, fadeOut);
     }
 
     private void OnLanguageSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)

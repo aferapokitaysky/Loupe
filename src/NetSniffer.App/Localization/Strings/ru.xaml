@@ -40,6 +40,7 @@
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Установщик Npcap закрыт без завершения. Нажмите «Установить Npcap», чтобы повторить.</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Packets">  |  Пакетов: {0}</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Bytes">  |  Байт: {0:N0}</sys:String>
+    <sys:String x:Key="Pkt_EmptyState">Начните захват, чтобы увидеть пакеты здесь</sys:String>
 
     <sys:String x:Key="Proxy_Port">Порт:</sys:String>
     <sys:String x:Key="Proxy_Start">Старт</sys:String>
@@ -66,6 +67,7 @@
     <sys:String x:Key="Proxy_Status_Stopped">Остановлено</sys:String>
     <sys:String x:Key="Proxy_Status_Error">Ошибка</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(ответа пока нет)</sys:String>
+    <sys:String x:Key="Proxy_EmptyState">Запустите прокси и направьте на него клиента, чтобы увидеть запросы здесь</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">Слушает 127.0.0.1:{0}. Укажите этот адрес в настройках прокси клиента.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Не удалось запустить: {0}</sys:String>
     <sys:String x:Key="Proxy_Status_CertInstalled">Корневой сертификат добавлен в доверенные для текущего пользователя Windows.</sys:String>
