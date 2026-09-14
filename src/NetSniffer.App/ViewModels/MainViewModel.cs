@@ -67,6 +67,17 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             StatusMessage = ex.Message;
         }
+        catch (DllNotFoundException)
+        {
+            // NetSniffer.Native.dll (or the wpcap.dll it links against) isn't loadable -
+            // almost always means the Npcap runtime isn't installed yet. Degrade to an
+            // empty adapter list with a clear next step rather than crashing startup.
+            StatusMessage = "Capture engine unavailable: install the Npcap runtime from https://npcap.com/#download, then click Refresh.";
+        }
+        catch (BadImageFormatException)
+        {
+            StatusMessage = "Capture engine unavailable: NetSniffer.Native.dll is missing or was built for the wrong architecture (expected x64).";
+        }
     }
 
     private bool CanStart() => !IsCapturing && SelectedAdapter is not null;

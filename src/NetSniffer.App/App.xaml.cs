@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Windows;
 
 namespace NetSniffer.App;
@@ -11,11 +12,21 @@ public partial class App : Application
         DispatcherUnhandledException += (_, args) =>
         {
             MessageBox.Show(
-                $"Unexpected error:\n\n{args.Exception.Message}",
+                $"Unexpected error:\n\n{DescribeWithInnerExceptions(args.Exception)}",
                 "NetSniffer",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
             args.Handled = true;
         };
+    }
+
+    // TargetInvocationException and similar wrapper exceptions hide the actually
+    // useful message in InnerException - unwrap the whole chain for the dialog.
+    private static string DescribeWithInnerExceptions(Exception exception)
+    {
+        var messages = new List<string>();
+        for (var current = exception; current is not null; current = current.InnerException)
+            messages.Add($"{current.GetType().Name}: {current.Message}");
+        return string.Join("\n\n→ ", messages);
     }
 }
