@@ -53,7 +53,7 @@
 
             <StackPanel Grid.Column="0" Background="{DynamicResource ControlFillColorDefaultBrush}">
                 <RadioButton x:Name="PacketsNavButton" GroupName="Nav" Style="{StaticResource NavButtonStyle}"
-                             Tag="🛰️" Content="Packets" IsChecked="True" Checked="OnPacketsNavChecked" />
+                             Tag="🛰️" Content="Packets" Checked="OnPacketsNavChecked" />
                 <RadioButton x:Name="ProxyNavButton" GroupName="Nav" Style="{StaticResource NavButtonStyle}"
                              Tag="🔓" Content="HTTP Proxy" Checked="OnProxyNavChecked" />
             </StackPanel>
