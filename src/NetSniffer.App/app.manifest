@@ -5,9 +5,9 @@
     NetSniffer requests administrator rights up front rather than failing
     with a confusing "could not open adapter" error later.
   -->
-  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
     <security>
-      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+      <requestedPrivileges>
         <requestedExecutionLevel level="requireAdministrator" uiAccess="false" />
       </requestedPrivileges>
     </security>
