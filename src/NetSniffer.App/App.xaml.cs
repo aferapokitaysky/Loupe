@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Windows;
+using NetSniffer.App.Localization;
 
 namespace NetSniffer.App;
 
@@ -8,6 +9,10 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Must run before StartupUri creates MainWindow, so every DynamicResource
+        // in the visual tree resolves against the right language on first render.
+        LocalizationService.Initialize();
 
         DispatcherUnhandledException += (_, args) =>
         {

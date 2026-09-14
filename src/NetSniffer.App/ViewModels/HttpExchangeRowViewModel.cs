@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using NetSniffer.App.Localization;
 using NetSniffer.Proxy.Http;
 
 namespace NetSniffer.App.ViewModels;
@@ -24,7 +25,7 @@ public sealed class HttpExchangeRowViewModel(HttpExchange exchange) : Observable
     {
         ExchangeState.Pending or ExchangeState.RequestSent => "…",
         ExchangeState.ResponseReceived => Exchange.StatusCode?.ToString() ?? "",
-        ExchangeState.Failed => "Error",
+        ExchangeState.Failed => Loc.Get("Proxy_Status_Error"),
         _ => "",
     };
 
@@ -36,7 +37,7 @@ public sealed class HttpExchangeRowViewModel(HttpExchange exchange) : Observable
     public string RequestHeadersText => FormatHeaders(Exchange.RequestHeaders);
     public string ResponseHeadersText => Exchange.State == ExchangeState.ResponseReceived
         ? FormatHeaders(Exchange.ResponseHeaders)
-        : Exchange.Error ?? "(no response yet)";
+        : Exchange.Error ?? Loc.Get("Proxy_NoResponseYet");
 
     public string RequestBodyText => BodyFormatter.Format(Exchange.RequestHeaders, Exchange.RequestBody, Exchange.RequestBodyTruncated);
     public string ResponseBodyText => Exchange.State == ExchangeState.ResponseReceived

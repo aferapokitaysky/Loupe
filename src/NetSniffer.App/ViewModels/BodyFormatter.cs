@@ -2,6 +2,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
+using NetSniffer.App.Localization;
 using NetSniffer.Core.Util;
 using NetSniffer.Proxy.Http;
 
@@ -12,13 +13,13 @@ public static class BodyFormatter
 {
     public static string Format(IReadOnlyList<HttpHeader> headers, byte[] body, bool truncated)
     {
-        if (body.Length == 0) return "(no body)";
+        if (body.Length == 0) return Loc.Get("Body_Empty");
 
         byte[] decoded = Decompress(body, headers.Get("Content-Encoding"));
         string contentType = headers.Get("Content-Type") ?? "";
 
         string text = TryFormatAsText(decoded, contentType) ?? HexDump.Format(decoded);
-        return truncated ? text + "\n\n[... truncated, only the first bytes were captured ...]" : text;
+        return truncated ? text + Loc.Get("Body_Truncated") : text;
     }
 
     private static byte[] Decompress(byte[] body, string? contentEncoding)

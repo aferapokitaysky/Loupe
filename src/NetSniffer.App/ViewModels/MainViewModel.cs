@@ -5,6 +5,7 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
+using NetSniffer.App.Localization;
 using NetSniffer.Capture;
 using NetSniffer.Core.IO;
 using NetSniffer.Core.Model;
@@ -24,6 +25,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private CaptureSession? _session;
     private DateTimeOffset _captureStart;
+    private bool _isInstallingNpcap;
 
     public ObservableCollection<CaptureDeviceInfo> Adapters { get; } = [];
     public ObservableCollection<PacketRowViewModel> Packets { get; } = [];
@@ -33,12 +35,24 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _isCapturing;
     [ObservableProperty] private bool _autoScroll = true;
     [ObservableProperty] private PacketRowViewModel? _selectedPacket;
-    [ObservableProperty] private string _statusMessage = "Ready";
-    [ObservableProperty] private long _totalPackets;
-    [ObservableProperty] private long _totalBytes;
+    [ObservableProperty] private string _statusMessage = "";
+    [ObservableProperty] private bool _isCaptureEngineAvailable = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PacketsCountText))]
+    private long _totalPackets;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BytesCountText))]
+    private long _totalBytes;
+
+    public string PacketsCountText => Loc.Format("Pkt_StatusBar_Packets", TotalPackets);
+    public string BytesCountText => Loc.Format("Pkt_StatusBar_Bytes", TotalBytes);
 
     public MainViewModel()
     {
+        StatusMessage = Loc.Get("Pkt_Status_Ready");
+
         _drainTimer = new DispatcherTimer(DispatcherPriority.Background)
         {
             Interval = TimeSpan.FromMilliseconds(150),
@@ -58,10 +72,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
             foreach (var device in CaptureDeviceManager.ListDevices())
                 Adapters.Add(device);
 
+            IsCaptureEngineAvailable = true;
             SelectedAdapter ??= Adapters.FirstOrDefault();
             StatusMessage = Adapters.Count == 0
-                ? "No adapters found. Is Npcap installed?"
-                : $"{Adapters.Count} adapter(s) found.";
+                ? Loc.Get("Pkt_Status_NoAdapters")
+                : Loc.Format("Pkt_Status_AdaptersFound", Adapters.Count);
         }
         catch (CaptureException ex)
         {
@@ -72,11 +87,46 @@ public partial class MainViewModel : ObservableObject, IDisposable
             // NetSniffer.Native.dll (or the wpcap.dll it links against) isn't loadable -
             // almost always means the Npcap runtime isn't installed yet. Degrade to an
             // empty adapter list with a clear next step rather than crashing startup.
-            StatusMessage = "Capture engine unavailable: install the Npcap runtime from https://npcap.com/#download, then click Refresh.";
+            IsCaptureEngineAvailable = false;
+            StatusMessage = Loc.Get("Pkt_Status_EngineMissingNpcap");
         }
         catch (BadImageFormatException)
         {
-            StatusMessage = "Capture engine unavailable: NetSniffer.Native.dll is missing or was built for the wrong architecture (expected x64).";
+            IsCaptureEngineAvailable = false;
+            StatusMessage = Loc.Get("Pkt_Status_EngineBadImage");
+        }
+    }
+
+    private bool CanInstallNpcap() => !_isInstallingNpcap;
+
+    [RelayCommand(CanExecute = nameof(CanInstallNpcap))]
+    private async Task InstallNpcapAsync()
+    {
+        _isInstallingNpcap = true;
+        InstallNpcapCommand.NotifyCanExecuteChanged();
+
+        var progress = new Progress<NpcapInstallStage>(stage => StatusMessage = stage switch
+        {
+            NpcapInstallStage.Downloading => Loc.Get("Pkt_Status_NpcapDownloading"),
+            NpcapInstallStage.Launching => Loc.Get("Pkt_Status_NpcapLaunching"),
+            _ => StatusMessage,
+        });
+
+        try
+        {
+            await NpcapInstaller.RunInstallerAsync(progress);
+            RefreshAdapters();
+            if (!IsCaptureEngineAvailable)
+                StatusMessage = Loc.Get("Pkt_Status_NpcapInstallCancelled");
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = Loc.Format("Pkt_Status_NpcapInstallFailed", ex.Message);
+        }
+        finally
+        {
+            _isInstallingNpcap = false;
+            InstallNpcapCommand.NotifyCanExecuteChanged();
         }
     }
 
@@ -92,7 +142,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _session.Stopped += (_, e) => Application.Current.Dispatcher.BeginInvoke(() =>
         {
             IsCapturing = false;
-            StatusMessage = e.ErrorReason is null ? "Capture stopped." : $"Capture stopped: {e.ErrorReason}";
+            StatusMessage = e.ErrorReason is null
+                ? Loc.Get("Pkt_Status_Stopped")
+                : Loc.Format("Pkt_Status_StoppedWithError", e.ErrorReason);
             StartCaptureCommand.NotifyCanExecuteChanged();
             StopCaptureCommand.NotifyCanExecuteChanged();
         });
@@ -102,7 +154,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             _captureStart = DateTimeOffset.Now;
             _session.Start(string.IsNullOrWhiteSpace(FilterText) ? null : FilterText);
             IsCapturing = true;
-            StatusMessage = $"Capturing on {SelectedAdapter.Description}…";
+            StatusMessage = Loc.Format("Pkt_Status_Capturing", SelectedAdapter.Description);
         }
         catch (CaptureException ex)
         {
@@ -138,7 +190,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         PcapFile.Write(dialog.FileName, Packets.Select(p => new CapturedPacket(
             p.Packet.Number, p.Packet.Timestamp, p.Packet.RawData, p.Packet.OriginalLength)));
-        StatusMessage = $"Saved {Packets.Count} packets to {dialog.FileName}";
+        StatusMessage = Loc.Format("Pkt_Status_Saved", Packets.Count, dialog.FileName);
     }
 
     [RelayCommand]
@@ -152,7 +204,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         foreach (var captured in PcapFile.Read(dialog.FileName))
             _incoming.Enqueue(captured);
 
-        StatusMessage = $"Loaded {dialog.FileName}";
+        StatusMessage = Loc.Format("Pkt_Status_Loaded", dialog.FileName);
     }
 
     private void DrainIncomingPackets()
