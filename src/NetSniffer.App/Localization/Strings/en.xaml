@@ -1,0 +1,90 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Canonical English source strings - every other language file mirrors these keys. -->
+
+    <sys:String x:Key="Nav_Packets">Packets</sys:String>
+    <sys:String x:Key="Nav_Proxy">HTTP Proxy</sys:String>
+    <sys:String x:Key="Nav_Language">Language</sys:String>
+
+    <sys:String x:Key="Pkt_Adapter">Adapter:</sys:String>
+    <sys:String x:Key="Pkt_Refresh">Refresh</sys:String>
+    <sys:String x:Key="Pkt_Filter">Filter (BPF):</sys:String>
+    <sys:String x:Key="Pkt_FilterPlaceholder">e.g. tcp port 443</sys:String>
+    <sys:String x:Key="Pkt_Start">Start</sys:String>
+    <sys:String x:Key="Pkt_Stop">Stop</sys:String>
+    <sys:String x:Key="Pkt_Clear">Clear</sys:String>
+    <sys:String x:Key="Pkt_OpenPcap">Open .pcap</sys:String>
+    <sys:String x:Key="Pkt_SavePcap">Save .pcap</sys:String>
+    <sys:String x:Key="Pkt_AutoScroll">Auto-scroll</sys:String>
+    <sys:String x:Key="Pkt_InstallNpcap">Install Npcap</sys:String>
+    <sys:String x:Key="Pkt_Col_No">No.</sys:String>
+    <sys:String x:Key="Pkt_Col_Time">Time</sys:String>
+    <sys:String x:Key="Pkt_Col_Source">Source</sys:String>
+    <sys:String x:Key="Pkt_Col_Destination">Destination</sys:String>
+    <sys:String x:Key="Pkt_Col_Protocol">Protocol</sys:String>
+    <sys:String x:Key="Pkt_Col_Length">Length</sys:String>
+    <sys:String x:Key="Pkt_Col_Info">Info</sys:String>
+    <sys:String x:Key="Pkt_Status_Ready">Ready</sys:String>
+    <sys:String x:Key="Pkt_Status_NoAdapters">No adapters found. Is Npcap installed?</sys:String>
+    <sys:String x:Key="Pkt_Status_AdaptersFound">{0} adapter(s) found.</sys:String>
+    <sys:String x:Key="Pkt_Status_Capturing">Capturing on {0}…</sys:String>
+    <sys:String x:Key="Pkt_Status_Stopped">Capture stopped.</sys:String>
+    <sys:String x:Key="Pkt_Status_StoppedWithError">Capture stopped: {0}</sys:String>
+    <sys:String x:Key="Pkt_Status_EngineMissingNpcap">Capture engine unavailable: install Npcap, then click Refresh.</sys:String>
+    <sys:String x:Key="Pkt_Status_EngineBadImage">Capture engine unavailable: NetSniffer.Native.dll is missing or was built for the wrong architecture (expected x64).</sys:String>
+    <sys:String x:Key="Pkt_Status_Saved">Saved {0} packets to {1}</sys:String>
+    <sys:String x:Key="Pkt_Status_Loaded">Loaded {0}</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapDownloading">Downloading the Npcap installer…</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapLaunching">Npcap installer launched - finish its setup wizard, then click Refresh.</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapInstallFailed">Could not install Npcap: {0}</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">The Npcap installer closed without finishing. Click Install Npcap to try again.</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Packets">  |  Packets: {0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Bytes">  |  Bytes: {0:N0}</sys:String>
+    <sys:String x:Key="Pkt_EmptyState">Start capturing to see packets here</sys:String>
+
+    <sys:String x:Key="Proxy_Port">Port:</sys:String>
+    <sys:String x:Key="Proxy_Start">Start</sys:String>
+    <sys:String x:Key="Proxy_Stop">Stop</sys:String>
+    <sys:String x:Key="Proxy_Clear">Clear</sys:String>
+    <sys:String x:Key="Proxy_InstallCert">Install Root Certificate</sys:String>
+    <sys:String x:Key="Proxy_UninstallCert">Untrust Root Certificate</sys:String>
+    <sys:String x:Key="Proxy_ExportCert">Export Certificate</sys:String>
+    <sys:String x:Key="Proxy_EnableSystemProxy">Enable System Proxy</sys:String>
+    <sys:String x:Key="Proxy_DisableSystemProxy">Disable System Proxy</sys:String>
+    <sys:String x:Key="Proxy_Banner">Only intercepts traffic that a client you control deliberately routes through this proxy and has chosen to trust NetSniffer's local root certificate for - i.e. your own devices and apps, configured by you for debugging.</sys:String>
+    <sys:String x:Key="Proxy_CaLabel">CA thumbprint:</sys:String>
+    <sys:String x:Key="Proxy_Col_Time">Time</sys:String>
+    <sys:String x:Key="Proxy_Col_Method">Method</sys:String>
+    <sys:String x:Key="Proxy_Col_Scheme">Scheme</sys:String>
+    <sys:String x:Key="Proxy_Col_Host">Host</sys:String>
+    <sys:String x:Key="Proxy_Col_Path">Path</sys:String>
+    <sys:String x:Key="Proxy_Col_Status">Status</sys:String>
+    <sys:String x:Key="Proxy_Col_Detail">Detail</sys:String>
+    <sys:String x:Key="Proxy_Col_Size">Size</sys:String>
+    <sys:String x:Key="Proxy_Col_Duration">Duration</sys:String>
+    <sys:String x:Key="Proxy_Tab_Request">Request</sys:String>
+    <sys:String x:Key="Proxy_Tab_Response">Response</sys:String>
+    <sys:String x:Key="Proxy_Status_Stopped">Stopped</sys:String>
+    <sys:String x:Key="Proxy_Status_Error">Error</sys:String>
+    <sys:String x:Key="Proxy_NoResponseYet">(no response yet)</sys:String>
+    <sys:String x:Key="Proxy_EmptyState">Start the proxy and point a client at it to see requests here</sys:String>
+    <sys:String x:Key="Proxy_Status_Listening">Listening on 127.0.0.1:{0}. Point a client's proxy settings here.</sys:String>
+    <sys:String x:Key="Proxy_Status_FailedToStart">Failed to start: {0}</sys:String>
+    <sys:String x:Key="Proxy_Status_CertInstalled">Root certificate trusted for the current Windows user.</sys:String>
+    <sys:String x:Key="Proxy_Status_CertInstallFailed">Could not install the root certificate: {0}</sys:String>
+    <sys:String x:Key="Proxy_Status_CertRemoved">Root certificate removed.</sys:String>
+    <sys:String x:Key="Proxy_Status_CertRemoveFailed">Could not remove the root certificate: {0}</sys:String>
+    <sys:String x:Key="Proxy_Status_CertExported">Exported root certificate to {0} - install it manually on other devices you own.</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyEnabled">Windows system proxy set to 127.0.0.1:{0}.</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyEnableFailed">Could not enable the system proxy: {0}</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyDisabled">Windows system proxy disabled.</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyDisableFailed">Could not disable the system proxy: {0}</sys:String>
+
+    <sys:String x:Key="Body_Empty">(no body)</sys:String>
+    <sys:String x:Key="Body_Truncated">
+
+[… truncated, only the first bytes were captured …]</sys:String>
+
+</ResourceDictionary>

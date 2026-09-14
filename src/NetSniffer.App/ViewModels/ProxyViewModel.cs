@@ -5,6 +5,7 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
+using NetSniffer.App.Localization;
 using NetSniffer.Proxy;
 using NetSniffer.Proxy.Ca;
 using NetSniffer.Proxy.Http;
@@ -27,7 +28,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
 
     [ObservableProperty] private int _port = 8080;
     [ObservableProperty] private bool _isRunning;
-    [ObservableProperty] private string _statusMessage = "Stopped";
+    [ObservableProperty] private string _statusMessage = "";
     [ObservableProperty] private HttpExchangeRowViewModel? _selectedExchange;
     [ObservableProperty] private bool _isCaInstalled;
     [ObservableProperty] private bool _isSystemProxyEnabled;
@@ -36,6 +37,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
 
     public ProxyViewModel()
     {
+        StatusMessage = Loc.Get("Proxy_Status_Stopped");
         IsCaInstalled = SafeCall(() => _ca.IsInstalledForCurrentUser(), fallback: false);
         IsSystemProxyEnabled = SafeCall(WindowsProxySettings.IsEnabled, fallback: false);
 
@@ -59,11 +61,11 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             server.Start();
             _server = server;
             IsRunning = true;
-            StatusMessage = $"Listening on 127.0.0.1:{Port}. Point a client's proxy settings here.";
+            StatusMessage = Loc.Format("Proxy_Status_Listening", Port);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Failed to start: {ex.Message}";
+            StatusMessage = Loc.Format("Proxy_Status_FailedToStart", ex.Message);
         }
 
         StartProxyCommand.NotifyCanExecuteChanged();
@@ -78,7 +80,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         _server?.Stop();
         _server = null;
         IsRunning = false;
-        StatusMessage = "Stopped";
+        StatusMessage = Loc.Get("Proxy_Status_Stopped");
 
         StartProxyCommand.NotifyCanExecuteChanged();
         StopProxyCommand.NotifyCanExecuteChanged();
@@ -99,11 +101,11 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         {
             _ca.InstallForCurrentUser();
             IsCaInstalled = true;
-            StatusMessage = "Root certificate trusted for the current Windows user.";
+            StatusMessage = Loc.Get("Proxy_Status_CertInstalled");
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Could not install the root certificate: {ex.Message}";
+            StatusMessage = Loc.Format("Proxy_Status_CertInstallFailed", ex.Message);
         }
     }
 
@@ -114,11 +116,11 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         {
             _ca.UninstallForCurrentUser();
             IsCaInstalled = false;
-            StatusMessage = "Root certificate removed.";
+            StatusMessage = Loc.Get("Proxy_Status_CertRemoved");
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Could not remove the root certificate: {ex.Message}";
+            StatusMessage = Loc.Format("Proxy_Status_CertRemoveFailed", ex.Message);
         }
     }
 
@@ -129,7 +131,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         if (dialog.ShowDialog() != true) return;
 
         File.WriteAllText(dialog.FileName, _ca.ExportPublicCertificatePem());
-        StatusMessage = $"Exported root certificate to {dialog.FileName} - install it manually on other devices you own.";
+        StatusMessage = Loc.Format("Proxy_Status_CertExported", dialog.FileName);
     }
 
     [RelayCommand]
@@ -139,11 +141,11 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         {
             WindowsProxySettings.Enable("127.0.0.1", Port);
             IsSystemProxyEnabled = true;
-            StatusMessage = $"Windows system proxy set to 127.0.0.1:{Port}.";
+            StatusMessage = Loc.Format("Proxy_Status_SystemProxyEnabled", Port);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Could not enable the system proxy: {ex.Message}";
+            StatusMessage = Loc.Format("Proxy_Status_SystemProxyEnableFailed", ex.Message);
         }
     }
 
@@ -154,11 +156,11 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         {
             WindowsProxySettings.Disable();
             IsSystemProxyEnabled = false;
-            StatusMessage = "Windows system proxy disabled.";
+            StatusMessage = Loc.Get("Proxy_Status_SystemProxyDisabled");
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Could not disable the system proxy: {ex.Message}";
+            StatusMessage = Loc.Format("Proxy_Status_SystemProxyDisableFailed", ex.Message);
         }
     }
 

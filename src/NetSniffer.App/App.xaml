@@ -8,19 +8,20 @@
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemesDictionary Theme="Dark" />
                 <ui:ControlsDictionary />
+                <ResourceDictionary Source="pack://application:,,,/Styles/GlassTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <SolidColorBrush x:Key="StreamBrushClient" Color="#569CD6" />
             <SolidColorBrush x:Key="StreamBrushServer" Color="#4EC9B0" />
 
-            <!-- Per-protocol row accents, in the spirit of Wireshark's coloring rules -->
-            <SolidColorBrush x:Key="ProtocolColorTls" Color="#2E4B3F" />
-            <SolidColorBrush x:Key="ProtocolColorHttp" Color="#3D3319" />
-            <SolidColorBrush x:Key="ProtocolColorDns" Color="#2E3B4B" />
-            <SolidColorBrush x:Key="ProtocolColorTcp" Color="#26262B" />
-            <SolidColorBrush x:Key="ProtocolColorUdp" Color="#242B2E" />
-            <SolidColorBrush x:Key="ProtocolColorArp" Color="#3A2E4B" />
-            <SolidColorBrush x:Key="ProtocolColorIcmp" Color="#4B2E2E" />
+            <!-- Per-protocol row accents: translucent glass tints, in the spirit of Wireshark's coloring rules -->
+            <SolidColorBrush x:Key="ProtocolColorTls" Color="#3322C55E" />
+            <SolidColorBrush x:Key="ProtocolColorHttp" Color="#33F59E0B" />
+            <SolidColorBrush x:Key="ProtocolColorDns" Color="#333B82F6" />
+            <SolidColorBrush x:Key="ProtocolColorTcp" Color="#14FFFFFF" />
+            <SolidColorBrush x:Key="ProtocolColorUdp" Color="#2622D3EE" />
+            <SolidColorBrush x:Key="ProtocolColorArp" Color="#337C6CFF" />
+            <SolidColorBrush x:Key="ProtocolColorIcmp" Color="#33EF4444" />
             <SolidColorBrush x:Key="ProtocolColorDefault" Color="Transparent" />
         </ResourceDictionary>
     </Application.Resources>

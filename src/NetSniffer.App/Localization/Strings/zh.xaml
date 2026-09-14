@@ -1,0 +1,88 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <sys:String x:Key="Nav_Packets">数据包</sys:String>
+    <sys:String x:Key="Nav_Proxy">HTTP 代理</sys:String>
+    <sys:String x:Key="Nav_Language">语言</sys:String>
+
+    <sys:String x:Key="Pkt_Adapter">网卡：</sys:String>
+    <sys:String x:Key="Pkt_Refresh">刷新</sys:String>
+    <sys:String x:Key="Pkt_Filter">过滤器 (BPF)：</sys:String>
+    <sys:String x:Key="Pkt_FilterPlaceholder">例如 tcp port 443</sys:String>
+    <sys:String x:Key="Pkt_Start">开始</sys:String>
+    <sys:String x:Key="Pkt_Stop">停止</sys:String>
+    <sys:String x:Key="Pkt_Clear">清空</sys:String>
+    <sys:String x:Key="Pkt_OpenPcap">打开 .pcap</sys:String>
+    <sys:String x:Key="Pkt_SavePcap">保存 .pcap</sys:String>
+    <sys:String x:Key="Pkt_AutoScroll">自动滚动</sys:String>
+    <sys:String x:Key="Pkt_InstallNpcap">安装 Npcap</sys:String>
+    <sys:String x:Key="Pkt_Col_No">序号</sys:String>
+    <sys:String x:Key="Pkt_Col_Time">时间</sys:String>
+    <sys:String x:Key="Pkt_Col_Source">源</sys:String>
+    <sys:String x:Key="Pkt_Col_Destination">目标</sys:String>
+    <sys:String x:Key="Pkt_Col_Protocol">协议</sys:String>
+    <sys:String x:Key="Pkt_Col_Length">长度</sys:String>
+    <sys:String x:Key="Pkt_Col_Info">信息</sys:String>
+    <sys:String x:Key="Pkt_Status_Ready">就绪</sys:String>
+    <sys:String x:Key="Pkt_Status_NoAdapters">未找到网卡。是否已安装 Npcap？</sys:String>
+    <sys:String x:Key="Pkt_Status_AdaptersFound">找到 {0} 个网卡。</sys:String>
+    <sys:String x:Key="Pkt_Status_Capturing">正在 {0} 上抓包…</sys:String>
+    <sys:String x:Key="Pkt_Status_Stopped">抓包已停止。</sys:String>
+    <sys:String x:Key="Pkt_Status_StoppedWithError">抓包已停止：{0}</sys:String>
+    <sys:String x:Key="Pkt_Status_EngineMissingNpcap">抓包引擎不可用：请安装 Npcap，然后点击刷新。</sys:String>
+    <sys:String x:Key="Pkt_Status_EngineBadImage">抓包引擎不可用：NetSniffer.Native.dll 缺失或架构不匹配（需要 x64）。</sys:String>
+    <sys:String x:Key="Pkt_Status_Saved">已将 {0} 个数据包保存到 {1}</sys:String>
+    <sys:String x:Key="Pkt_Status_Loaded">已加载：{0}</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapDownloading">正在下载 Npcap 安装程序…</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapLaunching">Npcap 安装程序已启动 —— 请完成安装向导，然后点击刷新。</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapInstallFailed">无法安装 Npcap：{0}</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Npcap 安装程序已关闭但未完成安装。请点击“安装 Npcap”重试。</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Packets">  |  数据包：{0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Bytes">  |  字节：{0:N0}</sys:String>
+    <sys:String x:Key="Pkt_EmptyState">开始抓包以在此查看数据包</sys:String>
+
+    <sys:String x:Key="Proxy_Port">端口：</sys:String>
+    <sys:String x:Key="Proxy_Start">开始</sys:String>
+    <sys:String x:Key="Proxy_Stop">停止</sys:String>
+    <sys:String x:Key="Proxy_Clear">清空</sys:String>
+    <sys:String x:Key="Proxy_InstallCert">安装根证书</sys:String>
+    <sys:String x:Key="Proxy_UninstallCert">取消信任证书</sys:String>
+    <sys:String x:Key="Proxy_ExportCert">导出证书</sys:String>
+    <sys:String x:Key="Proxy_EnableSystemProxy">启用系统代理</sys:String>
+    <sys:String x:Key="Proxy_DisableSystemProxy">禁用系统代理</sys:String>
+    <sys:String x:Key="Proxy_Banner">仅拦截你自己控制的客户端主动通过此代理转发、并且你已选择信任 NetSniffer 本地根证书的流量 —— 也就是你自己配置用于调试的设备和应用。</sys:String>
+    <sys:String x:Key="Proxy_CaLabel">CA 指纹：</sys:String>
+    <sys:String x:Key="Proxy_Col_Time">时间</sys:String>
+    <sys:String x:Key="Proxy_Col_Method">方法</sys:String>
+    <sys:String x:Key="Proxy_Col_Scheme">协议</sys:String>
+    <sys:String x:Key="Proxy_Col_Host">主机</sys:String>
+    <sys:String x:Key="Proxy_Col_Path">路径</sys:String>
+    <sys:String x:Key="Proxy_Col_Status">状态</sys:String>
+    <sys:String x:Key="Proxy_Col_Detail">详情</sys:String>
+    <sys:String x:Key="Proxy_Col_Size">大小</sys:String>
+    <sys:String x:Key="Proxy_Col_Duration">耗时</sys:String>
+    <sys:String x:Key="Proxy_Tab_Request">请求</sys:String>
+    <sys:String x:Key="Proxy_Tab_Response">响应</sys:String>
+    <sys:String x:Key="Proxy_Status_Stopped">已停止</sys:String>
+    <sys:String x:Key="Proxy_Status_Error">错误</sys:String>
+    <sys:String x:Key="Proxy_NoResponseYet">（尚无响应）</sys:String>
+    <sys:String x:Key="Proxy_EmptyState">启动代理并让客户端指向它，即可在此查看请求</sys:String>
+    <sys:String x:Key="Proxy_Status_Listening">正在监听 127.0.0.1:{0}。请将客户端代理设置指向此地址。</sys:String>
+    <sys:String x:Key="Proxy_Status_FailedToStart">启动失败：{0}</sys:String>
+    <sys:String x:Key="Proxy_Status_CertInstalled">根证书已在当前 Windows 用户下设为受信任。</sys:String>
+    <sys:String x:Key="Proxy_Status_CertInstallFailed">无法安装根证书：{0}</sys:String>
+    <sys:String x:Key="Proxy_Status_CertRemoved">根证书已移除。</sys:String>
+    <sys:String x:Key="Proxy_Status_CertRemoveFailed">无法移除根证书：{0}</sys:String>
+    <sys:String x:Key="Proxy_Status_CertExported">根证书已导出到 {0} —— 请在你的其他设备上手动安装。</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyEnabled">Windows 系统代理已设置为 127.0.0.1:{0}。</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyEnableFailed">无法启用系统代理：{0}</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyDisabled">Windows 系统代理已禁用。</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyDisableFailed">无法禁用系统代理：{0}</sys:String>
+
+    <sys:String x:Key="Body_Empty">（无正文）</sys:String>
+    <sys:String x:Key="Body_Truncated">
+
+[……已截断，仅捕获了前面部分字节……]</sys:String>
+
+</ResourceDictionary>
