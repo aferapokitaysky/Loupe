@@ -3,6 +3,7 @@
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  xmlns:views="clr-namespace:NetSniffer.App.Views"
+                 xmlns:loc="clr-namespace:NetSniffer.App.Localization"
                  Title="NetSniffer" Height="860" Width="1440"
                  WindowStartupLocation="CenterScreen"
                  ExtendsContentIntoTitleBar="True"
@@ -19,7 +20,8 @@
                         <Border x:Name="Bg" CornerRadius="6" Padding="{TemplateBinding Padding}"
                                 Background="Transparent">
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="{TemplateBinding Tag}" FontSize="20" HorizontalAlignment="Center" />
+                                <ui:SymbolIcon Symbol="{TemplateBinding Tag}" FontSize="20"
+                                               Foreground="White" HorizontalAlignment="Center" />
                                 <ContentPresenter HorizontalAlignment="Center" Margin="0,4,0,0" />
                             </StackPanel>
                         </Border>
@@ -51,12 +53,25 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Background="{DynamicResource ControlFillColorDefaultBrush}">
-                <RadioButton x:Name="PacketsNavButton" GroupName="Nav" Style="{StaticResource NavButtonStyle}"
-                             Tag="🛰️" Content="Packets" Checked="OnPacketsNavChecked" />
-                <RadioButton x:Name="ProxyNavButton" GroupName="Nav" Style="{StaticResource NavButtonStyle}"
-                             Tag="🔓" Content="HTTP Proxy" Checked="OnProxyNavChecked" />
-            </StackPanel>
+            <Grid Grid.Column="0" Background="{DynamicResource ControlFillColorDefaultBrush}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0">
+                    <RadioButton x:Name="PacketsNavButton" GroupName="Nav" Style="{StaticResource NavButtonStyle}"
+                                 Tag="Wifi124" Content="{DynamicResource Nav_Packets}" Checked="OnPacketsNavChecked" />
+                    <RadioButton x:Name="ProxyNavButton" GroupName="Nav" Style="{StaticResource NavButtonStyle}"
+                                 Tag="ShieldCheckmark24" Content="{DynamicResource Nav_Proxy}" Checked="OnProxyNavChecked" />
+                </StackPanel>
+
+                <ComboBox x:Name="LanguageComboBox" Grid.Row="1" Margin="8,4,8,12"
+                          ToolTip="{DynamicResource Nav_Language}"
+                          ItemsSource="{x:Static loc:LocalizationService.AvailableLanguages}"
+                          DisplayMemberPath="Flag"
+                          SelectionChanged="OnLanguageSelectionChanged" />
+            </Grid>
 
             <Grid Grid.Column="1">
                 <views:PacketCapturePage x:Name="PacketsPage" />
