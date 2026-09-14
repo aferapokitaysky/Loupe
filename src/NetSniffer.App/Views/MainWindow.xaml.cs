@@ -1,3 +1,4 @@
+using NetSniffer.App.Localization;
 using Wpf.Ui.Controls;
 
 namespace NetSniffer.App.Views;
@@ -18,6 +19,8 @@ public partial class MainWindow : FluentWindow
         // happens before later sibling elements (PacketsPage/ProxyPageControl) are constructed -
         // the handler would run against still-null fields and crash startup.
         PacketsNavButton.IsChecked = true;
+
+        LanguageComboBox.SelectedItem = LocalizationService.CurrentLanguage;
     }
 
     private void OnPacketsNavChecked(object sender, System.Windows.RoutedEventArgs e)
@@ -32,5 +35,11 @@ public partial class MainWindow : FluentWindow
         if (PacketsPage is null || ProxyPageControl is null) return;
         PacketsPage.Visibility = System.Windows.Visibility.Collapsed;
         ProxyPageControl.Visibility = System.Windows.Visibility.Visible;
+    }
+
+    private void OnLanguageSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (LanguageComboBox.SelectedItem is LanguageInfo language)
+            LocalizationService.SetLanguage(language.Code);
     }
 }

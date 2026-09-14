@@ -1,0 +1,86 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <sys:String x:Key="Nav_Packets">Paquets</sys:String>
+    <sys:String x:Key="Nav_Proxy">Proxy HTTP</sys:String>
+    <sys:String x:Key="Nav_Language">Langue</sys:String>
+
+    <sys:String x:Key="Pkt_Adapter">Adaptateur :</sys:String>
+    <sys:String x:Key="Pkt_Refresh">Actualiser</sys:String>
+    <sys:String x:Key="Pkt_Filter">Filtre (BPF) :</sys:String>
+    <sys:String x:Key="Pkt_FilterPlaceholder">p. ex. tcp port 443</sys:String>
+    <sys:String x:Key="Pkt_Start">Démarrer</sys:String>
+    <sys:String x:Key="Pkt_Stop">Arrêter</sys:String>
+    <sys:String x:Key="Pkt_Clear">Effacer</sys:String>
+    <sys:String x:Key="Pkt_OpenPcap">Ouvrir .pcap</sys:String>
+    <sys:String x:Key="Pkt_SavePcap">Enregistrer .pcap</sys:String>
+    <sys:String x:Key="Pkt_AutoScroll">Défilement auto</sys:String>
+    <sys:String x:Key="Pkt_InstallNpcap">Installer Npcap</sys:String>
+    <sys:String x:Key="Pkt_Col_No">N°</sys:String>
+    <sys:String x:Key="Pkt_Col_Time">Heure</sys:String>
+    <sys:String x:Key="Pkt_Col_Source">Source</sys:String>
+    <sys:String x:Key="Pkt_Col_Destination">Destination</sys:String>
+    <sys:String x:Key="Pkt_Col_Protocol">Protocole</sys:String>
+    <sys:String x:Key="Pkt_Col_Length">Longueur</sys:String>
+    <sys:String x:Key="Pkt_Col_Info">Info</sys:String>
+    <sys:String x:Key="Pkt_Status_Ready">Prêt</sys:String>
+    <sys:String x:Key="Pkt_Status_NoAdapters">Aucun adaptateur trouvé. Npcap est-il installé ?</sys:String>
+    <sys:String x:Key="Pkt_Status_AdaptersFound">{0} adaptateur(s) trouvé(s).</sys:String>
+    <sys:String x:Key="Pkt_Status_Capturing">Capture sur {0}…</sys:String>
+    <sys:String x:Key="Pkt_Status_Stopped">Capture arrêtée.</sys:String>
+    <sys:String x:Key="Pkt_Status_StoppedWithError">Capture arrêtée : {0}</sys:String>
+    <sys:String x:Key="Pkt_Status_EngineMissingNpcap">Moteur de capture indisponible : installez Npcap puis cliquez sur Actualiser.</sys:String>
+    <sys:String x:Key="Pkt_Status_EngineBadImage">Moteur de capture indisponible : NetSniffer.Native.dll est manquant ou compilé pour la mauvaise architecture (x64 attendu).</sys:String>
+    <sys:String x:Key="Pkt_Status_Saved">{0} paquets enregistrés dans {1}</sys:String>
+    <sys:String x:Key="Pkt_Status_Loaded">Chargé : {0}</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapDownloading">Téléchargement de l'installateur Npcap…</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapLaunching">Installateur Npcap lancé - terminez l'assistant puis cliquez sur Actualiser.</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapInstallFailed">Impossible d'installer Npcap : {0}</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">L'installateur Npcap s'est fermé sans terminer. Cliquez sur Installer Npcap pour réessayer.</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Packets">  |  Paquets : {0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Bytes">  |  Octets : {0:N0}</sys:String>
+
+    <sys:String x:Key="Proxy_Port">Port :</sys:String>
+    <sys:String x:Key="Proxy_Start">Démarrer</sys:String>
+    <sys:String x:Key="Proxy_Stop">Arrêter</sys:String>
+    <sys:String x:Key="Proxy_Clear">Effacer</sys:String>
+    <sys:String x:Key="Proxy_InstallCert">Installer le certificat racine</sys:String>
+    <sys:String x:Key="Proxy_UninstallCert">Révoquer la confiance du certificat</sys:String>
+    <sys:String x:Key="Proxy_ExportCert">Exporter le certificat</sys:String>
+    <sys:String x:Key="Proxy_EnableSystemProxy">Activer le proxy système</sys:String>
+    <sys:String x:Key="Proxy_DisableSystemProxy">Désactiver le proxy système</sys:String>
+    <sys:String x:Key="Proxy_Banner">Seul le trafic qu'un client sous votre contrôle achemine délibérément via ce proxy, et pour lequel vous avez choisi de faire confiance au certificat racine local de NetSniffer, est intercepté - c'est-à-dire vos propres appareils et applications, configurés par vous à des fins de débogage.</sys:String>
+    <sys:String x:Key="Proxy_CaLabel">Empreinte du CA :</sys:String>
+    <sys:String x:Key="Proxy_Col_Time">Heure</sys:String>
+    <sys:String x:Key="Proxy_Col_Method">Méthode</sys:String>
+    <sys:String x:Key="Proxy_Col_Scheme">Schéma</sys:String>
+    <sys:String x:Key="Proxy_Col_Host">Hôte</sys:String>
+    <sys:String x:Key="Proxy_Col_Path">Chemin</sys:String>
+    <sys:String x:Key="Proxy_Col_Status">Statut</sys:String>
+    <sys:String x:Key="Proxy_Col_Detail">Détail</sys:String>
+    <sys:String x:Key="Proxy_Col_Size">Taille</sys:String>
+    <sys:String x:Key="Proxy_Col_Duration">Durée</sys:String>
+    <sys:String x:Key="Proxy_Tab_Request">Requête</sys:String>
+    <sys:String x:Key="Proxy_Tab_Response">Réponse</sys:String>
+    <sys:String x:Key="Proxy_Status_Stopped">Arrêté</sys:String>
+    <sys:String x:Key="Proxy_Status_Error">Erreur</sys:String>
+    <sys:String x:Key="Proxy_NoResponseYet">(pas encore de réponse)</sys:String>
+    <sys:String x:Key="Proxy_Status_Listening">En écoute sur 127.0.0.1:{0}. Configurez le proxy du client avec cette adresse.</sys:String>
+    <sys:String x:Key="Proxy_Status_FailedToStart">Échec du démarrage : {0}</sys:String>
+    <sys:String x:Key="Proxy_Status_CertInstalled">Certificat racine approuvé pour l'utilisateur Windows actuel.</sys:String>
+    <sys:String x:Key="Proxy_Status_CertInstallFailed">Impossible d'installer le certificat racine : {0}</sys:String>
+    <sys:String x:Key="Proxy_Status_CertRemoved">Certificat racine supprimé.</sys:String>
+    <sys:String x:Key="Proxy_Status_CertRemoveFailed">Impossible de supprimer le certificat racine : {0}</sys:String>
+    <sys:String x:Key="Proxy_Status_CertExported">Certificat racine exporté vers {0} - installez-le manuellement sur vos autres appareils.</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyEnabled">Proxy système Windows défini sur 127.0.0.1:{0}.</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyEnableFailed">Impossible d'activer le proxy système : {0}</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyDisabled">Proxy système Windows désactivé.</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyDisableFailed">Impossible de désactiver le proxy système : {0}</sys:String>
+
+    <sys:String x:Key="Body_Empty">(aucun contenu)</sys:String>
+    <sys:String x:Key="Body_Truncated">
+
+[… tronqué, seuls les premiers octets ont été capturés …]</sys:String>
+
+</ResourceDictionary>

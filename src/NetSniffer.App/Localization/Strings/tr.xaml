@@ -1,0 +1,86 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <sys:String x:Key="Nav_Packets">Paketler</sys:String>
+    <sys:String x:Key="Nav_Proxy">HTTP Proxy</sys:String>
+    <sys:String x:Key="Nav_Language">Dil</sys:String>
+
+    <sys:String x:Key="Pkt_Adapter">Adaptör:</sys:String>
+    <sys:String x:Key="Pkt_Refresh">Yenile</sys:String>
+    <sys:String x:Key="Pkt_Filter">Filtre (BPF):</sys:String>
+    <sys:String x:Key="Pkt_FilterPlaceholder">örn. tcp port 443</sys:String>
+    <sys:String x:Key="Pkt_Start">Başlat</sys:String>
+    <sys:String x:Key="Pkt_Stop">Durdur</sys:String>
+    <sys:String x:Key="Pkt_Clear">Temizle</sys:String>
+    <sys:String x:Key="Pkt_OpenPcap">.pcap Aç</sys:String>
+    <sys:String x:Key="Pkt_SavePcap">.pcap Kaydet</sys:String>
+    <sys:String x:Key="Pkt_AutoScroll">Otomatik kaydırma</sys:String>
+    <sys:String x:Key="Pkt_InstallNpcap">Npcap Yükle</sys:String>
+    <sys:String x:Key="Pkt_Col_No">No.</sys:String>
+    <sys:String x:Key="Pkt_Col_Time">Zaman</sys:String>
+    <sys:String x:Key="Pkt_Col_Source">Kaynak</sys:String>
+    <sys:String x:Key="Pkt_Col_Destination">Hedef</sys:String>
+    <sys:String x:Key="Pkt_Col_Protocol">Protokol</sys:String>
+    <sys:String x:Key="Pkt_Col_Length">Uzunluk</sys:String>
+    <sys:String x:Key="Pkt_Col_Info">Bilgi</sys:String>
+    <sys:String x:Key="Pkt_Status_Ready">Hazır</sys:String>
+    <sys:String x:Key="Pkt_Status_NoAdapters">Adaptör bulunamadı. Npcap yüklü mü?</sys:String>
+    <sys:String x:Key="Pkt_Status_AdaptersFound">{0} adaptör bulundu.</sys:String>
+    <sys:String x:Key="Pkt_Status_Capturing">{0} üzerinde yakalanıyor…</sys:String>
+    <sys:String x:Key="Pkt_Status_Stopped">Yakalama durduruldu.</sys:String>
+    <sys:String x:Key="Pkt_Status_StoppedWithError">Yakalama durduruldu: {0}</sys:String>
+    <sys:String x:Key="Pkt_Status_EngineMissingNpcap">Yakalama motoru kullanılamıyor: Npcap'i yükleyip Yenile'ye tıklayın.</sys:String>
+    <sys:String x:Key="Pkt_Status_EngineBadImage">Yakalama motoru kullanılamıyor: NetSniffer.Native.dll eksik veya yanlış mimari için derlenmiş (x64 gerekli).</sys:String>
+    <sys:String x:Key="Pkt_Status_Saved">{0} paket {1} konumuna kaydedildi</sys:String>
+    <sys:String x:Key="Pkt_Status_Loaded">Yüklendi: {0}</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapDownloading">Npcap kurulum dosyası indiriliyor…</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapLaunching">Npcap kurulumu başlatıldı - sihirbazı tamamlayın, ardından Yenile'ye tıklayın.</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapInstallFailed">Npcap yüklenemedi: {0}</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Npcap kurulumu tamamlanmadan kapatıldı. Tekrar denemek için Npcap Yükle'ye tıklayın.</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Packets">  |  Paket: {0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Bytes">  |  Bayt: {0:N0}</sys:String>
+
+    <sys:String x:Key="Proxy_Port">Port:</sys:String>
+    <sys:String x:Key="Proxy_Start">Başlat</sys:String>
+    <sys:String x:Key="Proxy_Stop">Durdur</sys:String>
+    <sys:String x:Key="Proxy_Clear">Temizle</sys:String>
+    <sys:String x:Key="Proxy_InstallCert">Kök Sertifikayı Yükle</sys:String>
+    <sys:String x:Key="Proxy_UninstallCert">Sertifika Güvenini Kaldır</sys:String>
+    <sys:String x:Key="Proxy_ExportCert">Sertifikayı Dışa Aktar</sys:String>
+    <sys:String x:Key="Proxy_EnableSystemProxy">Sistem Proxy'sini Etkinleştir</sys:String>
+    <sys:String x:Key="Proxy_DisableSystemProxy">Sistem Proxy'sini Devre Dışı Bırak</sys:String>
+    <sys:String x:Key="Proxy_Banner">Yalnızca kontrolünüzdeki bir istemcinin bilerek bu proxy üzerinden yönlendirdiği ve NetSniffer'ın yerel kök sertifikasına güvenmeyi seçtiği trafik yakalanır - yani hata ayıklama için sizin yapılandırdığınız kendi cihaz ve uygulamalarınız.</sys:String>
+    <sys:String x:Key="Proxy_CaLabel">CA parmak izi:</sys:String>
+    <sys:String x:Key="Proxy_Col_Time">Zaman</sys:String>
+    <sys:String x:Key="Proxy_Col_Method">Yöntem</sys:String>
+    <sys:String x:Key="Proxy_Col_Scheme">Şema</sys:String>
+    <sys:String x:Key="Proxy_Col_Host">Sunucu</sys:String>
+    <sys:String x:Key="Proxy_Col_Path">Yol</sys:String>
+    <sys:String x:Key="Proxy_Col_Status">Durum</sys:String>
+    <sys:String x:Key="Proxy_Col_Detail">Ayrıntı</sys:String>
+    <sys:String x:Key="Proxy_Col_Size">Boyut</sys:String>
+    <sys:String x:Key="Proxy_Col_Duration">Süre</sys:String>
+    <sys:String x:Key="Proxy_Tab_Request">İstek</sys:String>
+    <sys:String x:Key="Proxy_Tab_Response">Yanıt</sys:String>
+    <sys:String x:Key="Proxy_Status_Stopped">Durduruldu</sys:String>
+    <sys:String x:Key="Proxy_Status_Error">Hata</sys:String>
+    <sys:String x:Key="Proxy_NoResponseYet">(henüz yanıt yok)</sys:String>
+    <sys:String x:Key="Proxy_Status_Listening">127.0.0.1:{0} adresinde dinleniyor. İstemcinin proxy ayarlarını bu adrese yönlendirin.</sys:String>
+    <sys:String x:Key="Proxy_Status_FailedToStart">Başlatılamadı: {0}</sys:String>
+    <sys:String x:Key="Proxy_Status_CertInstalled">Kök sertifika, geçerli Windows kullanıcısı için güvenilir hale getirildi.</sys:String>
+    <sys:String x:Key="Proxy_Status_CertInstallFailed">Kök sertifika yüklenemedi: {0}</sys:String>
+    <sys:String x:Key="Proxy_Status_CertRemoved">Kök sertifika kaldırıldı.</sys:String>
+    <sys:String x:Key="Proxy_Status_CertRemoveFailed">Kök sertifika kaldırılamadı: {0}</sys:String>
+    <sys:String x:Key="Proxy_Status_CertExported">Kök sertifika {0} konumuna aktarıldı - diğer kendi cihazlarınıza elle yükleyin.</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyEnabled">Windows sistem proxy'si 127.0.0.1:{0} olarak ayarlandı.</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyEnableFailed">Sistem proxy'si etkinleştirilemedi: {0}</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyDisabled">Windows sistem proxy'si devre dışı bırakıldı.</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyDisableFailed">Sistem proxy'si devre dışı bırakılamadı: {0}</sys:String>
+
+    <sys:String x:Key="Body_Empty">(içerik yok)</sys:String>
+    <sys:String x:Key="Body_Truncated">
+
+[… kısaltıldı, yalnızca ilk baytlar yakalandı …]</sys:String>
+
+</ResourceDictionary>

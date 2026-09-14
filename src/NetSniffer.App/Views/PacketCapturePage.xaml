@@ -25,34 +25,39 @@
         <!-- Toolbar -->
         <Border Grid.Row="0" Padding="12,8" Background="{DynamicResource ControlFillColorDefaultBrush}">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Adapter:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <TextBlock Text="{DynamicResource Pkt_Adapter}" VerticalAlignment="Center" Margin="0,0,6,0" />
                 <ComboBox Width="320" Margin="0,0,12,0"
                           ItemsSource="{Binding Adapters}"
                           SelectedItem="{Binding SelectedAdapter}"
                           DisplayMemberPath="Description"
                           IsEnabled="{Binding IsCapturing, Converter={StaticResource InverseBoolean}}" />
 
-                <ui:Button Content="Refresh" Icon="{ui:SymbolIcon ArrowClockwise24}"
+                <ui:Button Content="{DynamicResource Pkt_Refresh}" Icon="{ui:SymbolIcon ArrowClockwise24}"
                            Command="{Binding RefreshAdaptersCommand}" Margin="0,0,12,0" />
 
-                <TextBlock Text="Filter (BPF):" VerticalAlignment="Center" Margin="0,0,6,0" />
-                <ui:TextBox Width="260" Margin="0,0,12,0" PlaceholderText="e.g. tcp port 443"
+                <ui:Button Content="{DynamicResource Pkt_InstallNpcap}" Icon="{ui:SymbolIcon ArrowDownload24}"
+                           Appearance="Primary" Command="{Binding InstallNpcapCommand}"
+                           Visibility="{Binding IsCaptureEngineAvailable, Converter={StaticResource BoolToVisibilityInverse}}"
+                           Margin="0,0,12,0" />
+
+                <TextBlock Text="{DynamicResource Pkt_Filter}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <ui:TextBox Width="260" Margin="0,0,12,0" PlaceholderText="{DynamicResource Pkt_FilterPlaceholder}"
                             Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" />
 
-                <ui:Button Content="Start" Icon="{ui:SymbolIcon Play24}" Appearance="Primary"
+                <ui:Button Content="{DynamicResource Pkt_Start}" Icon="{ui:SymbolIcon Play24}" Appearance="Primary"
                            Command="{Binding StartCaptureCommand}"
                            Visibility="{Binding IsCapturing, Converter={StaticResource BoolToVisibilityInverse}}"
                            Margin="0,0,8,0" />
-                <ui:Button Content="Stop" Icon="{ui:SymbolIcon Stop24}" Appearance="Danger"
+                <ui:Button Content="{DynamicResource Pkt_Stop}" Icon="{ui:SymbolIcon Stop24}" Appearance="Danger"
                            Command="{Binding StopCaptureCommand}"
                            Visibility="{Binding IsCapturing, Converter={StaticResource BoolToVisibility}}"
                            Margin="0,0,8,0" />
 
-                <ui:Button Content="Clear" Icon="{ui:SymbolIcon Broom24}" Command="{Binding ClearPacketsCommand}" Margin="0,0,8,0" />
-                <ui:Button Content="Open .pcap" Icon="{ui:SymbolIcon FolderOpen24}" Command="{Binding OpenCaptureCommand}" Margin="0,0,8,0" />
-                <ui:Button Content="Save .pcap" Icon="{ui:SymbolIcon Save24}" Command="{Binding SaveCaptureCommand}" Margin="0,0,8,0" />
+                <ui:Button Content="{DynamicResource Pkt_Clear}" Icon="{ui:SymbolIcon Broom24}" Command="{Binding ClearPacketsCommand}" Margin="0,0,8,0" />
+                <ui:Button Content="{DynamicResource Pkt_OpenPcap}" Icon="{ui:SymbolIcon FolderOpen24}" Command="{Binding OpenCaptureCommand}" Margin="0,0,8,0" />
+                <ui:Button Content="{DynamicResource Pkt_SavePcap}" Icon="{ui:SymbolIcon Save24}" Command="{Binding SaveCaptureCommand}" Margin="0,0,8,0" />
 
-                <CheckBox Content="Auto-scroll" IsChecked="{Binding AutoScroll}" VerticalAlignment="Center" Margin="12,0,0,0" />
+                <CheckBox Content="{DynamicResource Pkt_AutoScroll}" IsChecked="{Binding AutoScroll}" VerticalAlignment="Center" Margin="12,0,0,0" />
             </StackPanel>
         </Border>
 
@@ -74,13 +79,13 @@
                       VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
                       ScrollViewer.CanContentScroll="True">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="No." Binding="{Binding Number}" Width="70" />
-                    <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="110" />
-                    <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="180" />
-                    <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="180" />
-                    <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="80" />
-                    <DataGridTextColumn Header="Length" Binding="{Binding Length}" Width="70" />
-                    <DataGridTextColumn Header="Info" Binding="{Binding Info}" Width="*" />
+                    <DataGridTextColumn Header="{DynamicResource Pkt_Col_No}" Binding="{Binding Number}" Width="70" />
+                    <DataGridTextColumn Header="{DynamicResource Pkt_Col_Time}" Binding="{Binding Time}" Width="110" />
+                    <DataGridTextColumn Header="{DynamicResource Pkt_Col_Source}" Binding="{Binding Source}" Width="180" />
+                    <DataGridTextColumn Header="{DynamicResource Pkt_Col_Destination}" Binding="{Binding Destination}" Width="180" />
+                    <DataGridTextColumn Header="{DynamicResource Pkt_Col_Protocol}" Binding="{Binding Protocol}" Width="80" />
+                    <DataGridTextColumn Header="{DynamicResource Pkt_Col_Length}" Binding="{Binding Length}" Width="70" />
+                    <DataGridTextColumn Header="{DynamicResource Pkt_Col_Info}" Binding="{Binding Info}" Width="*" />
                 </DataGrid.Columns>
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
@@ -132,8 +137,8 @@
         <Border Grid.Row="2" Padding="10,6" Background="{DynamicResource ControlFillColorDefaultBrush}">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="{Binding StatusMessage}" />
-                <TextBlock Text="{Binding TotalPackets, StringFormat='  |  Packets: {0}'}" />
-                <TextBlock Text="{Binding TotalBytes, StringFormat='  |  Bytes: {0:N0}'}" />
+                <TextBlock Text="{Binding PacketsCountText}" />
+                <TextBlock Text="{Binding BytesCountText}" />
             </StackPanel>
         </Border>
     </Grid>

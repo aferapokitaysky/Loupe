@@ -54,6 +54,14 @@ callback only crosses into C# once a frame is ready. Everything above that
 - A dark, Fluent-styled (WPF-UI / Mica) UI: adapter + filter toolbar, a
   virtualized packet list color-coded by protocol, a protocol detail tree,
   and a hex/ASCII byte view - laid out the way Wireshark's three panes are.
+- No Npcap yet? Click **"Install Npcap"** on the Packets toolbar - it fetches
+  the current official installer straight from npcap.com and launches it as
+  a normal child process (see [What it deliberately does not do](#what-it-deliberately-does-not-do)
+  below for why this downloads the real installer rather than bundling one).
+- 12 UI languages (English, Russian, Ukrainian, Spanish, German, French,
+  Portuguese, Italian, Chinese, Japanese, Turkish, Polish), switchable live
+  from the language picker at the bottom of the left nav rail - no restart
+  needed, and the choice is remembered between runs.
 
 Separately, the **HTTP(S) Proxy** page is a local MITM debugging proxy:
 
@@ -92,6 +100,14 @@ Wireshark uses: pointing the app at an `SSLKEYLOGFILE` written by a client
 you control (e.g. `set SSLKEYLOGFILE=...` before launching a browser), never
 at key extraction or interception of third-party sessions - the same
 "your own traffic only" boundary the proxy already enforces.
+
+It also doesn't vendor/bundle the Npcap installer. Npcap's license doesn't
+permit free redistribution of the installer itself outside npcap.com, so
+"Install Npcap" ([`NpcapInstaller`](src/NetSniffer.Capture/NpcapInstaller.cs))
+downloads the current official installer over HTTPS at the moment you click
+the button and runs it as a normal child process - you still see Npcap's own
+installer UI and accept Npcap's own license; NetSniffer never pre-accepts
+anything or installs silently on your behalf.
 
 ## Building
 

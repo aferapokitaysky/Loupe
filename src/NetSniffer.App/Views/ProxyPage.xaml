@@ -25,40 +25,39 @@
         <!-- Capture toolbar -->
         <Border Grid.Row="0" Padding="12,8" Background="{DynamicResource ControlFillColorDefaultBrush}">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Port:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <TextBlock Text="{DynamicResource Proxy_Port}" VerticalAlignment="Center" Margin="0,0,6,0" />
                 <ui:TextBox Width="80" Margin="0,0,12,0"
                             Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"
                             IsEnabled="{Binding IsRunning, Converter={StaticResource InverseBoolean}}" />
 
-                <ui:Button Content="Start" Icon="{ui:SymbolIcon Play24}" Appearance="Primary"
+                <ui:Button Content="{DynamicResource Proxy_Start}" Icon="{ui:SymbolIcon Play24}" Appearance="Primary"
                            Command="{Binding StartProxyCommand}"
                            Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibilityInverse}}"
                            Margin="0,0,8,0" />
-                <ui:Button Content="Stop" Icon="{ui:SymbolIcon Stop24}" Appearance="Danger"
+                <ui:Button Content="{DynamicResource Proxy_Stop}" Icon="{ui:SymbolIcon Stop24}" Appearance="Danger"
                            Command="{Binding StopProxyCommand}"
                            Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibility}}"
                            Margin="0,0,8,0" />
 
-                <ui:Button Content="Clear" Icon="{ui:SymbolIcon Broom24}" Command="{Binding ClearExchangesCommand}" Margin="0,0,20,0" />
+                <ui:Button Content="{DynamicResource Proxy_Clear}" Icon="{ui:SymbolIcon Broom24}" Command="{Binding ClearExchangesCommand}" Margin="0,0,20,0" />
 
-                <ui:Button Content="Install Root Certificate"
+                <ui:Button Content="{DynamicResource Proxy_InstallCert}"
                            Icon="{ui:SymbolIcon ShieldCheckmark24}"
                            Command="{Binding InstallRootCertificateCommand}"
                            Visibility="{Binding IsCaInstalled, Converter={StaticResource BoolToVisibilityInverse}}"
-                           Margin="0,0,8,0" ToolTip="Trust NetSniffer's local root CA so it can decrypt HTTPS for inspection" />
-                <ui:Button Content="Untrust Root Certificate" Icon="{ui:SymbolIcon ShieldError24}"
+                           Margin="0,0,8,0" />
+                <ui:Button Content="{DynamicResource Proxy_UninstallCert}" Icon="{ui:SymbolIcon ShieldError24}"
                            Command="{Binding UninstallRootCertificateCommand}"
                            Visibility="{Binding IsCaInstalled, Converter={StaticResource BoolToVisibility}}"
                            Margin="0,0,8,0" />
-                <ui:Button Content="Export Certificate" Icon="{ui:SymbolIcon ArrowExportUp24}"
-                           Command="{Binding ExportRootCertificateCommand}" Margin="0,0,20,0"
-                           ToolTip="Save the public root certificate as .pem, e.g. to install manually on a phone" />
+                <ui:Button Content="{DynamicResource Proxy_ExportCert}" Icon="{ui:SymbolIcon ArrowExportUp24}"
+                           Command="{Binding ExportRootCertificateCommand}" Margin="0,0,20,0" />
 
-                <ui:Button Content="Enable System Proxy" Icon="{ui:SymbolIcon Wifi124}"
+                <ui:Button Content="{DynamicResource Proxy_EnableSystemProxy}" Icon="{ui:SymbolIcon Wifi124}"
                            Command="{Binding EnableSystemProxyCommand}"
                            Visibility="{Binding IsSystemProxyEnabled, Converter={StaticResource BoolToVisibilityInverse}}"
                            Margin="0,0,8,0" />
-                <ui:Button Content="Disable System Proxy" Icon="{ui:SymbolIcon WifiOff24}"
+                <ui:Button Content="{DynamicResource Proxy_DisableSystemProxy}" Icon="{ui:SymbolIcon WifiOff24}"
                            Command="{Binding DisableSystemProxyCommand}"
                            Visibility="{Binding IsSystemProxyEnabled, Converter={StaticResource BoolToVisibility}}"
                            Margin="0,0,8,0" />
@@ -68,9 +67,10 @@
         <!-- Ethics/scope banner + live status -->
         <StackPanel Grid.Row="1" Background="{DynamicResource ControlFillColorSecondaryBrush}">
             <TextBlock Padding="12,6,12,0" TextWrapping="Wrap" Opacity="0.85">
-                Only intercepts traffic that a client you control deliberately routes through this proxy
-                <Run FontWeight="SemiBold">and</Run> has chosen to trust NetSniffer's local root certificate for -
-                i.e. your own devices and apps, configured by you for debugging. CA thumbprint:
+                <Run Text="{DynamicResource Proxy_Banner}" />
+                <Run Text=" " />
+                <Run FontWeight="SemiBold" Text="{DynamicResource Proxy_CaLabel}" />
+                <Run Text=" " />
                 <Run FontFamily="Consolas" Text="{Binding CaThumbprint, Mode=OneWay}" />
             </TextBlock>
             <TextBlock Padding="12,2,12,6" Text="{Binding StatusMessage}" FontStyle="Italic" Opacity="0.75" />
@@ -86,15 +86,15 @@
                   EnableRowVirtualization="True" EnableColumnVirtualization="True"
                   VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="100" />
-                <DataGridTextColumn Header="Method" Binding="{Binding Method}" Width="70" />
-                <DataGridTextColumn Header="Scheme" Binding="{Binding Scheme}" Width="60" />
-                <DataGridTextColumn Header="Host" Binding="{Binding Host}" Width="220" />
-                <DataGridTextColumn Header="Path" Binding="{Binding Path}" Width="*" />
-                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="70" />
-                <DataGridTextColumn Header="Detail" Binding="{Binding StatusDetail}" Width="160" />
-                <DataGridTextColumn Header="Size" Binding="{Binding ResponseSize}" Width="80" />
-                <DataGridTextColumn Header="Duration" Binding="{Binding Duration}" Width="90" />
+                <DataGridTextColumn Header="{DynamicResource Proxy_Col_Time}" Binding="{Binding Time}" Width="100" />
+                <DataGridTextColumn Header="{DynamicResource Proxy_Col_Method}" Binding="{Binding Method}" Width="70" />
+                <DataGridTextColumn Header="{DynamicResource Proxy_Col_Scheme}" Binding="{Binding Scheme}" Width="60" />
+                <DataGridTextColumn Header="{DynamicResource Proxy_Col_Host}" Binding="{Binding Host}" Width="220" />
+                <DataGridTextColumn Header="{DynamicResource Proxy_Col_Path}" Binding="{Binding Path}" Width="*" />
+                <DataGridTextColumn Header="{DynamicResource Proxy_Col_Status}" Binding="{Binding Status}" Width="70" />
+                <DataGridTextColumn Header="{DynamicResource Proxy_Col_Detail}" Binding="{Binding StatusDetail}" Width="160" />
+                <DataGridTextColumn Header="{DynamicResource Proxy_Col_Size}" Binding="{Binding ResponseSize}" Width="80" />
+                <DataGridTextColumn Header="{DynamicResource Proxy_Col_Duration}" Binding="{Binding Duration}" Width="90" />
             </DataGrid.Columns>
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
@@ -109,7 +109,7 @@
 
         <!-- Request/response detail -->
         <TabControl Grid.Row="3" Height="260">
-            <TabItem Header="Request">
+            <TabItem Header="{DynamicResource Proxy_Tab_Request}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" MaxHeight="90" />
@@ -127,7 +127,7 @@
                     </ScrollViewer>
                 </Grid>
             </TabItem>
-            <TabItem Header="Response">
+            <TabItem Header="{DynamicResource Proxy_Tab_Response}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" MaxHeight="90" />
