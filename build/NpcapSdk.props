@@ -1,0 +1,26 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    Locates the Npcap SDK (headers + import libs for wpcap/Packet) needed to
+    build NetSniffer.Native. The SDK itself has a restrictive redistribution
+    license, so it is NOT vendored in this repo - download it yourself:
+
+      https://npcap.com/#download  ("Npcap SDK")
+
+    Then either:
+      1. Set an NPCAP_SDK_DIR environment variable pointing at the extracted
+         folder (the one containing Include\ and Lib\), or
+      2. Extract it to third_party\npcap-sdk\ at the repo root (gitignored).
+
+    Building NetSniffer.Native also requires the Npcap RUNTIME to be
+    installed (https://npcap.com/#download, plain installer) so
+    wpcap.dll/Packet.dll exist at run time - the SDK only provides the
+    build-time .lib files.
+  -->
+  <PropertyGroup>
+    <NpcapSdkDir Condition="'$(NPCAP_SDK_DIR)' != ''">$(NPCAP_SDK_DIR)</NpcapSdkDir>
+    <NpcapSdkDir Condition="'$(NpcapSdkDir)' == ''">$(SolutionDir)third_party\npcap-sdk\</NpcapSdkDir>
+    <NpcapSdkDir Condition="!HasTrailingSlash('$(NpcapSdkDir)')">$(NpcapSdkDir)\</NpcapSdkDir>
+    <NpcapSdkLibDir Condition="'$(Platform)' == 'x64'">$(NpcapSdkDir)Lib\x64\</NpcapSdkLibDir>
+    <NpcapSdkLibDir Condition="'$(Platform)' != 'x64'">$(NpcapSdkDir)Lib\</NpcapSdkLibDir>
+  </PropertyGroup>
+</Project>
