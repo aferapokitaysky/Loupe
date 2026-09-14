@@ -1,30 +1,28 @@
-using System.Collections.Specialized;
-using System.Windows;
-using NetSniffer.App.ViewModels;
 using Wpf.Ui.Controls;
 
 namespace NetSniffer.App.Views;
 
 public partial class MainWindow : FluentWindow
 {
-    private readonly MainViewModel _viewModel;
-
     public MainWindow()
     {
         InitializeComponent();
-
-        _viewModel = new MainViewModel();
-        DataContext = _viewModel;
-
-        _viewModel.Packets.CollectionChanged += OnPacketsCollectionChanged;
-        Closed += (_, _) => _viewModel.Dispose();
+        Closed += (_, _) =>
+        {
+            PacketsPage.ViewModel.Dispose();
+            ProxyPageControl.ViewModel.Dispose();
+        };
     }
 
-    private void OnPacketsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void OnPacketsNavChecked(object sender, System.Windows.RoutedEventArgs e)
     {
-        if (!_viewModel.AutoScroll) return;
-        if (e.Action != NotifyCollectionChangedAction.Add || PacketGrid.Items.Count == 0) return;
+        PacketsPage.Visibility = System.Windows.Visibility.Visible;
+        ProxyPageControl.Visibility = System.Windows.Visibility.Collapsed;
+    }
 
-        PacketGrid.ScrollIntoView(PacketGrid.Items[^1]);
+    private void OnProxyNavChecked(object sender, System.Windows.RoutedEventArgs e)
+    {
+        PacketsPage.Visibility = System.Windows.Visibility.Collapsed;
+        ProxyPageControl.Visibility = System.Windows.Visibility.Visible;
     }
 }
