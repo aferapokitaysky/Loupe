@@ -1,0 +1,150 @@
+<UserControl x:Class="NetSniffer.App.Views.ProxyPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:conv="clr-namespace:NetSniffer.App.Converters"
+             xmlns:vm="clr-namespace:NetSniffer.App.ViewModels"
+             d:DataContext="{d:DesignInstance Type=vm:ProxyViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+
+    <UserControl.Resources>
+        <conv:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverse" />
+        <conv:InverseBooleanConverter x:Key="InverseBoolean" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Capture toolbar -->
+        <Border Grid.Row="0" Padding="12,8" Background="{DynamicResource ControlFillColorDefaultBrush}">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Port:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <ui:TextBox Width="80" Margin="0,0,12,0"
+                            Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"
+                            IsEnabled="{Binding IsRunning, Converter={StaticResource InverseBoolean}}" />
+
+                <ui:Button Content="Start" Icon="{ui:SymbolIcon Play24}" Appearance="Primary"
+                           Command="{Binding StartProxyCommand}"
+                           Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibilityInverse}}"
+                           Margin="0,0,8,0" />
+                <ui:Button Content="Stop" Icon="{ui:SymbolIcon Stop24}" Appearance="Danger"
+                           Command="{Binding StopProxyCommand}"
+                           Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibility}}"
+                           Margin="0,0,8,0" />
+
+                <ui:Button Content="Clear" Icon="{ui:SymbolIcon Broom24}" Command="{Binding ClearExchangesCommand}" Margin="0,0,20,0" />
+
+                <ui:Button Content="Install Root Certificate"
+                           Icon="{ui:SymbolIcon ShieldCheckmark24}"
+                           Command="{Binding InstallRootCertificateCommand}"
+                           Visibility="{Binding IsCaInstalled, Converter={StaticResource BoolToVisibilityInverse}}"
+                           Margin="0,0,8,0" ToolTip="Trust NetSniffer's local root CA so it can decrypt HTTPS for inspection" />
+                <ui:Button Content="Untrust Root Certificate" Icon="{ui:SymbolIcon ShieldError24}"
+                           Command="{Binding UninstallRootCertificateCommand}"
+                           Visibility="{Binding IsCaInstalled, Converter={StaticResource BoolToVisibility}}"
+                           Margin="0,0,8,0" />
+                <ui:Button Content="Export Certificate" Icon="{ui:SymbolIcon ArrowExportUp24}"
+                           Command="{Binding ExportRootCertificateCommand}" Margin="0,0,20,0"
+                           ToolTip="Save the public root certificate as .pem, e.g. to install manually on a phone" />
+
+                <ui:Button Content="Enable System Proxy" Icon="{ui:SymbolIcon Wifi124}"
+                           Command="{Binding EnableSystemProxyCommand}"
+                           Visibility="{Binding IsSystemProxyEnabled, Converter={StaticResource BoolToVisibilityInverse}}"
+                           Margin="0,0,8,0" />
+                <ui:Button Content="Disable System Proxy" Icon="{ui:SymbolIcon WifiOff24}"
+                           Command="{Binding DisableSystemProxyCommand}"
+                           Visibility="{Binding IsSystemProxyEnabled, Converter={StaticResource BoolToVisibility}}"
+                           Margin="0,0,8,0" />
+            </StackPanel>
+        </Border>
+
+        <!-- Ethics/scope banner + live status -->
+        <StackPanel Grid.Row="1" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+            <TextBlock Padding="12,6,12,0" TextWrapping="Wrap" Opacity="0.85">
+                Only intercepts traffic that a client you control deliberately routes through this proxy
+                <Run FontWeight="SemiBold">and</Run> has chosen to trust NetSniffer's local root certificate for -
+                i.e. your own devices and apps, configured by you for debugging. CA thumbprint:
+                <Run FontFamily="Consolas" Text="{Binding CaThumbprint, Mode=OneWay}" />
+            </TextBlock>
+            <TextBlock Padding="12,2,12,6" Text="{Binding StatusMessage}" FontStyle="Italic" Opacity="0.75" />
+        </StackPanel>
+
+        <!-- Exchange list -->
+        <DataGrid Grid.Row="2" x:Name="ExchangeGrid"
+                  ItemsSource="{Binding Exchanges}"
+                  SelectedItem="{Binding SelectedExchange}"
+                  AutoGenerateColumns="False" IsReadOnly="True"
+                  GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                  SelectionMode="Single" SelectionUnit="FullRow"
+                  EnableRowVirtualization="True" EnableColumnVirtualization="True"
+                  VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="100" />
+                <DataGridTextColumn Header="Method" Binding="{Binding Method}" Width="70" />
+                <DataGridTextColumn Header="Scheme" Binding="{Binding Scheme}" Width="60" />
+                <DataGridTextColumn Header="Host" Binding="{Binding Host}" Width="220" />
+                <DataGridTextColumn Header="Path" Binding="{Binding Path}" Width="*" />
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="70" />
+                <DataGridTextColumn Header="Detail" Binding="{Binding StatusDetail}" Width="160" />
+                <DataGridTextColumn Header="Size" Binding="{Binding ResponseSize}" Width="80" />
+                <DataGridTextColumn Header="Duration" Binding="{Binding Duration}" Width="90" />
+            </DataGrid.Columns>
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsError}" Value="True">
+                            <Setter Property="Background" Value="#4B2E2E" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
+        </DataGrid>
+
+        <!-- Request/response detail -->
+        <TabControl Grid.Row="3" Height="260">
+            <TabItem Header="Request">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" MaxHeight="90" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                        <TextBox Text="{Binding SelectedExchange.RequestHeadersText, Mode=OneWay}"
+                                 FontFamily="Cascadia Mono, Consolas" FontSize="12" IsReadOnly="True"
+                                 BorderThickness="0" Background="Transparent" TextWrapping="NoWrap" />
+                    </ScrollViewer>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <TextBox Text="{Binding SelectedExchange.RequestBodyText, Mode=OneWay}"
+                                 FontFamily="Cascadia Mono, Consolas" FontSize="12" IsReadOnly="True"
+                                 BorderThickness="0" Background="Transparent" TextWrapping="NoWrap" />
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Response">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" MaxHeight="90" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                        <TextBox Text="{Binding SelectedExchange.ResponseHeadersText, Mode=OneWay}"
+                                 FontFamily="Cascadia Mono, Consolas" FontSize="12" IsReadOnly="True"
+                                 BorderThickness="0" Background="Transparent" TextWrapping="NoWrap" />
+                    </ScrollViewer>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <TextBox Text="{Binding SelectedExchange.ResponseBodyText, Mode=OneWay}"
+                                 FontFamily="Cascadia Mono, Consolas" FontSize="12" IsReadOnly="True"
+                                 BorderThickness="0" Background="Transparent" TextWrapping="NoWrap" />
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

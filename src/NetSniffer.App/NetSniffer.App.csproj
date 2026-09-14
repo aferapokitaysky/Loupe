@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NetSniffer.Core\NetSniffer.Core.csproj" />
     <ProjectReference Include="..\NetSniffer.Capture\NetSniffer.Capture.csproj" />
+    <ProjectReference Include="..\NetSniffer.Proxy\NetSniffer.Proxy.csproj" />
   </ItemGroup>
 
 </Project>
