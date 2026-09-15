@@ -78,7 +78,12 @@
     <sys:String x:Key="Proxy_Status_Stopped">已停止</sys:String>
     <sys:String x:Key="Proxy_Status_Error">错误</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">（尚无响应）</sys:String>
-    <sys:String x:Key="Proxy_EmptyState">启动代理并让客户端指向它，即可在此查看请求</sys:String>
+    <sys:String x:Key="Proxy_EmptyState">启动代理并让客户端指向它，即可在此查看请求</sys:String>
+    <sys:String x:Key="Proxy_Domains">域名</sys:String>
+    <sys:String x:Key="Proxy_Domains_EmptyState">请求将按域名分组显示在这里</sys:String>
+    <sys:String x:Key="Proxy_Transparent">透明端口</sys:String>
+    <sys:String x:Key="Proxy_Transparent_Tip">接受未配置代理的连接：按 TLS SNI 或 Host 头路由。将忽略系统代理的程序指向这里。</sys:String>
+    <sys:String x:Key="Proxy_Status_ListeningTransparent">监听 {0}，透明端口 {1}</sys:String>
     <sys:String x:Key="Proxy_SelectExchange">选择一个请求以查看其标头和正文</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">正在监听 127.0.0.1:{0}。请将客户端代理设置指向此地址。</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">启动失败：{0}</sys:String>

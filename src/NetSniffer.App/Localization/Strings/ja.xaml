@@ -78,7 +78,12 @@
     <sys:String x:Key="Proxy_Status_Stopped">停止しました</sys:String>
     <sys:String x:Key="Proxy_Status_Error">エラー</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(まだ応答なし)</sys:String>
-    <sys:String x:Key="Proxy_EmptyState">プロキシを開始し、クライアントをこれに向けるとここにリクエストが表示されます</sys:String>
+    <sys:String x:Key="Proxy_EmptyState">プロキシを開始し、クライアントをこれに向けるとここにリクエストが表示されます</sys:String>
+    <sys:String x:Key="Proxy_Domains">ドメイン</sys:String>
+    <sys:String x:Key="Proxy_Domains_EmptyState">リクエストがドメインごとにここに表示されます</sys:String>
+    <sys:String x:Key="Proxy_Transparent">透過ポート</sys:String>
+    <sys:String x:Key="Proxy_Transparent_Tip">プロキシ設定なしの接続を受け付け、TLS SNI または Host ヘッダーで振り分けます。</sys:String>
+    <sys:String x:Key="Proxy_Status_ListeningTransparent">{0} で待受、透過は {1}</sys:String>
     <sys:String x:Key="Proxy_SelectExchange">リクエストを選ぶとヘッダーと本文が表示されます</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">127.0.0.1:{0} で待機中です。クライアントのプロキシ設定にこのアドレスを指定してください。</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">起動に失敗しました: {0}</sys:String>

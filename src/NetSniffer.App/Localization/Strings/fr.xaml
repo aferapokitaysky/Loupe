@@ -78,7 +78,12 @@
     <sys:String x:Key="Proxy_Status_Stopped">Arrêté</sys:String>
     <sys:String x:Key="Proxy_Status_Error">Erreur</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(pas encore de réponse)</sys:String>
-    <sys:String x:Key="Proxy_EmptyState">Démarrez le proxy et pointez un client vers lui pour voir les requêtes ici</sys:String>
+    <sys:String x:Key="Proxy_EmptyState">Démarrez le proxy et pointez un client vers lui pour voir les requêtes ici</sys:String>
+    <sys:String x:Key="Proxy_Domains">DOMAINES</sys:String>
+    <sys:String x:Key="Proxy_Domains_EmptyState">Les requêtes apparaissent ici, groupées par domaine</sys:String>
+    <sys:String x:Key="Proxy_Transparent">Port transparent</sys:String>
+    <sys:String x:Key="Proxy_Transparent_Tip">Accepte les connexions sans réglage de proxy : routage par SNI TLS ou en-tête Host.</sys:String>
+    <sys:String x:Key="Proxy_Status_ListeningTransparent">Écoute sur {0}, transparent sur {1}</sys:String>
     <sys:String x:Key="Proxy_SelectExchange">Sélectionnez une requête pour voir ses en-têtes et son corps</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">En écoute sur 127.0.0.1:{0}. Configurez le proxy du client avec cette adresse.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Échec du démarrage : {0}</sys:String>

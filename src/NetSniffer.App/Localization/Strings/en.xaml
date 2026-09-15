@@ -80,7 +80,12 @@
     <sys:String x:Key="Proxy_Status_Stopped">Stopped</sys:String>
     <sys:String x:Key="Proxy_Status_Error">Error</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(no response yet)</sys:String>
-    <sys:String x:Key="Proxy_EmptyState">Start the proxy and point a client at it to see requests here</sys:String>
+    <sys:String x:Key="Proxy_EmptyState">Start the proxy and point a client at it to see requests here</sys:String>
+    <sys:String x:Key="Proxy_Domains">DOMAINS</sys:String>
+    <sys:String x:Key="Proxy_Domains_EmptyState">Requests appear here, grouped by domain</sys:String>
+    <sys:String x:Key="Proxy_Transparent">Transparent port</sys:String>
+    <sys:String x:Key="Proxy_Transparent_Tip">Accepts raw connections with no proxy settings: routed by TLS SNI or Host header. Point programs that ignore the Windows proxy here.</sys:String>
+    <sys:String x:Key="Proxy_Status_ListeningTransparent">Listening on {0}, transparent on {1}</sys:String>
     <sys:String x:Key="Proxy_SelectExchange">Select a request to inspect its headers and body</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">Listening on 127.0.0.1:{0}. Point a client's proxy settings here.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Failed to start: {0}</sys:String>

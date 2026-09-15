@@ -78,7 +78,12 @@
     <sys:String x:Key="Proxy_Status_Stopped">Остановлено</sys:String>
     <sys:String x:Key="Proxy_Status_Error">Ошибка</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(ответа пока нет)</sys:String>
-    <sys:String x:Key="Proxy_EmptyState">Запустите прокси и направьте на него клиента, чтобы увидеть запросы здесь</sys:String>
+    <sys:String x:Key="Proxy_EmptyState">Запустите прокси и направьте на него клиента, чтобы увидеть запросы здесь</sys:String>
+    <sys:String x:Key="Proxy_Domains">ДОМЕНЫ</sys:String>
+    <sys:String x:Key="Proxy_Domains_EmptyState">Запросы появятся здесь, сгруппированные по доменам</sys:String>
+    <sys:String x:Key="Proxy_Transparent">Прозрачный порт</sys:String>
+    <sys:String x:Key="Proxy_Transparent_Tip">Принимает обычные соединения без настроек прокси: маршрут по TLS SNI или заголовку Host. Направьте сюда программы, игнорирующие системный прокси.</sys:String>
+    <sys:String x:Key="Proxy_Status_ListeningTransparent">Слушает на {0}, прозрачный на {1}</sys:String>
     <sys:String x:Key="Proxy_SelectExchange">Выберите запрос, чтобы посмотреть заголовки и тело</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">Слушает 127.0.0.1:{0}. Укажите этот адрес в настройках прокси клиента.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Не удалось запустить: {0}</sys:String>

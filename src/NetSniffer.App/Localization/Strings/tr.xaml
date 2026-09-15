@@ -78,7 +78,12 @@
     <sys:String x:Key="Proxy_Status_Stopped">Durduruldu</sys:String>
     <sys:String x:Key="Proxy_Status_Error">Hata</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(henüz yanıt yok)</sys:String>
-    <sys:String x:Key="Proxy_EmptyState">Proxy'yi başlatın ve bir istemciyi buna yönlendirin, istekleri burada görün</sys:String>
+    <sys:String x:Key="Proxy_EmptyState">Proxy'yi başlatın ve bir istemciyi buna yönlendirin, istekleri burada görün</sys:String>
+    <sys:String x:Key="Proxy_Domains">ALAN ADLARI</sys:String>
+    <sys:String x:Key="Proxy_Domains_EmptyState">İstekler burada alan adına göre gruplanır</sys:String>
+    <sys:String x:Key="Proxy_Transparent">Şeffaf bağlantı noktası</sys:String>
+    <sys:String x:Key="Proxy_Transparent_Tip">Proxy ayarı olmadan gelen bağlantıları kabul eder: TLS SNI veya Host başlığına göre yönlendirir.</sys:String>
+    <sys:String x:Key="Proxy_Status_ListeningTransparent">{0} dinleniyor, şeffaf {1}</sys:String>
     <sys:String x:Key="Proxy_SelectExchange">Başlıklarını ve gövdesini görmek için bir istek seçin</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">127.0.0.1:{0} adresinde dinleniyor. İstemcinin proxy ayarlarını bu adrese yönlendirin.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Başlatılamadı: {0}</sys:String>
