@@ -49,6 +49,7 @@
 
                     <StackPanel Grid.Row="0" Margin="0,8,0,0">
                         <RadioButton x:Name="PacketsNavButton" GroupName="Nav" Style="{StaticResource NavButtonStyle}"
+                                     AutomationProperties.Name="{DynamicResource Nav_Packets}"
                                      Checked="OnPacketsNavChecked">
                             <StackPanel>
                                 <ui:SymbolIcon Symbol="Pulse24" FontSize="22" HorizontalAlignment="Center" />
@@ -57,6 +58,7 @@
                         </RadioButton>
 
                         <RadioButton x:Name="ProxyNavButton" GroupName="Nav" Style="{StaticResource NavButtonStyle}"
+                                     AutomationProperties.Name="{DynamicResource Nav_Proxy}"
                                      Checked="OnProxyNavChecked">
                             <StackPanel>
                                 <ui:SymbolIcon Symbol="ShieldKeyhole24" FontSize="22" HorizontalAlignment="Center" />
@@ -71,6 +73,7 @@
                              the popup (StaysOpen=False) also lands on the toggle and reopens it -->
                         <ToggleButton x:Name="LanguageToggle" Style="{StaticResource FlagChip}"
                                       HorizontalAlignment="Center" ToolTip="{DynamicResource Nav_Language}"
+                                      AutomationProperties.Name="{DynamicResource Nav_Language}"
                                       IsHitTestVisible="{Binding IsOpen, ElementName=LanguagePopup, Converter={StaticResource InverseBoolean}}">
                             <Border x:Name="CurrentFlag" Style="{StaticResource FlagSwatch}" />
                         </ToggleButton>

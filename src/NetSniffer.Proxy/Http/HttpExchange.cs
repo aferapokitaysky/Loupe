@@ -35,7 +35,16 @@ public sealed class HttpExchange
     public string? Error { get; set; }
     public TimeSpan? Duration { get; set; }
 
+    /// <summary>The local program that sent this request, when the proxy could tell. Null for
+    /// clients on other machines, or when no resolver was configured.</summary>
+    public ClientApplication? Client { get; init; }
+
     public string Scheme => IsHttps ? "https" : "http";
     public bool IsDefaultPort => (IsHttps && Port == 443) || (!IsHttps && Port == 80);
     public string Url => $"{Scheme}://{Host}{(IsDefaultPort ? "" : $":{Port}")}{PathAndQuery}";
 }
+
+/// <summary>A program on this machine that made a request through the proxy.</summary>
+/// <param name="Name">Executable name without extension.</param>
+/// <param name="ImagePath">Full executable path when readable, for its icon.</param>
+public sealed record ClientApplication(string Name, string? ImagePath);

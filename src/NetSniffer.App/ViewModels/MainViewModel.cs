@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using NetSniffer.App.Localization;
 using NetSniffer.Capture;
+using NetSniffer.Capture.Processes;
 using NetSniffer.Core.IO;
 using NetSniffer.App.Services;
 using NetSniffer.Core.Model;
@@ -50,7 +51,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly DispatcherTimer _drainTimer;
     private readonly TcpStreamReassembler _reassembler = new();
     private readonly HostNameRegistry _names = new();
-    private readonly HostTrafficTracker _hosts = new(LocalAddresses());
+    private readonly HostTrafficTracker _hosts = new(LocalAddresses(), ResolveLocalProcess);
     private readonly FaviconService _favicons = new();
     private readonly Dictionary<string, HostRowViewModel> _hostRows = [];
 
@@ -82,6 +83,20 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>Fold runs of identical packets into one counted row. On by default: a bulk
     /// transfer is otherwise hundreds of lines that differ only in sequence number.</summary>
     [ObservableProperty] private bool _collapseRepeats = true;
+
+    /// <summary>Host picked in the hosts panel; narrows the packet list to its traffic.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsFiltered))]
+    private HostRowViewModel? _selectedHost;
+
+    /// <summary>Free-text search over endpoints, domains, protocol, program and summary.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsFiltered))]
+    private string _searchText = "";
+
+    [ObservableProperty] private string _filterSummary = "";
+
+    public bool IsFiltered => SelectedHost is not null || !string.IsNullOrWhiteSpace(SearchText);
     [ObservableProperty] private PacketRowViewModel? _selectedPacket;
     [ObservableProperty] private string _statusMessage = "";
     [ObservableProperty] private bool _isCaptureEngineAvailable = true;
@@ -116,6 +131,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // The status-bar counters bake their label into the string, so they'd keep the old
         // language until the next packet arrived. Re-read them when the language changes.
         LocalizationService.LanguageChanged += OnLanguageChanged;
+
+        // Rules persist across launches, so they may already hide something before any packet.
+        IgnoreListStore.Rules.Changed += OnIgnoreRulesChanged;
+        ApplyFilter();
+        ApplyHostFilter();
 
         _drainTimer = new DispatcherTimer(DispatcherPriority.Background)
         {
@@ -268,6 +288,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         // Drop rows the parser already produced too, or they'd stream straight back in.
         while (_parsed.TryDequeue(out _)) { }
+
+        // The selected host is about to disappear from the list; drop the filter with it rather
+        // than leave an empty grid filtered on a host nobody can see any more.
+        SelectedHost = null;
 
         Packets.Clear();
         Hosts.Clear();
@@ -437,6 +461,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             Packets.RemoveAt(0);
 
         RefreshHosts();
+        if (IsFiltered || HasHidden) UpdateFilterSummary();
 
         // A name usually turns up after the first packets to an address, so rows already on
         // screen would otherwise keep showing the bare IP. Only the tail is refreshed: those
@@ -483,6 +508,177 @@ public partial class MainViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(HostsCountText));
     }
 
+    // ---------------------------------------------------------------- filtering
+
+    private DispatcherTimer? _searchDebounce;
+
+    partial void OnSelectedHostChanged(HostRowViewModel? value) => ApplyFilter();
+
+    /// <summary>Typing re-filters 50k rows; wait for a pause instead of doing it per keystroke.</summary>
+    partial void OnSearchTextChanged(string value)
+    {
+        _searchDebounce ??= CreateSearchDebounce();
+        _searchDebounce.Stop();
+        _searchDebounce.Start();
+    }
+
+    private DispatcherTimer CreateSearchDebounce()
+    {
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(220) };
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            ApplyFilter();
+        };
+        return timer;
+    }
+
+    [RelayCommand]
+    private void ClearFilter()
+    {
+        SelectedHost = null;
+        SearchText = "";
+        _searchDebounce?.Stop();
+        ApplyFilter();
+    }
+
+    /// <summary>
+    /// Filters the grid's view rather than the collection: the capture itself (counters, saved
+    /// .pcap, the folding of repeats) keeps seeing every packet, only what is shown narrows.
+    /// </summary>
+    private void ApplyFilter()
+    {
+        var view = System.Windows.Data.CollectionViewSource.GetDefaultView(Packets);
+        var host = SelectedHost?.AddressValue;
+        string search = SearchText.Trim();
+        var rules = IgnoreListStore.Rules;
+
+        view.Filter = host is null && search.Length == 0 && rules.IsEmpty
+            ? null // no predicate at all: nothing to evaluate per row
+            : item => item is PacketRowViewModel row && Matches(row, host, search, rules);
+
+        UpdateFilterSummary();
+    }
+
+    private static bool Matches(PacketRowViewModel row, IPAddress? host, string search, IgnoreRules rules)
+    {
+        var packet = row.Packet;
+
+        if (!rules.IsEmpty
+            && (rules.IsProcessIgnored(packet.ProcessName) || rules.IsHostIgnored(row.RemoteHost)))
+            return false;
+
+        if (host is not null && !host.Equals(packet.SourceAddress) && !host.Equals(packet.DestinationAddress))
+            return false;
+
+        if (search.Length == 0) return true;
+
+        return Contains(row.Source, search)
+               || Contains(row.Destination, search)
+               || Contains(packet.Protocol, search)
+               || Contains(packet.Info, search)
+               || Contains(packet.ProcessName, search);
+
+        static bool Contains(string? haystack, string needle) =>
+            haystack is not null && haystack.Contains(needle, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void UpdateFilterSummary()
+    {
+        if (!IsFiltered && IgnoreListStore.Rules.IsEmpty)
+        {
+            FilterSummary = "";
+            return;
+        }
+
+        int shown = System.Windows.Data.CollectionViewSource.GetDefaultView(Packets) is System.Windows.Data.ListCollectionView list
+            ? list.Count
+            : Packets.Count;
+        FilterSummary = Loc.Format("Filter_ShowingOf", shown, Packets.Count);
+        if (HasHidden) OnPropertyChanged(nameof(HiddenSummary));
+    }
+
+    // ---------------------------------------------------------------- hiding & host search
+
+    /// <summary>Search over the hosts panel itself: domain, address or program.</summary>
+    [ObservableProperty] private string _hostSearchText = "";
+
+    partial void OnHostSearchTextChanged(string value) => ApplyHostFilter();
+
+    public bool HasHidden => !IgnoreListStore.Rules.IsEmpty;
+    /// <summary>"Hidden: powershell, github.com" - plus the shown count when no other filter chip
+    /// is on screen to carry it.</summary>
+    public string HiddenSummary => IsFiltered || FilterSummary.Length == 0
+        ? Loc.Format("Ignore_Summary", IgnoreListStore.Rules.Describe())
+        : Loc.Format("Ignore_Summary", IgnoreListStore.Rules.Describe()) + " · " + FilterSummary;
+
+    public void HideHost(string? host) => IgnoreListStore.Rules.AddHost(host);
+
+    public void HideProcess(string? process) => IgnoreListStore.Rules.AddProcess(process);
+
+    [RelayCommand]
+    private void ShowHidden() => IgnoreListStore.Rules.Clear();
+
+    private void OnIgnoreRulesChanged(object? sender, EventArgs e)
+    {
+        // A hidden host can't stay the selected one - the grid would be filtered to nothing.
+        if (SelectedHost is { } selected && IsHostHidden(selected)) SelectedHost = null;
+
+        ApplyFilter();
+        ApplyHostFilter();
+        OnPropertyChanged(nameof(HasHidden));
+        OnPropertyChanged(nameof(HiddenSummary));
+    }
+
+    private void ApplyHostFilter()
+    {
+        var view = System.Windows.Data.CollectionViewSource.GetDefaultView(Hosts);
+        string search = HostSearchText.Trim();
+
+        if (search.Length == 0 && IgnoreListStore.Rules.IsEmpty)
+        {
+            view.Filter = null;
+            return;
+        }
+
+        // Live filtering: a host's program is usually attributed a few packets after the host
+        // itself appears, and a host hidden by its program has to disappear when that happens.
+        if (view is System.ComponentModel.ICollectionViewLiveShaping live && live.CanChangeLiveFiltering)
+        {
+            live.IsLiveFiltering = true;
+            if (!live.LiveFilteringProperties.Contains(nameof(HostRowViewModel.ProcessText)))
+            {
+                live.LiveFilteringProperties.Add(nameof(HostRowViewModel.ProcessText));
+                live.LiveFilteringProperties.Add(nameof(HostRowViewModel.Name));
+            }
+        }
+
+        view.Filter = item => item is HostRowViewModel host
+                              && !IsHostHidden(host)
+                              && (search.Length == 0
+                                  || host.Name.Contains(search, StringComparison.OrdinalIgnoreCase)
+                                  || host.Address.Contains(search, StringComparison.OrdinalIgnoreCase)
+                                  || host.ProcessText.Contains(search, StringComparison.OrdinalIgnoreCase)
+                                  || host.Protocols.Contains(search, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>Hidden by name or address, or because every program that used it is hidden.</summary>
+    private static bool IsHostHidden(HostRowViewModel host)
+    {
+        var rules = IgnoreListStore.Rules;
+        if (rules.IsEmpty) return false;
+
+        return rules.IsHostIgnored(host.Name)
+               || rules.IsHostIgnored(host.Address)
+               || (host.ProcessNames.Count > 0 && host.ProcessNames.All(rules.IsProcessIgnored));
+    }
+
+    /// <summary>Bridges Core's platform-neutral resolver to the Windows socket tables.</summary>
+    private static LocalProcess? ResolveLocalProcess(bool tcp, ushort localPort) =>
+        ProcessPortMap.Shared.Lookup(tcp, localPort) is { } owner
+            ? new LocalProcess(owner.Name, owner.ImagePath)
+            : null;
+
     /// <summary>This machine's own addresses, so the tracker knows which end of a packet is remote.</summary>
     private static IEnumerable<IPAddress> LocalAddresses()
     {
@@ -511,6 +707,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         // LanguageChanged is static - not unsubscribing would keep this view model alive.
         LocalizationService.LanguageChanged -= OnLanguageChanged;
+        IgnoreListStore.Rules.Changed -= OnIgnoreRulesChanged;
         _drainTimer.Stop();
         _session?.Dispose();
         _favicons.Dispose();

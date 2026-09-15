@@ -102,4 +102,18 @@
 
 [… tronqué, seuls les premiers octets ont été capturés …]</sys:String>
 
+    <sys:String x:Key="Pkt_Col_Process">Processus</sys:String>
+    <sys:String x:Key="Proxy_Col_Client">Client</sys:String>
+    <sys:String x:Key="Search_Placeholder">Rechercher : domaine, IP, protocole, appli…</sys:String>
+    <sys:String x:Key="Filter_Clear">Effacer le filtre</sys:String>
+    <sys:String x:Key="Filter_ShowingOf">{0} sur {1}</sys:String>
+    <sys:String x:Key="Proxy_Search_Placeholder">Rechercher : URL, méthode, statut, appli…</sys:String>
+    <sys:String x:Key="Hosts_Search_Placeholder">Trouver un hôte, une IP ou une appli…</sys:String>
+    <sys:String x:Key="Domains_Search_Placeholder">Trouver un domaine ou une appli…</sys:String>
+    <sys:String x:Key="Ignore_Summary">Masqués : {0}</sys:String>
+    <sys:String x:Key="Ignore_ShowAll">Afficher les masqués</sys:String>
+    <sys:String x:Key="Ignore_HideHost">Masquer « {0} »</sys:String>
+    <sys:String x:Key="Ignore_HideProcess">Masquer l’appli « {0} »</sys:String>
+    <sys:String x:Key="Ignore_OnlyThisHost">Afficher seulement « {0} »</sys:String>
+    <sys:String x:Key="Proxy_CopyUrl">Copier l’URL</sys:String>
 </ResourceDictionary>

@@ -149,5 +149,7 @@ await ProxyTests.RunAsync();
 
 await TransparentTests.RunAsync();
 
+await ProcessTests.RunAsync();
+
 Console.WriteLine($"\n================  {T.Pass} passed, {T.Fail} failed  ================");
 return T.Fail == 0 ? 0 : 1;

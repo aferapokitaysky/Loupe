@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using NetSniffer.App.Localization;
+using NetSniffer.App.Services;
 using NetSniffer.Proxy.Http;
 
 namespace NetSniffer.App.ViewModels;
@@ -20,6 +21,12 @@ public sealed class HttpExchangeRowViewModel(HttpExchange exchange) : Observable
     public string Host => Exchange.Host;
     public string Path => Exchange.PathAndQuery;
     public string Url => Exchange.Url;
+
+    /// <summary>The app that made the request ("chrome", "Discord"), or empty for a remote client.</summary>
+    public string Client => Exchange.Client?.Name ?? "";
+
+    /// <summary>Loaded lazily from the binding, on the UI thread, once per executable.</summary>
+    public System.Windows.Media.ImageSource? ClientIcon => AppIconService.Get(Exchange.Client?.ImagePath);
 
     public string Status => Exchange.State switch
     {

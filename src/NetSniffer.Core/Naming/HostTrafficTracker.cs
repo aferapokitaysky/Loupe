@@ -28,7 +28,17 @@ public sealed class HostTraffic
 
     /// <summary>Remote ports contacted - 443, 80, 53 and friends.</summary>
     public HashSet<ushort> Ports { get; } = [];
+
+    /// <summary>Local programs that talked to this host, by name, with their executable path
+    /// when known (null otherwise). Usually one; a CDN address serves several.</summary>
+    public Dictionary<string, string?> Processes { get; } = new(StringComparer.OrdinalIgnoreCase);
 }
+
+/// <summary>A local program resolved for a socket: its name and, when readable, its executable.</summary>
+public readonly record struct LocalProcess(string Name, string? ImagePath);
+
+/// <summary>Resolves the local program owning a TCP (<c>tcp</c> true) or UDP port, or null.</summary>
+public delegate LocalProcess? LocalProcessResolver(bool tcp, ushort localPort);
 
 /// <summary>
 /// Rolls packets up per remote host, which is what makes a fast link readable: a gigabit of
@@ -38,12 +48,18 @@ public sealed class HostTrafficTracker
 {
     private readonly ConcurrentDictionary<IPAddress, HostTraffic> _hosts = new();
     private readonly HashSet<IPAddress> _localAddresses;
+    private readonly LocalProcessResolver? _resolveProcess;
 
     /// <param name="localAddresses">This machine's own addresses, used to decide which end of
     /// a packet is the remote one. May be empty, in which case the public address wins and a
     /// LAN-only conversation falls back to the destination.</param>
-    public HostTrafficTracker(IEnumerable<IPAddress>? localAddresses = null) =>
+    /// <param name="resolveProcess">Optional: maps a local port to the program that owns it.
+    /// Core stays platform-neutral; the capture layer supplies the Windows implementation.</param>
+    public HostTrafficTracker(IEnumerable<IPAddress>? localAddresses = null, LocalProcessResolver? resolveProcess = null)
+    {
         _localAddresses = localAddresses is null ? [] : [.. localAddresses];
+        _resolveProcess = resolveProcess;
+    }
 
     public int Count => _hosts.Count;
 
@@ -51,6 +67,24 @@ public sealed class HostTrafficTracker
     {
         var (remote, remotePort, outbound) = PickRemote(packet);
         if (remote is null || IsUninteresting(remote)) return;
+
+        packet.RemoteAddress = remote;
+
+        // Our end of the conversation is whichever port isn't the remote one. Only TCP and UDP
+        // have sockets to attribute; ICMP and friends belong to no program.
+        LocalProcess? process = null;
+        if (_resolveProcess is not null && packet.Protocol is not ("ICMP" or "ICMPv6" or "ARP"))
+        {
+            ushort localPort = outbound ? packet.SourcePort : packet.DestinationPort;
+            bool tcp = packet.Tcp is not null;
+            if (localPort != 0) process = _resolveProcess(tcp, localPort);
+        }
+
+        if (process is { } owner)
+        {
+            packet.ProcessName = owner.Name;
+            packet.ProcessImagePath = owner.ImagePath;
+        }
 
         var host = _hosts.GetOrAdd(remote, address => new HostTraffic
         {
@@ -69,6 +103,11 @@ public sealed class HostTrafficTracker
             host.LastSeen = packet.Timestamp;
             if (!string.IsNullOrEmpty(packet.Protocol)) host.Protocols.Add(packet.Protocol);
             if (remotePort != 0) host.Ports.Add(remotePort);
+
+            // Keep the first path seen for a name; a later lookup that couldn't read the image
+            // (the process was exiting) mustn't wipe out a good one.
+            if (process is { } p && (!host.Processes.TryGetValue(p.Name, out var knownPath) || knownPath is null))
+                host.Processes[p.Name] = p.ImagePath;
 
             // The name usually shows up after the first packets to an address (the DNS answer
             // precedes the connection, but an SNI does not), so re-check it every time until found.

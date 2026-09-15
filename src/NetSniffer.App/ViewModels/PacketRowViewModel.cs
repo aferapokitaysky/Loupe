@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using NetSniffer.App.Services;
 using NetSniffer.Core.Model;
 using NetSniffer.Core.Naming;
 using NetSniffer.Core.Util;
@@ -112,6 +113,18 @@ public sealed partial class PacketRowViewModel : ObservableObject
         int len = info.IndexOf(" Len=", StringComparison.Ordinal);
         return len >= 0 ? info[..len] : info;
     }
+
+    /// <summary>The remote end as a domain when known, else its address; null when there is none.
+    /// This is what "hide this host" matches against.</summary>
+    public string? RemoteHost =>
+        Packet.RemoteAddress is not { } remote ? null
+        : _names?.GetNameOrNull(remote) ?? remote.ToString();
+
+    /// <summary>The local program behind this packet, or empty when it couldn't be attributed.</summary>
+    public string Process => Packet.ProcessName ?? "";
+
+    /// <summary>Loaded on first display, on the UI thread (see <see cref="AppIconService"/>).</summary>
+    public System.Windows.Media.ImageSource? ProcessIcon => AppIconService.Get(Packet.ProcessImagePath);
 
     public string Protocol => Packet.Protocol;
     /// <summary>Bytes on the wire - for a collapsed row, the whole run rather than one packet.</summary>

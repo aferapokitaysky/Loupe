@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using NetSniffer.App.Localization;
 using NetSniffer.App.ViewModels;
 
 namespace NetSniffer.App.Views;
@@ -47,6 +48,56 @@ public partial class PacketCapturePage : UserControl
         // realize a container for the last row on every batch.
         _gridScroller ??= FindScrollViewer(PacketGrid);
         _gridScroller?.ScrollToEnd();
+    }
+
+    // ---------------------------------------------------------------- context menus
+
+    /// <summary>Right-click on a host: hide it, hide its programs, or show only its traffic.</summary>
+    private void OnHostListContextMenuOpening(object sender, ContextMenuEventArgs e)
+    {
+        if (ContextMenus.FindDataContext<HostRowViewModel>(e.OriginalSource) is not { } host)
+        {
+            e.Handled = true; // blank space under the list: nothing to offer
+            return;
+        }
+
+        var menu = HostList.ContextMenu!;
+        menu.Items.Clear();
+
+        menu.Items.Add(ContextMenus.Item(Loc.Format("Ignore_OnlyThisHost", host.Name), "Filter24",
+            () => ViewModel.SelectedHost = host));
+        menu.Items.Add(new Separator());
+        menu.Items.Add(ContextMenus.Item(Loc.Format("Ignore_HideHost", host.Name), "EyeOff24",
+            () => ViewModel.HideHost(host.HasName ? host.Name : host.Address)));
+
+        foreach (var process in host.ProcessNames)
+        {
+            string name = process;
+            menu.Items.Add(ContextMenus.Item(Loc.Format("Ignore_HideProcess", name), "AppsListDetail24",
+                () => ViewModel.HideProcess(name)));
+        }
+    }
+
+    /// <summary>Right-click on a packet: hide its program or its remote host.</summary>
+    private void OnPacketGridContextMenuOpening(object sender, ContextMenuEventArgs e)
+    {
+        if (ContextMenus.FindDataContext<PacketRowViewModel>(e.OriginalSource) is not { } row)
+        {
+            e.Handled = true; // header or empty area
+            return;
+        }
+
+        var menu = PacketGrid.ContextMenu!;
+        menu.Items.Clear();
+
+        if (row.RemoteHost is { } remote)
+            menu.Items.Add(ContextMenus.Item(Loc.Format("Ignore_HideHost", remote), "EyeOff24", () => ViewModel.HideHost(remote)));
+
+        if (!string.IsNullOrEmpty(row.Process))
+            menu.Items.Add(ContextMenus.Item(Loc.Format("Ignore_HideProcess", row.Process), "AppsListDetail24",
+                () => ViewModel.HideProcess(row.Process)));
+
+        if (menu.Items.Count == 0) e.Handled = true; // e.g. an ARP frame: no host, no program
     }
 
     private static ScrollViewer? FindScrollViewer(DependencyObject root)
