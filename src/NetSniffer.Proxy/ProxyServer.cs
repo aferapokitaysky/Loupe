@@ -31,6 +31,13 @@ public sealed class ProxyServer : IDisposable
 
     private readonly ProxyOptions _options;
     private readonly LeafCertificateFactory _leafCertificates;
+
+    /// <summary>
+    /// The program behind the connection currently being served. Async-local so it follows each
+    /// connection's own chain of awaits down to <see cref="NewExchange"/> without threading a
+    /// parameter through every relay method - and never leaks into another connection.
+    /// </summary>
+    private static readonly AsyncLocal<ClientApplication?> CurrentClient = new();
     private TcpListener? _listener;
     private TcpListener? _transparentListener;
     private CancellationTokenSource? _cts;
@@ -107,6 +114,7 @@ public sealed class ProxyServer : IDisposable
     {
         using var disposeClient = client;
         client.NoDelay = true;
+        CurrentClient.Value = IdentifyClient(client);
         await using var socketStream = client.GetStream();
 
         try
@@ -203,6 +211,7 @@ public sealed class ProxyServer : IDisposable
     {
         using var disposeClient = client;
         client.NoDelay = true;
+        CurrentClient.Value = IdentifyClient(client);
         await using var clientStream = client.GetStream();
         var reader = new HttpLineReader(clientStream);
 
@@ -310,7 +319,23 @@ public sealed class ProxyServer : IDisposable
         PathAndQuery = head.Target,
         HttpVersion = head.Version,
         RequestHeaders = head.Headers,
+        Client = CurrentClient.Value,
     };
+
+    /// <summary>Asks the host who is on the other end. A failing resolver must never cost a request.</summary>
+    private ClientApplication? IdentifyClient(TcpClient client)
+    {
+        if (_options.ResolveClientApplication is not { } resolve) return null;
+
+        try
+        {
+            return resolve(client.Client.RemoteEndPoint);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
 
     /// <summary>Runs one request/response exchange end to end. Returns whether the client connection should stay open for another request.</summary>
     private async Task<bool> RunExchangeAsync(HttpExchange exchange, HttpLineReader clientReader, Stream clientStream, CancellationToken ct)

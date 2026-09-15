@@ -19,7 +19,16 @@ public static class ProxyTests
         string caDir = Path.Combine(Path.GetTempPath(), "ns-ca-" + Guid.NewGuid().ToString("N"));
         var ca = new RootCertificateAuthority(caDir);
         var exchanges = new List<HttpExchange>();
-        var proxy = new ProxyServer(new ProxyOptions { Port = 18777 }, ca);
+        // The real Windows resolver: the HttpClient below runs in this process, so this process
+        // is what every exchange must be attributed to.
+        var proxy = new ProxyServer(new ProxyOptions
+        {
+            Port = 18777,
+            ResolveClientApplication = endPoint =>
+                NetSniffer.Capture.Processes.ProcessPortMap.Shared.LookupTcpClient(endPoint) is { } owner
+                    ? new ClientApplication(owner.Name, owner.ImagePath)
+                    : null,
+        }, ca);
         proxy.ExchangeUpdated += (_, e) =>
         {
             if (e.State is ExchangeState.ResponseReceived or ExchangeState.Failed)
@@ -78,6 +87,8 @@ public static class ProxyTests
             T.Eq("captured status code", 200, len.StatusCode);
             T.Eq("captured response body", "hello-len", Encoding.UTF8.GetString(len.ResponseBody));
             T.Eq("captured scheme", "http", len.Scheme);
+            T.Eq("request attributed to the program that sent it",
+                System.Diagnostics.Process.GetCurrentProcess().ProcessName, len.Client?.Name ?? "(none)");
             T.Check("captured URL shaped correctly", len.Url.StartsWith("http://127.0.0.1:"), len.Url);
 
             var chunked = exchanges.First(e => e.PathAndQuery == "/chunked");

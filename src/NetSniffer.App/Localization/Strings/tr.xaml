@@ -102,4 +102,10 @@
 
 [… kısaltıldı, yalnızca ilk baytlar yakalandı …]</sys:String>
 
+    <sys:String x:Key="Pkt_Col_Process">İşlem</sys:String>
+    <sys:String x:Key="Proxy_Col_Client">İstemci</sys:String>
+    <sys:String x:Key="Search_Placeholder">Ara: alan adı, IP, protokol, uygulama…</sys:String>
+    <sys:String x:Key="Filter_Clear">Filtreyi temizle</sys:String>
+    <sys:String x:Key="Filter_ShowingOf">{0} / {1}</sys:String>
+    <sys:String x:Key="Proxy_Search_Placeholder">Ara: URL, yöntem, durum, uygulama…</sys:String>
 </ResourceDictionary>

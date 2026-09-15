@@ -102,4 +102,10 @@
 
 [… gekürzt, es wurden nur die ersten Bytes erfasst …]</sys:String>
 
+    <sys:String x:Key="Pkt_Col_Process">Prozess</sys:String>
+    <sys:String x:Key="Proxy_Col_Client">Client</sys:String>
+    <sys:String x:Key="Search_Placeholder">Suche: Domain, IP, Protokoll, App…</sys:String>
+    <sys:String x:Key="Filter_Clear">Filter löschen</sys:String>
+    <sys:String x:Key="Filter_ShowingOf">{0} von {1}</sys:String>
+    <sys:String x:Key="Proxy_Search_Placeholder">Suche: URL, Methode, Status, App…</sys:String>
 </ResourceDictionary>

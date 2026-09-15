@@ -15,13 +15,23 @@ public partial class ProxyPage : UserControl
     }
 
     /// <summary>
-    /// Picking a request in the domain tree selects it in the grid and the detail pane below.
-    /// Picking a domain itself selects nothing - the domain row is a heading, not a request.
-    /// (TreeView.SelectedItem is read-only, so this can't be a binding.)
+    /// Picking a domain narrows the request list to it; picking a request opens it and keeps the
+    /// list on that request's domain, so the grid and the tree never disagree about what you are
+    /// looking at. (TreeView.SelectedItem is read-only, so this can't be a binding.)
     /// </summary>
     private void OnDomainTreeSelectionChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        if (e.NewValue is HttpExchangeRowViewModel exchange)
-            ViewModel.SelectedExchange = exchange;
+        switch (e.NewValue)
+        {
+            case DomainGroupViewModel domain:
+                ViewModel.SelectedDomain = domain;
+                break;
+
+            case HttpExchangeRowViewModel exchange:
+                ViewModel.SelectedDomain = ViewModel.Domains.FirstOrDefault(d =>
+                    string.Equals(d.Host, exchange.Host, StringComparison.OrdinalIgnoreCase));
+                ViewModel.SelectedExchange = exchange;
+                break;
+        }
     }
 }

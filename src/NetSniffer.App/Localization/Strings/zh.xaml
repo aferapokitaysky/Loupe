@@ -102,4 +102,10 @@
 
 [……已截断，仅捕获了前面部分字节……]</sys:String>
 
+    <sys:String x:Key="Pkt_Col_Process">进程</sys:String>
+    <sys:String x:Key="Proxy_Col_Client">客户端</sys:String>
+    <sys:String x:Key="Search_Placeholder">搜索：域名、IP、协议、程序…</sys:String>
+    <sys:String x:Key="Filter_Clear">清除筛选</sys:String>
+    <sys:String x:Key="Filter_ShowingOf">{0} / {1}</sys:String>
+    <sys:String x:Key="Proxy_Search_Placeholder">搜索：URL、方法、状态、应用…</sys:String>
 </ResourceDictionary>

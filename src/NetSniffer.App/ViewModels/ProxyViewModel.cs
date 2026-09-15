@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using NetSniffer.App.Localization;
 using NetSniffer.App.Services;
+using NetSniffer.Capture.Processes;
 using NetSniffer.Proxy;
 using NetSniffer.Proxy.Ca;
 using NetSniffer.Proxy.Http;
@@ -57,6 +58,65 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _isRunning;
     [ObservableProperty] private string _statusMessage = "";
     [ObservableProperty] private HttpExchangeRowViewModel? _selectedExchange;
+    /// <summary>Domain picked in the sidebar; narrows the request list to it.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsFiltered))]
+    private DomainGroupViewModel? _selectedDomain;
+
+    /// <summary>Search over URL, method, status and the sending app.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsFiltered))]
+    private string _searchText = "";
+
+    [ObservableProperty] private string _filterSummary = "";
+
+    public bool IsFiltered => SelectedDomain is not null || !string.IsNullOrWhiteSpace(SearchText);
+
+    partial void OnSelectedDomainChanged(DomainGroupViewModel? value) => ApplyFilter();
+
+    partial void OnSearchTextChanged(string value) => ApplyFilter(); // request lists stay small enough
+
+    [RelayCommand]
+    private void ClearFilter()
+    {
+        SelectedDomain = null;
+        SearchText = "";
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        var view = System.Windows.Data.CollectionViewSource.GetDefaultView(Exchanges);
+        string? host = SelectedDomain?.Host;
+        string search = SearchText.Trim();
+
+        view.Filter = host is null && search.Length == 0
+            ? null
+            : item => item is HttpExchangeRowViewModel row
+                      && (host is null || string.Equals(row.Host, host, StringComparison.OrdinalIgnoreCase))
+                      && (search.Length == 0
+                          || row.Url.Contains(search, StringComparison.OrdinalIgnoreCase)
+                          || row.Method.Contains(search, StringComparison.OrdinalIgnoreCase)
+                          || row.Status.Contains(search, StringComparison.OrdinalIgnoreCase)
+                          || row.Client.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        UpdateFilterSummary();
+    }
+
+    private void UpdateFilterSummary()
+    {
+        if (!IsFiltered)
+        {
+            FilterSummary = "";
+            return;
+        }
+
+        int shown = System.Windows.Data.CollectionViewSource.GetDefaultView(Exchanges) is System.Windows.Data.ListCollectionView list
+            ? list.Count
+            : Exchanges.Count;
+        FilterSummary = Loc.Format("Filter_ShowingOf", shown, Exchanges.Count);
+    }
+
     [ObservableProperty] private bool _isCaInstalled;
     [ObservableProperty] private bool _isSystemProxyEnabled;
 
@@ -83,6 +143,10 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             {
                 Port = Port,
                 TransparentPort = TransparentEnabled ? TransparentPort : 0,
+                ResolveClientApplication = endPoint =>
+                    ProcessPortMap.Shared.LookupTcpClient(endPoint) is { } owner
+                        ? new ClientApplication(owner.Name, owner.ImagePath)
+                        : null,
             },
             _ca);
         server.ExchangeStarted += (_, exchange) => _incoming.Enqueue(exchange);
@@ -145,6 +209,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ClearExchanges()
     {
+        SelectedDomain = null;
         Exchanges.Clear();
         _rowsById.Clear();
         Domains.Clear();
@@ -251,6 +316,8 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         foreach (var domain in touchedDomains)
             domain.Recount();
 
+        if (processed > 0 && IsFiltered) UpdateFilterSummary();
+
         while (Exchanges.Count > MaxExchanges)
         {
             var oldest = Exchanges[0];
@@ -262,6 +329,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             domain.Exchanges.Remove(oldest);
             if (domain.Exchanges.Count == 0)
             {
+                if (SelectedDomain == domain) SelectedDomain = null;
                 Domains.Remove(domain);
                 _domainsByHost.Remove(oldest.Host);
             }

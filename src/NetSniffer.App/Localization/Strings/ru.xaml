@@ -102,4 +102,10 @@
 
 [… обрезано, захвачены только первые байты …]</sys:String>
 
+    <sys:String x:Key="Pkt_Col_Process">Процесс</sys:String>
+    <sys:String x:Key="Proxy_Col_Client">Клиент</sys:String>
+    <sys:String x:Key="Search_Placeholder">Поиск: домен, IP, протокол, программа…</sys:String>
+    <sys:String x:Key="Filter_Clear">Сбросить фильтр</sys:String>
+    <sys:String x:Key="Filter_ShowingOf">{0} из {1}</sys:String>
+    <sys:String x:Key="Proxy_Search_Placeholder">Поиск: URL, метод, статус, приложение…</sys:String>
 </ResourceDictionary>

@@ -18,11 +18,15 @@ public sealed partial class HostRowViewModel : ObservableObject
     public HostRowViewModel(HostTraffic host, FaviconService favicons)
     {
         _favicons = favicons;
+        AddressValue = host.Address;
         Address = host.Address.ToString();
         Update(host);
     }
 
     public string Address { get; }
+
+    /// <summary>Typed form, for filtering packets without formatting 50k addresses back to text.</summary>
+    public System.Net.IPAddress AddressValue { get; }
 
     [ObservableProperty] private string _name = "";
     [ObservableProperty] private bool _hasName;
@@ -32,6 +36,17 @@ public sealed partial class HostRowViewModel : ObservableObject
     [ObservableProperty] private string _protocols = "";
     [ObservableProperty] private string _ports = "";
     [ObservableProperty] private ImageSource? _favicon;
+
+    /// <summary>Programs that talked to this host - "chrome", or "chrome, Telegram" for a CDN.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasProcess))]
+    private string _processText = "";
+
+    [ObservableProperty] private ImageSource? _processIcon;
+
+    public bool HasProcess => ProcessText.Length > 0;
+
+    private string? _processIconPath;
 
     /// <summary>Shown under the name; for a named host this is where the address stays visible.</summary>
     public string Subtitle => HasName ? Address : "";
@@ -51,6 +66,21 @@ public sealed partial class HostRowViewModel : ObservableObject
             BytesText = FormatBytes(host.Bytes);
             Protocols = string.Join(" · ", host.Protocols.OrderBy(p => p));
             Ports = string.Join(", ", host.Ports.OrderBy(p => p).Take(6));
+
+            if (host.Processes.Count > 0)
+            {
+                ProcessText = string.Join(", ", host.Processes.Keys.OrderBy(n => n, StringComparer.OrdinalIgnoreCase).Take(3))
+                              + (host.Processes.Count > 3 ? $" +{host.Processes.Count - 3}" : "");
+
+                // Update() runs on the UI thread (the drain tick), which is where the shell icon
+                // API has to be called. Only reload when the first program's executable changed.
+                string? path = host.Processes.Values.FirstOrDefault(p => p is not null);
+                if (path != _processIconPath)
+                {
+                    _processIconPath = path;
+                    ProcessIcon = AppIconService.Get(path);
+                }
+            }
 
             if (nameChanged)
             {

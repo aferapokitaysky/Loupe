@@ -102,4 +102,10 @@
 
 [… обрізано, захоплено лише перші байти …]</sys:String>
 
+    <sys:String x:Key="Pkt_Col_Process">Процес</sys:String>
+    <sys:String x:Key="Proxy_Col_Client">Клієнт</sys:String>
+    <sys:String x:Key="Search_Placeholder">Пошук: домен, IP, протокол, програма…</sys:String>
+    <sys:String x:Key="Filter_Clear">Скинути фільтр</sys:String>
+    <sys:String x:Key="Filter_ShowingOf">{0} з {1}</sys:String>
+    <sys:String x:Key="Proxy_Search_Placeholder">Пошук: URL, метод, статус, застосунок…</sys:String>
 </ResourceDictionary>

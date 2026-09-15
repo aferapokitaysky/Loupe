@@ -19,6 +19,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\NetSniffer.Core\NetSniffer.Core.csproj" />
     <ProjectReference Include="..\..\src\NetSniffer.Proxy\NetSniffer.Proxy.csproj" />
+    <!-- Only for ProcessPortMap, which reads the OS socket tables; nothing here loads Npcap. -->
+    <ProjectReference Include="..\..\src\NetSniffer.Capture\NetSniffer.Capture.csproj" />
   </ItemGroup>
 
 </Project>

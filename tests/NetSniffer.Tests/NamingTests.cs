@@ -119,6 +119,39 @@ public static class NamingTests
         T.Check("remote port recorded", hosts[0].Ports.Contains(443));
         T.Check("direction split kept", hosts[0].SentBytes > 0 && hosts[0].ReceivedBytes == 0);
 
+        // ---- Process attribution picks OUR port, in both directions
+        var asked = new List<(bool Tcp, ushort Port)>();
+        var attributing = new HostTrafficTracker(
+            [IPAddress.Parse("192.168.1.5")],
+            (tcp, port) =>
+            {
+                asked.Add((tcp, port));
+                return port == 40000 ? new LocalProcess("chrome", @"C:\chrome.exe")
+                     : port == 55123 ? new LocalProcess("Telegram", null)
+                     : null;
+            });
+
+        var sent = Parse(B.Ethernet(0x0800, B.IPv4(6, "192.168.1.5", "140.82.121.4",
+            B.Tcp(40000, 443, 1, 1, 0x18, [1]))));
+        attributing.Ingest(sent, registry);
+        var received = Parse(B.Ethernet(0x0800, B.IPv4(17, "149.154.167.51", "192.168.1.5",
+            B.Udp(443, 55123, [0x40, 1, 2, 3]))));
+        attributing.Ingest(received, registry);
+
+        T.Check("outbound packet asks about its source port, over TCP", asked.Contains((true, 40000)),
+            string.Join(",", asked));
+        T.Check("inbound packet asks about its destination port, over UDP", asked.Contains((false, 55123)),
+            string.Join(",", asked));
+        T.Eq("packet labelled with its program", "chrome", sent.ProcessName ?? "");
+        T.Eq("inbound packet labelled too", "Telegram", received.ProcessName ?? "");
+        T.Check("host remembers which programs used it",
+            attributing.Snapshot().Single(h => h.Address.ToString() == "140.82.121.4").Processes.ContainsKey("chrome"));
+
+        var icmpOnly = Parse(B.Ethernet(0x0800, B.IPv4(1, "192.168.1.5", "8.8.8.8", [8, 0, 0, 0, 0, 1, 0, 1])));
+        int before = asked.Count;
+        attributing.Ingest(icmpOnly, registry);
+        T.Eq("ICMP never asks for a process (no sockets)", before, asked.Count);
+
         // Broadcast and multicast would otherwise swamp the host list.
         tracker.Ingest(Parse(B.Ethernet(0x0800, B.IPv4(17, "192.168.1.5", "239.255.255.250",
             B.Udp(50000, 1900, [1, 2, 3])))), registry);

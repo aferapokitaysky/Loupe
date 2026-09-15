@@ -102,4 +102,10 @@
 
 […切り詰められました。先頭部分のバイトのみキャプチャされています…]</sys:String>
 
+    <sys:String x:Key="Pkt_Col_Process">プロセス</sys:String>
+    <sys:String x:Key="Proxy_Col_Client">クライアント</sys:String>
+    <sys:String x:Key="Search_Placeholder">検索: ドメイン、IP、プロトコル、アプリ…</sys:String>
+    <sys:String x:Key="Filter_Clear">フィルターを解除</sys:String>
+    <sys:String x:Key="Filter_ShowingOf">{0} / {1}</sys:String>
+    <sys:String x:Key="Proxy_Search_Placeholder">検索: URL、メソッド、ステータス、アプリ…</sys:String>
 </ResourceDictionary>
