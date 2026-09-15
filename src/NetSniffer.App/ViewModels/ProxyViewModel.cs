@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using NetSniffer.App.Localization;
+using NetSniffer.App.Services;
 using NetSniffer.Proxy;
 using NetSniffer.Proxy.Ca;
 using NetSniffer.Proxy.Http;
@@ -33,7 +34,26 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
 
     public ObservableCollection<HttpExchangeRowViewModel> Exchanges { get; } = [];
 
+    /// <summary>
+    /// The same exchanges grouped by host, which is how you actually read a capture: pick the
+    /// domain you care about, then the request. A flat chronological list of everything the
+    /// machine did is unusable the moment more than one app is talking.
+    /// </summary>
+    public ObservableCollection<DomainGroupViewModel> Domains { get; } = [];
+
+    private readonly Dictionary<string, DomainGroupViewModel> _domainsByHost = [];
+    private readonly FaviconService _favicons = new();
+
     [ObservableProperty] private int _port = 8080;
+
+    /// <summary>
+    /// Second listener that takes raw connections with no CONNECT line, routing by TLS SNI or
+    /// Host header. This is the answer to "it only captures my browser": programs that ignore
+    /// the Windows proxy setting can be pointed here instead and are intercepted the same way.
+    /// </summary>
+    [ObservableProperty] private int _transparentPort = 8443;
+
+    [ObservableProperty] private bool _transparentEnabled;
     [ObservableProperty] private bool _isRunning;
     [ObservableProperty] private string _statusMessage = "";
     [ObservableProperty] private HttpExchangeRowViewModel? _selectedExchange;
@@ -58,7 +78,13 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(CanStart))]
     private void StartProxy()
     {
-        var server = new ProxyServer(new ProxyOptions { Port = Port }, _ca);
+        var server = new ProxyServer(
+            new ProxyOptions
+            {
+                Port = Port,
+                TransparentPort = TransparentEnabled ? TransparentPort : 0,
+            },
+            _ca);
         server.ExchangeStarted += (_, exchange) => _incoming.Enqueue(exchange);
         server.ExchangeUpdated += (_, exchange) => _incoming.Enqueue(exchange);
         server.ConnectionError += (_, message) => System.Windows.Application.Current.Dispatcher.BeginInvoke(() => StatusMessage = message);
@@ -68,7 +94,9 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             server.Start();
             _server = server;
             IsRunning = true;
-            StatusMessage = Loc.Format("Proxy_Status_Listening", Port);
+            StatusMessage = TransparentEnabled
+                ? Loc.Format("Proxy_Status_ListeningTransparent", Port, TransparentPort)
+                : Loc.Format("Proxy_Status_Listening", Port);
         }
         catch (Exception ex)
         {
@@ -119,6 +147,8 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     {
         Exchanges.Clear();
         _rowsById.Clear();
+        Domains.Clear();
+        _domainsByHost.Clear();
         SelectedExchange = null;
     }
 
@@ -197,27 +227,70 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     private void Drain()
     {
         int processed = 0;
+        var touchedDomains = new HashSet<DomainGroupViewModel>();
+
         while (processed < DrainBatchSize && _incoming.TryDequeue(out var exchange))
         {
             if (_rowsById.TryGetValue(exchange.Id, out var row))
             {
+                // Updated in place by the proxy as the response arrives - the row and its
+                // domain's totals both need to re-read it.
                 row.Refresh();
+                if (_domainsByHost.TryGetValue(row.Host, out var owner)) touchedDomains.Add(owner);
             }
             else
             {
                 row = new HttpExchangeRowViewModel(exchange);
                 _rowsById[exchange.Id] = row;
                 Exchanges.Add(row);
+                GroupFor(row.Host).Add(row);
             }
             processed++;
         }
+
+        foreach (var domain in touchedDomains)
+            domain.Recount();
 
         while (Exchanges.Count > MaxExchanges)
         {
             var oldest = Exchanges[0];
             Exchanges.RemoveAt(0);
             _rowsById.Remove(oldest.Id);
+
+            if (!_domainsByHost.TryGetValue(oldest.Host, out var domain)) continue;
+
+            domain.Exchanges.Remove(oldest);
+            if (domain.Exchanges.Count == 0)
+            {
+                Domains.Remove(domain);
+                _domainsByHost.Remove(oldest.Host);
+            }
+            else
+            {
+                domain.Recount();
+            }
         }
+    }
+
+    /// <summary>Returns the sidebar group for a host, creating it in alphabetical position.</summary>
+    private DomainGroupViewModel GroupFor(string host)
+    {
+        if (_domainsByHost.TryGetValue(host, out var existing)) return existing;
+
+        var group = new DomainGroupViewModel(host, _favicons);
+        _domainsByHost[host] = group;
+
+        // Alphabetical and stable: a list that reordered itself by traffic would move the
+        // domain out from under the pointer while you were reading it.
+        int index = 0;
+        while (index < Domains.Count
+               && string.CompareOrdinal(Domains[index].Host, host) < 0)
+        {
+            index++;
+        }
+
+        Domains.Insert(index, group);
+        return group;
     }
 
     private static T SafeCall<T>(Func<T> action, T fallback)
@@ -230,5 +303,6 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         _drainTimer.Stop();
         _server?.Stop();
         RestoreSystemProxy();
+        _favicons.Dispose();
     }
 }

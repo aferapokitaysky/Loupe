@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
@@ -40,7 +40,14 @@
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Der Npcap-Installer wurde ohne Abschluss geschlossen. Zum erneuten Versuch auf Npcap installieren klicken.</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Packets">Pakete: {0}</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Bytes">Bytes: {0:N0}</sys:String>
-    <sys:String x:Key="Pkt_EmptyState">Starte die Aufzeichnung, um hier Pakete zu sehen</sys:String>
+    <sys:String x:Key="Pkt_EmptyState">Starte die Aufzeichnung, um hier Pakete zu sehen</sys:String>
+    <sys:String x:Key="Pkt_Hosts">HOSTS</sys:String>
+    <sys:String x:Key="Pkt_Hosts_PacketsSuffix">Pkt.</sys:String>
+    <sys:String x:Key="Pkt_Hosts_EmptyState">Domains erscheinen hier, sobald Verkehr fließt</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Hosts">Hosts: {0}</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats">Wiederholungen bündeln</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats_Tip">Serien identischer Pakete zu einer gezählten Zeile zusammenfassen</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Dropped">Verworfen: {0}</sys:String>
     <sys:String x:Key="Pkt_SelectPacket">Wähle ein Paket, um Schichten und Bytes zu sehen</sys:String>
     <sys:String x:Key="Npcap_Title">Für die Paketaufzeichnung wird Npcap benötigt</sys:String>
     <sys:String x:Key="Npcap_Desc">NetSniffer lädt den offiziellen Npcap-Installer herunter und öffnet ihn. Schließe den Assistenten ab, dann ist die Aufzeichnung automatisch verfügbar.</sys:String>
@@ -71,7 +78,12 @@
     <sys:String x:Key="Proxy_Status_Stopped">Gestoppt</sys:String>
     <sys:String x:Key="Proxy_Status_Error">Fehler</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(noch keine Antwort)</sys:String>
-    <sys:String x:Key="Proxy_EmptyState">Starte den Proxy und richte einen Client darauf aus, um hier Anfragen zu sehen</sys:String>
+    <sys:String x:Key="Proxy_EmptyState">Starte den Proxy und richte einen Client darauf aus, um hier Anfragen zu sehen</sys:String>
+    <sys:String x:Key="Proxy_Domains">DOMAINS</sys:String>
+    <sys:String x:Key="Proxy_Domains_EmptyState">Anfragen erscheinen hier, nach Domain gruppiert</sys:String>
+    <sys:String x:Key="Proxy_Transparent">Transparenter Port</sys:String>
+    <sys:String x:Key="Proxy_Transparent_Tip">Nimmt Verbindungen ohne Proxy-Einstellungen an: Routing über TLS-SNI oder Host-Header.</sys:String>
+    <sys:String x:Key="Proxy_Status_ListeningTransparent">Lauscht auf {0}, transparent auf {1}</sys:String>
     <sys:String x:Key="Proxy_SelectExchange">Wähle eine Anfrage, um Header und Body zu sehen</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">Wartet auf 127.0.0.1:{0}. Diese Adresse in den Proxy-Einstellungen des Clients eintragen.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Start fehlgeschlagen: {0}</sys:String>

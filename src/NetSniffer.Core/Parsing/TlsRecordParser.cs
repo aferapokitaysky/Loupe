@@ -47,6 +47,11 @@ public static class TlsRecordParser
             if (handshakeType == 1 && TryParseClientHello(data, offset + 5, layer, out var sni))
             {
                 packet.Info = sni is null ? "Client Hello" : $"Client Hello (SNI={sni})";
+
+                // The SNI names the server this connection is for - the one name available
+                // even when the address was resolved before the capture started.
+                if (sni is not null)
+                    packet.AddNameHint(packet.DestinationAddress, sni, NameHintSource.TlsSni);
             }
             else if (handshakeType == 2 && TryParseServerHello(data, offset + 5, layer, out var cipher))
             {
@@ -62,7 +67,11 @@ public static class TlsRecordParser
         return true;
     }
 
-    private static bool TryParseClientHello(byte[] data, int msgOffset, PacketLayer layer, out string? sni)
+    /// <summary>
+    /// Parses a TLS ClientHello handshake message in place. Internal rather than private because
+    /// QUIC carries the very same message inside CRYPTO frames, with no TLS record around it.
+    /// </summary>
+    internal static bool TryParseClientHello(byte[] data, int msgOffset, PacketLayer layer, out string? sni)
     {
         sni = null;
         // handshake header: type(1) length(3) ; body: version(2) random(32) sessionIdLen(1)...

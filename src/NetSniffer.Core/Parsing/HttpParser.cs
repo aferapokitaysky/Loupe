@@ -30,6 +30,14 @@ public static class HttpParser
         packet.Layers.Add(layer);
         packet.Protocol = "HTTP";
         packet.Info = host != null ? $"{firstLine} (Host: {host})" : firstLine;
+
+        // A Host header names the destination the same way an SNI does. Strip any :port.
+        if (host != null)
+        {
+            int colon = host.LastIndexOf(':');
+            string bare = colon > 0 && !host.Contains(']') ? host[..colon] : host;
+            packet.AddNameHint(packet.DestinationAddress, bare, NameHintSource.HttpHost);
+        }
         return true;
     }
 

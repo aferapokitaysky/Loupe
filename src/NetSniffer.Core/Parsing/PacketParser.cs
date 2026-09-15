@@ -135,6 +135,8 @@ public static class PacketParser
 
         packet.Source = srcIp.ToString();
         packet.Destination = dstIp.ToString();
+        packet.SourceAddress = srcIp;
+        packet.DestinationAddress = dstIp;
         packet.Protocol = IpProtocolName(protocol);
 
         int payloadOffset = offset + headerLength;
@@ -164,6 +166,8 @@ public static class PacketParser
 
         packet.Source = srcIp.ToString();
         packet.Destination = dstIp.ToString();
+        packet.SourceAddress = srcIp;
+        packet.DestinationAddress = dstIp;
         packet.Protocol = IpProtocolName(nextHeader);
 
         DispatchTransport(nextHeader, data, offset + 40, packet);
@@ -229,6 +233,8 @@ public static class PacketParser
         string dstIp = packet.Destination;
         packet.Source += $":{srcPort}";
         packet.Destination += $":{dstPort}";
+        packet.SourcePort = srcPort;
+        packet.DestinationPort = dstPort;
         packet.Protocol = "TCP";
         packet.Info = $"{srcPort} → {dstPort} [{DescribeTcpFlags(flags)}] Seq={seq} Ack={ack} Win={window}";
 
@@ -258,6 +264,8 @@ public static class PacketParser
 
         packet.Source += $":{srcPort}";
         packet.Destination += $":{dstPort}";
+        packet.SourcePort = srcPort;
+        packet.DestinationPort = dstPort;
         packet.Protocol = "UDP";
         packet.Info = $"{srcPort} → {dstPort} Len={length}";
 
@@ -271,6 +279,12 @@ public static class PacketParser
         byte[] data, int offset, int length, ushort srcPort, ushort dstPort, ParsedPacket packet)
     {
         if ((srcPort == 53 || dstPort == 53) && DnsParser.TryParse(data, offset, length, packet))
+            return;
+
+        // QUIC before TLS: it lives on UDP 443, and its Initial packets carry a ClientHello
+        // that the TLS record parser would never recognise (no record layer around it).
+        if ((srcPort == 443 || dstPort == 443) && packet.Protocol == "UDP"
+            && QuicParser.TryParse(data, offset, length, packet))
             return;
 
         if (TlsRecordParser.TryParse(data, offset, length, packet))
