@@ -114,6 +114,12 @@ public sealed partial class PacketRowViewModel : ObservableObject
         return len >= 0 ? info[..len] : info;
     }
 
+    /// <summary>The remote end as a domain when known, else its address; null when there is none.
+    /// This is what "hide this host" matches against.</summary>
+    public string? RemoteHost =>
+        Packet.RemoteAddress is not { } remote ? null
+        : _names?.GetNameOrNull(remote) ?? remote.ToString();
+
     /// <summary>The local program behind this packet, or empty when it couldn't be attributed.</summary>
     public string Process => Packet.ProcessName ?? "";
 

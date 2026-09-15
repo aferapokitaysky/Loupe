@@ -108,4 +108,12 @@
     <sys:String x:Key="Filter_Clear">フィルターを解除</sys:String>
     <sys:String x:Key="Filter_ShowingOf">{0} / {1}</sys:String>
     <sys:String x:Key="Proxy_Search_Placeholder">検索: URL、メソッド、ステータス、アプリ…</sys:String>
+    <sys:String x:Key="Hosts_Search_Placeholder">ホスト、IP、アプリを検索…</sys:String>
+    <sys:String x:Key="Domains_Search_Placeholder">ドメインまたはアプリを検索…</sys:String>
+    <sys:String x:Key="Ignore_Summary">非表示: {0}</sys:String>
+    <sys:String x:Key="Ignore_ShowAll">非表示を表示</sys:String>
+    <sys:String x:Key="Ignore_HideHost">「{0}」を非表示</sys:String>
+    <sys:String x:Key="Ignore_HideProcess">アプリ「{0}」を非表示</sys:String>
+    <sys:String x:Key="Ignore_OnlyThisHost">「{0}」のみ表示</sys:String>
+    <sys:String x:Key="Proxy_CopyUrl">URL をコピー</sys:String>
 </ResourceDictionary>

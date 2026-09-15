@@ -86,6 +86,8 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
@@ -97,13 +99,37 @@
                                    Margin="7,0,0,0" Opacity="0.65" />
                     </StackPanel>
 
-                    <ListBox Grid.Row="1" ItemsSource="{Binding Hosts}"
+                    <!-- Finds a host in the list itself - the grid search can't scroll you to one -->
+                    <ui:TextBox Grid.Row="1" Margin="2,0,2,6"
+                                PlaceholderText="{DynamicResource Hosts_Search_Placeholder}"
+                                Icon="{ui:SymbolIcon Search24}" ClearButtonEnabled="True"
+                                Text="{Binding HostSearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <!-- What is hidden, and the way back. Hidden, never dropped: it is all still captured. -->
+                    <Border Grid.Row="2" Style="{StaticResource FilterChip}" HorizontalAlignment="Left" Margin="2,0,2,8"
+                            Visibility="{Binding HasHidden, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="EyeOff24" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"
+                                           Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="{Binding HiddenSummary}" FontSize="12" MaxWidth="200"
+                                       TextTrimming="CharacterEllipsis" ToolTip="{Binding HiddenSummary}"
+                                       Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                            <Button Style="{StaticResource ChipCloseButton}" Command="{Binding ShowHiddenCommand}"
+                                    ToolTip="{DynamicResource Ignore_ShowAll}"
+                                    AutomationProperties.Name="{DynamicResource Ignore_ShowAll}" />
+                        </StackPanel>
+                    </Border>
+
+                    <ListBox Grid.Row="3" x:Name="HostList" ItemsSource="{Binding Hosts}"
+                             ContextMenuOpening="OnHostListContextMenuOpening"
                              SelectedItem="{Binding SelectedHost, Mode=TwoWay}"
                              Background="Transparent" BorderThickness="0"
                              ItemContainerStyle="{StaticResource HostListItem}"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              VirtualizingPanel.IsVirtualizing="True"
                              VirtualizingPanel.VirtualizationMode="Recycling">
+                        <!-- Items are built per click in code-behind, with the host and program names in them -->
+                        <ListBox.ContextMenu><ContextMenu /></ListBox.ContextMenu>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -151,7 +177,7 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
 
-                    <StackPanel Grid.Row="1" Style="{StaticResource EmptyState}"
+                    <StackPanel Grid.Row="3" Style="{StaticResource EmptyState}"
                                 Visibility="{Binding Hosts.Count, Converter={StaticResource CountToVisibility}}">
                         <ui:SymbolIcon Symbol="Globe24" Style="{StaticResource EmptyStateIcon}" />
                         <TextBlock Text="{DynamicResource Pkt_Hosts_EmptyState}" Style="{StaticResource EmptyStateText}" />
@@ -207,6 +233,7 @@
                 </Grid>
 
                 <DataGrid x:Name="PacketGrid" Grid.Row="1"
+                          ContextMenuOpening="OnPacketGridContextMenuOpening"
                           Background="Transparent" BorderThickness="0"
                           RowStyle="{StaticResource PacketRow}"
                           ItemsSource="{Binding Packets}"
@@ -217,6 +244,7 @@
                           EnableRowVirtualization="True" EnableColumnVirtualization="True"
                           VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
                           ScrollViewer.CanContentScroll="True">
+                    <DataGrid.ContextMenu><ContextMenu /></DataGrid.ContextMenu>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="{DynamicResource Pkt_Col_No}" Binding="{Binding Number}" Width="64" />
                         <DataGridTextColumn Header="{DynamicResource Pkt_Col_Time}" Binding="{Binding Time}" Width="104" />

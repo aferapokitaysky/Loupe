@@ -114,6 +114,8 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
@@ -125,12 +127,32 @@
                                    Margin="7,0,0,0" Opacity="0.65" />
                     </StackPanel>
 
-                    <TreeView Grid.Row="1" x:Name="DomainTree" Background="Transparent" BorderThickness="0"
+                    <ui:TextBox Grid.Row="1" Margin="2,0,2,6"
+                                PlaceholderText="{DynamicResource Domains_Search_Placeholder}"
+                                Icon="{ui:SymbolIcon Search24}" ClearButtonEnabled="True"
+                                Text="{Binding DomainSearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Border Grid.Row="2" Style="{StaticResource FilterChip}" HorizontalAlignment="Left" Margin="2,0,2,8"
+                            Visibility="{Binding HasHidden, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="EyeOff24" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"
+                                           Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="{Binding HiddenSummary}" FontSize="12" MaxWidth="190"
+                                       TextTrimming="CharacterEllipsis" ToolTip="{Binding HiddenSummary}"
+                                       Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                            <Button Style="{StaticResource ChipCloseButton}" Command="{Binding ShowHiddenCommand}"
+                                    ToolTip="{DynamicResource Ignore_ShowAll}"
+                                    AutomationProperties.Name="{DynamicResource Ignore_ShowAll}" />
+                        </StackPanel>
+                    </Border>
+
+                    <TreeView Grid.Row="3" x:Name="DomainTree" ContextMenuOpening="OnDomainTreeContextMenuOpening" Background="Transparent" BorderThickness="0"
                               ItemsSource="{Binding Domains}"
                               SelectedItemChanged="OnDomainTreeSelectionChanged"
                               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                               VirtualizingPanel.IsVirtualizing="True"
                               VirtualizingPanel.VirtualizationMode="Recycling">
+                        <TreeView.ContextMenu><ContextMenu /></TreeView.ContextMenu>
                         <TreeView.ItemContainerStyle>
                             <Style TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
                                 <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
@@ -204,7 +226,7 @@
                         </TreeView.Resources>
                     </TreeView>
 
-                    <StackPanel Grid.Row="1" Style="{StaticResource EmptyState}"
+                    <StackPanel Grid.Row="3" Style="{StaticResource EmptyState}"
                                 Visibility="{Binding Domains.Count, Converter={StaticResource CountToVisibility}}">
                         <ui:SymbolIcon Symbol="Globe24" Style="{StaticResource EmptyStateIcon}" />
                         <TextBlock Text="{DynamicResource Proxy_Domains_EmptyState}" Style="{StaticResource EmptyStateText}" />
@@ -251,6 +273,7 @@
                 </Grid>
 
                 <DataGrid x:Name="ExchangeGrid" Grid.Row="1"
+                          ContextMenuOpening="OnExchangeGridContextMenuOpening"
                           Background="Transparent" BorderThickness="0"
                           RowStyle="{StaticResource ExchangeRow}"
                           ItemsSource="{Binding Exchanges}"
@@ -260,6 +283,7 @@
                           SelectionMode="Single" SelectionUnit="FullRow"
                           EnableRowVirtualization="True" EnableColumnVirtualization="True"
                           VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+                    <DataGrid.ContextMenu><ContextMenu /></DataGrid.ContextMenu>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="{DynamicResource Proxy_Col_Time}" Binding="{Binding Time}" Width="96" />
                         <DataGridTemplateColumn Header="{DynamicResource Proxy_Col_Client}" Width="120">

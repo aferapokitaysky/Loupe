@@ -46,6 +46,9 @@ public sealed partial class HostRowViewModel : ObservableObject
 
     public bool HasProcess => ProcessText.Length > 0;
 
+    /// <summary>Every program seen on this host, for hide rules and search.</summary>
+    public IReadOnlyList<string> ProcessNames { get; private set; } = [];
+
     private string? _processIconPath;
 
     /// <summary>Shown under the name; for a named host this is where the address stays visible.</summary>
@@ -69,6 +72,9 @@ public sealed partial class HostRowViewModel : ObservableObject
 
             if (host.Processes.Count > 0)
             {
+                if (host.Processes.Count != ProcessNames.Count)
+                    ProcessNames = [.. host.Processes.Keys];
+
                 ProcessText = string.Join(", ", host.Processes.Keys.OrderBy(n => n, StringComparer.OrdinalIgnoreCase).Take(3))
                               + (host.Processes.Count > 3 ? $" +{host.Processes.Count - 3}" : "");
 

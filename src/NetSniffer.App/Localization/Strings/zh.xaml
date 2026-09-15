@@ -108,4 +108,12 @@
     <sys:String x:Key="Filter_Clear">清除筛选</sys:String>
     <sys:String x:Key="Filter_ShowingOf">{0} / {1}</sys:String>
     <sys:String x:Key="Proxy_Search_Placeholder">搜索：URL、方法、状态、应用…</sys:String>
+    <sys:String x:Key="Hosts_Search_Placeholder">查找主机、IP 或程序…</sys:String>
+    <sys:String x:Key="Domains_Search_Placeholder">查找域名或应用…</sys:String>
+    <sys:String x:Key="Ignore_Summary">已隐藏：{0}</sys:String>
+    <sys:String x:Key="Ignore_ShowAll">显示已隐藏</sys:String>
+    <sys:String x:Key="Ignore_HideHost">隐藏“{0}”</sys:String>
+    <sys:String x:Key="Ignore_HideProcess">隐藏程序“{0}”</sys:String>
+    <sys:String x:Key="Ignore_OnlyThisHost">仅显示“{0}”</sys:String>
+    <sys:String x:Key="Proxy_CopyUrl">复制 URL</sys:String>
 </ResourceDictionary>

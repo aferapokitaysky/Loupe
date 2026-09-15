@@ -110,4 +110,12 @@
     <sys:String x:Key="Filter_Clear">Clear filter</sys:String>
     <sys:String x:Key="Filter_ShowingOf">{0} of {1}</sys:String>
     <sys:String x:Key="Proxy_Search_Placeholder">Search: URL, method, status, app…</sys:String>
+    <sys:String x:Key="Hosts_Search_Placeholder">Find a host, IP or app…</sys:String>
+    <sys:String x:Key="Domains_Search_Placeholder">Find a domain or app…</sys:String>
+    <sys:String x:Key="Ignore_Summary">Hidden: {0}</sys:String>
+    <sys:String x:Key="Ignore_ShowAll">Show hidden</sys:String>
+    <sys:String x:Key="Ignore_HideHost">Hide “{0}”</sys:String>
+    <sys:String x:Key="Ignore_HideProcess">Hide app “{0}”</sys:String>
+    <sys:String x:Key="Ignore_OnlyThisHost">Show only “{0}”</sys:String>
+    <sys:String x:Key="Proxy_CopyUrl">Copy URL</sys:String>
 </ResourceDictionary>

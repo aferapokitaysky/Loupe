@@ -39,6 +39,10 @@ public sealed class ParsedPacket
     /// </summary>
     public string? ProcessName { get; set; }
 
+    /// <summary>The far end of the conversation, as decided by the host tracker. Null until the
+    /// packet has been through it, and for traffic that belongs to no remote host.</summary>
+    public IPAddress? RemoteAddress { get; set; }
+
     /// <summary>Full path of <see cref="ProcessName"/>'s executable, for its icon. Often null.</summary>
     public string? ProcessImagePath { get; set; }
 

@@ -68,6 +68,8 @@ public sealed class HostTrafficTracker
         var (remote, remotePort, outbound) = PickRemote(packet);
         if (remote is null || IsUninteresting(remote)) return;
 
+        packet.RemoteAddress = remote;
+
         // Our end of the conversation is whichever port isn't the remote one. Only TCP and UDP
         // have sockets to attribute; ICMP and friends belong to no program.
         LocalProcess? process = null;

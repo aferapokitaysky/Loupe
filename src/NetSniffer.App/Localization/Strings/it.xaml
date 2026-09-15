@@ -108,4 +108,12 @@
     <sys:String x:Key="Filter_Clear">Rimuovi filtro</sys:String>
     <sys:String x:Key="Filter_ShowingOf">{0} di {1}</sys:String>
     <sys:String x:Key="Proxy_Search_Placeholder">Cerca: URL, metodo, stato, app…</sys:String>
+    <sys:String x:Key="Hosts_Search_Placeholder">Trova host, IP o app…</sys:String>
+    <sys:String x:Key="Domains_Search_Placeholder">Trova dominio o app…</sys:String>
+    <sys:String x:Key="Ignore_Summary">Nascosti: {0}</sys:String>
+    <sys:String x:Key="Ignore_ShowAll">Mostra nascosti</sys:String>
+    <sys:String x:Key="Ignore_HideHost">Nascondi «{0}»</sys:String>
+    <sys:String x:Key="Ignore_HideProcess">Nascondi app «{0}»</sys:String>
+    <sys:String x:Key="Ignore_OnlyThisHost">Mostra solo «{0}»</sys:String>
+    <sys:String x:Key="Proxy_CopyUrl">Copia URL</sys:String>
 </ResourceDictionary>
