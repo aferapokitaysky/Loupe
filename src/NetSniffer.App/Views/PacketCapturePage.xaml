@@ -34,10 +34,10 @@
         <Border Grid.Row="0" Style="{StaticResource ToolbarCard}">
             <WrapPanel Orientation="Horizontal" ItemHeight="34">
                 <TextBlock Text="{DynamicResource Pkt_Adapter}" Style="{StaticResource ToolbarLabel}" />
-                <ComboBox MinWidth="220" MaxWidth="320" Margin="0,0,10,0" VerticalAlignment="Center"
+                <ComboBox MinWidth="260" MaxWidth="380" Margin="0,0,10,0" VerticalAlignment="Center"
                           ItemsSource="{Binding Adapters}"
                           SelectedItem="{Binding SelectedAdapter}"
-                          DisplayMemberPath="Description"
+                          DisplayMemberPath="Label"
                           IsEnabled="{Binding IsCapturing, Converter={StaticResource InverseBoolean}}" />
 
                 <ui:Button Content="{DynamicResource Pkt_Refresh}" Icon="{ui:SymbolIcon ArrowClockwise24}"
