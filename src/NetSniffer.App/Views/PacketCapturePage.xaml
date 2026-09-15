@@ -67,8 +67,91 @@
             </WrapPanel>
         </Border>
 
-        <!-- Packet list + dissection -->
-        <Border Grid.Row="2" Style="{StaticResource Card}" Padding="1">
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" MinWidth="200" MaxWidth="460" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="3*" MinWidth="360" />
+            </Grid.ColumnDefinitions>
+
+            <!--
+                Hosts panel. The packet grid on a fast link scrolls past far quicker than anyone
+                can read; this rolls the same traffic up per domain and only changes once per
+                drain tick, so there is always something legible on screen.
+            -->
+            <Border Grid.Column="0" Style="{StaticResource Card}" Padding="8,10,8,8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="6,0,6,8">
+                        <ui:SymbolIcon Symbol="Globe24" FontSize="14" Margin="0,0,7,0"
+                                       Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{DynamicResource Pkt_Hosts}" Style="{StaticResource PanelHeader}" />
+                        <TextBlock Text="{Binding Hosts.Count}" Style="{StaticResource PanelHeader}"
+                                   Margin="7,0,0,0" Opacity="0.65" />
+                    </StackPanel>
+
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Hosts}"
+                             Background="Transparent" BorderThickness="0"
+                             ItemContainerStyle="{StaticResource HostListItem}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             VirtualizingPanel.IsVirtualizing="True"
+                             VirtualizingPanel.VirtualizationMode="Recycling">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Style="{StaticResource FaviconTile}" Margin="0,0,10,0">
+                                        <Grid>
+                                            <TextBlock Text="{Binding Initial}" Style="{StaticResource FaviconInitial}" />
+                                            <Image Source="{Binding Favicon}" Width="16" Height="16"
+                                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                                        </Grid>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" Style="{StaticResource HostName}"
+                                                   ToolTip="{Binding Name}" />
+                                        <TextBlock Style="{StaticResource HostMeta}">
+                                            <Run Text="{Binding Protocols, Mode=OneWay}" />
+                                            <Run Text="{Binding Subtitle, Mode=OneWay}"
+                                                 Foreground="{StaticResource TextTertiaryBrush}" />
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="8,0,0,0">
+                                        <TextBlock Text="{Binding BytesText}" Style="{StaticResource HostBytes}" />
+                                        <TextBlock Style="{StaticResource HostMeta}" HorizontalAlignment="Right">
+                                            <Run Text="{Binding Packets, Mode=OneWay}" />
+                                            <Run Text="{DynamicResource Pkt_Hosts_PacketsSuffix}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <StackPanel Grid.Row="1" Style="{StaticResource EmptyState}"
+                                Visibility="{Binding Hosts.Count, Converter={StaticResource CountToVisibility}}">
+                        <ui:SymbolIcon Symbol="Globe24" Style="{StaticResource EmptyStateIcon}" />
+                        <TextBlock Text="{DynamicResource Pkt_Hosts_EmptyState}" Style="{StaticResource EmptyStateText}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Width="8" HorizontalAlignment="Stretch"
+                          Background="Transparent" />
+
+            <!-- Packet list + dissection -->
+            <Border Grid.Column="2" Style="{StaticResource Card}" Padding="1">
             <Grid ClipToBounds="True">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="2*" MinHeight="120" />
@@ -147,7 +230,8 @@
                                Visibility="{Binding SelectedPacket, Converter={StaticResource NullToVisibility}}" />
                 </Grid>
             </Grid>
-        </Border>
+            </Border>
+        </Grid>
 
         <!-- Npcap setup overlay: covers the list while the capture engine is missing -->
         <Border Grid.Row="2" CornerRadius="10" Background="#FB101318"

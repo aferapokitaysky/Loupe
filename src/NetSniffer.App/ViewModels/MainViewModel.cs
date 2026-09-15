@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Collections.ObjectModel;
+using System.Net;
+using System.Net.NetworkInformation;
 using System.Windows;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -9,7 +11,9 @@ using Microsoft.Win32;
 using NetSniffer.App.Localization;
 using NetSniffer.Capture;
 using NetSniffer.Core.IO;
+using NetSniffer.App.Services;
 using NetSniffer.Core.Model;
+using NetSniffer.Core.Naming;
 using NetSniffer.Core.Parsing;
 using NetSniffer.Core.Tcp;
 
@@ -23,12 +27,30 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly ConcurrentQueue<CapturedPacket> _incoming = new();
     private readonly DispatcherTimer _drainTimer;
     private readonly TcpStreamReassembler _reassembler = new();
+    private readonly HostNameRegistry _names = new();
+    private readonly HostTrafficTracker _hosts = new(LocalAddresses());
+    private readonly FaviconService _favicons = new();
+    private readonly Dictionary<string, HostRowViewModel> _hostRows = [];
 
     private CaptureSession? _session;
     private DateTimeOffset _captureStart;
 
     public ObservableCollection<CaptureDeviceInfo> Adapters { get; } = [];
     public ObservableCollection<PacketRowViewModel> Packets { get; } = [];
+
+    /// <summary>
+    /// Remote hosts seen so far, newest traffic first. Rebuilt once per drain tick rather than
+    /// per packet: on a busy link the packet grid is unreadable, but this list stays calm.
+    /// </summary>
+    public ObservableCollection<HostRowViewModel> Hosts { get; } = [];
+
+    public string HostsCountText => Loc.Format("Pkt_StatusBar_Hosts", Hosts.Count);
+
+    /// <summary>
+    /// Raised once per drain tick after a batch of packets has been appended - never from
+    /// inside a CollectionChanged notification, so a handler may safely touch the grid.
+    /// </summary>
+    public event EventHandler? PacketsAppended;
 
     [ObservableProperty] private CaptureDeviceInfo? _selectedAdapter;
     [ObservableProperty] private string _filterText = "";
@@ -203,10 +225,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void ClearPackets()
     {
         Packets.Clear();
+        Hosts.Clear();
+        _hostRows.Clear();
         _reassembler.Clear();
+        _hosts.Clear();
+
+        // The name registry deliberately survives a clear: names learned from DNS answers
+        // earlier in the session still describe the addresses that keep showing up, and those
+        // answers won't be repeated until the TTL expires.
         TotalPackets = 0;
         TotalBytes = 0;
         SelectedPacket = null;
+        OnPropertyChanged(nameof(HostsCountText));
     }
 
     [RelayCommand]
@@ -242,12 +272,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
         var budget = Stopwatch.StartNew();
         int drained = 0;
 
+        int namesBefore = _names.Count;
+
         while (budget.ElapsedMilliseconds < DrainBudgetMs && _incoming.TryDequeue(out var captured))
         {
             var parsed = PacketParser.Parse(captured);
             _reassembler.Ingest(parsed);
+            _names.Ingest(parsed);
+            _hosts.Ingest(parsed, _names);
 
-            Packets.Add(new PacketRowViewModel(parsed, _captureStart));
+            Packets.Add(new PacketRowViewModel(parsed, _captureStart, _names));
             TotalPackets++;
             TotalBytes += parsed.OriginalLength;
             drained++;
@@ -257,12 +291,74 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         while (Packets.Count > MaxDisplayedPackets)
             Packets.RemoveAt(0);
+
+        RefreshHosts();
+
+        // A name usually turns up after the first packets to an address, so rows already on
+        // screen would otherwise keep showing the bare IP for the rest of the capture.
+        if (_names.Count != namesBefore)
+        {
+            foreach (var row in Packets)
+                row.RefreshNames();
+        }
+
+        PacketsAppended?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Mirrors the tracker into the bound collection, updating rows in place so the list doesn't
+    /// flicker or lose the user's selection, and keeping it ordered by traffic volume.
+    /// </summary>
+    private void RefreshHosts()
+    {
+        foreach (var host in _hosts.Snapshot())
+        {
+            string key = host.Address.ToString();
+            if (_hostRows.TryGetValue(key, out var existing))
+            {
+                existing.Update(host);
+                continue;
+            }
+
+            var row = new HostRowViewModel(host, _favicons);
+            _hostRows[key] = row;
+            Hosts.Add(row);
+        }
+
+        // Re-sort only when the order actually changed: moving items in an ObservableCollection
+        // is visible to the user, so doing it every tick would make the list jump constantly.
+        var ordered = Hosts.OrderByDescending(h => h.Bytes).ToList();
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            int current = Hosts.IndexOf(ordered[i]);
+            if (current != i) Hosts.Move(current, i);
+        }
+
+        OnPropertyChanged(nameof(HostsCountText));
+    }
+
+    /// <summary>This machine's own addresses, so the tracker knows which end of a packet is remote.</summary>
+    private static IEnumerable<IPAddress> LocalAddresses()
+    {
+        try
+        {
+            return NetworkInterface.GetAllNetworkInterfaces()
+                .Where(nic => nic.OperationalStatus == OperationalStatus.Up)
+                .SelectMany(nic => nic.GetIPProperties().UnicastAddresses)
+                .Select(a => a.Address)
+                .ToList();
+        }
+        catch (NetworkInformationException)
+        {
+            return [];
+        }
     }
 
     private void OnLanguageChanged(object? sender, EventArgs e)
     {
         OnPropertyChanged(nameof(PacketsCountText));
         OnPropertyChanged(nameof(BytesCountText));
+        OnPropertyChanged(nameof(HostsCountText));
     }
 
     public void Dispose()
@@ -271,5 +367,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
         LocalizationService.LanguageChanged -= OnLanguageChanged;
         _drainTimer.Stop();
         _session?.Dispose();
+        _favicons.Dispose();
     }
 }

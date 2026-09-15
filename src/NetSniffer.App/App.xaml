@@ -51,6 +51,8 @@
             <SolidColorBrush x:Key="ProtocolColorDns" Color="#1A58A6FF" />
             <SolidColorBrush x:Key="ProtocolColorTcp" Color="#0AFFFFFF" />
             <SolidColorBrush x:Key="ProtocolColorUdp" Color="#142DD4BF" />
+            <!-- QUIC sits next to TLS in hue: it is the same handshake over UDP. -->
+            <SolidColorBrush x:Key="ProtocolColorQuic" Color="#1A56D364" />
             <SolidColorBrush x:Key="ProtocolColorArp" Color="#16C9A0FF" />
             <SolidColorBrush x:Key="ProtocolColorIcmp" Color="#1AF85149" />
             <SolidColorBrush x:Key="ProtocolColorDefault" Color="Transparent" />
