@@ -3,7 +3,15 @@ namespace NetSniffer.Core.Tcp;
 /// <summary>Reassembled byte stream for one direction of a TCP connection.</summary>
 public sealed class TcpDirectionBuffer
 {
-    private readonly SortedDictionary<uint, byte[]> _pendingBySeq = new();
+    /// <summary>
+    /// How much out-of-order data to hold while waiting for a gap to be filled. A segment
+    /// that never arrives (dropped upstream, or capture started mid-stream) would otherwise
+    /// pin every later segment in memory for the lifetime of the capture.
+    /// </summary>
+    private const int MaxPendingBytes = 2 * 1024 * 1024;
+
+    private readonly Dictionary<uint, byte[]> _pendingBySeq = [];
+    private int _pendingBytes;
     private uint? _nextExpectedSeq;
     private readonly MemoryStream _reassembled = new();
 
@@ -37,20 +45,38 @@ public sealed class TcpDirectionBuffer
         }
         else
         {
+            if (!_pendingBySeq.TryGetValue(seq, out var existing))
+            {
+                if (_pendingBytes >= MaxPendingBytes)
+                {
+                    // The gap is never going to be filled - drop what we were holding for it
+                    // rather than growing without bound. Bytes already reassembled are kept.
+                    _pendingBySeq.Clear();
+                    _pendingBytes = 0;
+                }
+                _pendingBytes += payload.Length;
+            }
+            else
+            {
+                _pendingBytes += payload.Length - existing.Length;
+            }
+
             _pendingBySeq[seq] = payload.ToArray();
         }
     }
 
     private void DrainPending()
     {
-        while (_pendingBySeq.Count > 0)
+        // Look the next sequence number up directly. Picking the numerically smallest
+        // pending key instead would stall whenever a lower key is buffered that isn't the
+        // one we need - which is exactly what happens every time the 32-bit sequence
+        // number wraps past zero mid-stream.
+        while (_pendingBySeq.TryGetValue(_nextExpectedSeq!.Value, out var next))
         {
-            var first = _pendingBySeq.First();
-            if (first.Key != _nextExpectedSeq!.Value) break;
-
-            _reassembled.Write(first.Value);
-            _nextExpectedSeq = first.Key + (uint)first.Value.Length;
-            _pendingBySeq.Remove(first.Key);
+            _reassembled.Write(next);
+            _pendingBySeq.Remove(_nextExpectedSeq.Value);
+            _pendingBytes -= next.Length;
+            _nextExpectedSeq += (uint)next.Length;
         }
     }
 
