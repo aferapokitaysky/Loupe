@@ -61,6 +61,9 @@
                            Style="{StaticResource AppButton}" Command="{Binding OpenCaptureCommand}" />
                 <ui:Button Content="{DynamicResource Pkt_SavePcap}" Icon="{ui:SymbolIcon Save24}"
                            Style="{StaticResource AppButton}" Command="{Binding SaveCaptureCommand}" />
+                <ui:Button Content="{DynamicResource Sessions_Save}" Icon="{ui:SymbolIcon Bookmark24}"
+                           ToolTip="{DynamicResource Sessions_Save_Tip}"
+                           Style="{StaticResource AppButton}" Command="{Binding SaveSessionCommand}" />
 
                 <CheckBox Content="{DynamicResource Pkt_AutoScroll}" IsChecked="{Binding AutoScroll}"
                           VerticalAlignment="Center" Margin="8,0,0,0" />
@@ -209,7 +212,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <ui:TextBox Grid.Column="0" Width="380" VerticalAlignment="Center"
+                    <ui:TextBox x:Name="SearchBox" Grid.Column="0" Width="380" VerticalAlignment="Center"
                                 PlaceholderText="{DynamicResource Search_Placeholder}"
                                 Icon="{ui:SymbolIcon Search24}"
                                 ClearButtonEnabled="True"

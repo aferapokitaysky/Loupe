@@ -275,6 +275,16 @@
         </Setter>
     </Style>
 
+    <!-- One saved session in the library -->
+    <Style x:Key="SessionCard" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceRaisedBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderSubtleBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="Margin" Value="2,3" />
+    </Style>
+
     <!-- Active filter: says what is narrowing the list and offers the one way out -->
     <Style x:Key="FilterChip" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource SurfaceSelectedBrush}" />

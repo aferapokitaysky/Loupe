@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -16,6 +17,7 @@ using NetSniffer.App.Services;
 using NetSniffer.Core.Model;
 using NetSniffer.Core.Naming;
 using NetSniffer.Core.Parsing;
+using NetSniffer.Core.Sessions;
 using NetSniffer.Core.Tcp;
 
 namespace NetSniffer.App.ViewModels;
@@ -146,12 +148,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         // Below normal priority: the UI thread must always win. Background so it can't keep
         // the process alive if Dispose is missed.
-        new Thread(ParseLoop)
+        _parseThread = new Thread(ParseLoop)
         {
             IsBackground = true,
             Name = "NetSniffer.Parse",
             Priority = ThreadPriority.BelowNormal,
-        }.Start();
+        };
+        _parseThread.Start();
 
         RefreshAdapters();
 
@@ -250,7 +253,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         _session = new CaptureSession(SelectedAdapter);
         _session.PacketArrived += (_, e) => Enqueue(e.Packet);
-        _session.Stopped += (_, e) => Application.Current.Dispatcher.BeginInvoke(() =>
+        // Application.Current is null once WPF has shut down, and this fires from the capture
+        // thread - an NRE there is an unhandled exception on a non-UI thread.
+        _session.Stopped += (_, e) => Application.Current?.Dispatcher.BeginInvoke(() =>
         {
             IsCapturing = false;
             StatusMessage = e.ErrorReason is null
@@ -330,18 +335,105 @@ public partial class MainViewModel : ObservableObject, IDisposable
         StatusMessage = Loc.Format("Pkt_Status_Saved", frames.Count, dialog.FileName);
     }
 
+    /// <summary>
+    /// Saves everything on screen as a named session - the capture as an ordinary .pcap, so it
+    /// also opens in Wireshark, plus what it was and how big it was.
+    /// </summary>
+    [RelayCommand]
+    private void SaveSession()
+    {
+        var frames = Packets
+            .SelectMany(row => row.AllPackets)
+            .Select(p => new CapturedPacket(p.Number, p.Timestamp, p.RawData, p.OriginalLength))
+            .ToList();
+
+        if (frames.Count == 0)
+        {
+            StatusMessage = Loc.Get("Sessions_NothingToSave");
+            return;
+        }
+
+        try
+        {
+            var session = SessionService.Store.Create(
+                Loc.Format("Sessions_DefaultName", DateTime.Now.ToString("dd.MM HH:mm")),
+                new SessionInfo
+                {
+                    Id = "", Name = "", Created = default,
+                    Source = SelectedAdapter?.Description,
+                    PacketCount = frames.Count,
+                    ByteCount = TotalBytes,
+                    HostCount = Hosts.Count,
+                });
+
+            PcapFile.Write(SessionService.Store.PathTo(session, SessionStore.CaptureFileName), frames);
+            StatusMessage = Loc.Format("Sessions_Saved", session.Name);
+            SessionSaved?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            StatusMessage = Loc.Format("Sessions_SaveFailed", ex.Message);
+        }
+    }
+
+    /// <summary>Lets the window refresh the sessions list without it polling the disk.</summary>
+    public event EventHandler? SessionSaved;
+
     [RelayCommand]
     private void OpenCapture()
     {
         var dialog = new OpenFileDialog { Filter = "pcap files (*.pcap)|*.pcap" };
         if (dialog.ShowDialog() != true) return;
 
+        LoadCaptureFile(dialog.FileName);
+    }
+
+    /// <summary>
+    /// Reads a .pcap into the pipeline off the UI thread. A capture file can be gigabytes, so
+    /// reading it inline froze the window, and pushing it through the same bounded queue as a
+    /// live adapter silently dropped everything past the cap - a file has no reason to lose
+    /// packets, so this one waits for room instead.
+    /// </summary>
+    public void LoadCaptureFile(string path)
+    {
+        // Mixing a file into a running capture would interleave two unrelated timelines.
+        if (IsCapturing) StopCapture();
+
         ClearPackets();
         _captureStart = DateTimeOffset.Now;
-        foreach (var captured in PcapFile.Read(dialog.FileName))
-            Enqueue(captured);
+        StatusMessage = Loc.Format("Pkt_Status_Loading", Path.GetFileName(path));
 
-        StatusMessage = Loc.Format("Pkt_Status_Loaded", dialog.FileName);
+        var token = _parseCancellation.Token;
+        Task.Run(() =>
+        {
+            long count = 0;
+            string message;
+
+            try
+            {
+                foreach (var captured in PcapFile.Read(path))
+                {
+                    if (token.IsCancellationRequested) return;
+
+                    // Backpressure rather than dropping: the parser is never far behind.
+                    while (Interlocked.Read(ref _queuedCount) >= MaxQueuedPackets && !token.IsCancellationRequested)
+                        Thread.Sleep(5);
+
+                    Enqueue(captured);
+                    count++;
+                }
+
+                message = Loc.Format("Pkt_Status_Loaded", Path.GetFileName(path));
+            }
+            catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException
+                                           or ArgumentException or NotSupportedException)
+            {
+                // A truncated or foreign file: keep whatever parsed and say what happened.
+                message = Loc.Format("Pkt_Status_LoadFailed", ex.Message);
+            }
+
+            Application.Current?.Dispatcher.BeginInvoke(() => StatusMessage = message);
+        }, token);
     }
 
     /// <summary>
@@ -350,6 +442,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// </summary>
     private void Enqueue(CapturedPacket captured)
     {
+        if (_disposed) return; // a capture callback can outlive the view model by a moment
+
         if (Interlocked.Read(ref _queuedCount) >= MaxQueuedPackets)
         {
             Interlocked.Increment(ref _droppedCount);
@@ -361,7 +455,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         // The parser drains the whole queue per wake-up, so one spare release is enough to
         // guarantee it looks again; letting the count run up would just spin it.
-        if (_parseSignal.CurrentCount == 0) _parseSignal.Release();
+        try
+        {
+            if (_parseSignal.CurrentCount == 0) _parseSignal.Release();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Raced with shutdown. The packet is already queued and simply won't be parsed.
+        }
     }
 
     /// <summary>
@@ -379,9 +480,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             {
                 _parseSignal.Wait(token);
             }
-            catch (OperationCanceledException)
+            catch (Exception e) when (e is OperationCanceledException or ObjectDisposedException)
             {
-                return;
+                return; // shutting down
             }
 
             while (_incoming.TryDequeue(out var captured))
@@ -705,6 +806,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
+
         // LanguageChanged is static - not unsubscribing would keep this view model alive.
         LocalizationService.LanguageChanged -= OnLanguageChanged;
         IgnoreListStore.Rules.Changed -= OnIgnoreRulesChanged;
@@ -712,8 +816,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _session?.Dispose();
         _favicons.Dispose();
 
+        // Order matters. The parser thread blocks on the semaphore, so cancelling alone can
+        // leave it there; it is woken, then joined, and only then are the primitives disposed.
+        // Disposing them first would throw ObjectDisposedException on a background thread -
+        // which is an unhandled exception, i.e. the process dies on the way out.
         _parseCancellation.Cancel();
+        try { _parseSignal.Release(); } catch (ObjectDisposedException) { }
+        _parseThread?.Join(TimeSpan.FromSeconds(2));
+
         _parseCancellation.Dispose();
         _parseSignal.Dispose();
     }
+
+    private volatile bool _disposed;
+    private Thread? _parseThread;
 }

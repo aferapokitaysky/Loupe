@@ -145,6 +145,8 @@ T.Section("TCP REASSEMBLY");
 
 NamingTests.Run();
 
+SessionTests.Run();
+
 await ProxyTests.RunAsync();
 
 await TransparentTests.RunAsync();

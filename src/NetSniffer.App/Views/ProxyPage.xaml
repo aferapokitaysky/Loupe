@@ -60,6 +60,9 @@
                            Style="{StaticResource AppButton}" Command="{Binding StopProxyCommand}"
                            Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibility}}" />
 
+                <ui:Button Content="{DynamicResource Sessions_Save}" Icon="{ui:SymbolIcon Bookmark24}"
+                           ToolTip="{DynamicResource Sessions_Save_Tip}"
+                           Style="{StaticResource AppButton}" Command="{Binding SaveSessionCommand}" />
                 <ui:Button Content="{DynamicResource Proxy_Clear}" Icon="{ui:SymbolIcon Broom24}"
                            Style="{StaticResource AppButton}" Command="{Binding ClearExchangesCommand}" Margin="0,0,14,0" />
 
@@ -249,7 +252,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <ui:TextBox Grid.Column="0" Width="380" VerticalAlignment="Center"
+                    <ui:TextBox x:Name="SearchBox" Grid.Column="0" Width="380" VerticalAlignment="Center"
                                 PlaceholderText="{DynamicResource Proxy_Search_Placeholder}"
                                 Icon="{ui:SymbolIcon Search24}"
                                 ClearButtonEnabled="True"

@@ -8,6 +8,7 @@ using Microsoft.Win32;
 using NetSniffer.App.Localization;
 using NetSniffer.App.Services;
 using NetSniffer.Capture.Processes;
+using NetSniffer.Core.Sessions;
 using NetSniffer.Proxy;
 using NetSniffer.Proxy.Ca;
 using NetSniffer.Proxy.Http;
@@ -227,7 +228,9 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             _ca);
         server.ExchangeStarted += (_, exchange) => _incoming.Enqueue(exchange);
         server.ExchangeUpdated += (_, exchange) => _incoming.Enqueue(exchange);
-        server.ConnectionError += (_, message) => System.Windows.Application.Current.Dispatcher.BeginInvoke(() => StatusMessage = message);
+        // Null once WPF is shutting down; this arrives on a connection's own thread.
+        server.ConnectionError += (_, message) =>
+            System.Windows.Application.Current?.Dispatcher.BeginInvoke(() => StatusMessage = message);
 
         try
         {
@@ -280,6 +283,56 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         {
             _weEnabledSystemProxy = false;
         }
+    }
+
+    /// <summary>Saves the captured requests, bodies and all, as a named session.</summary>
+    [RelayCommand]
+    private void SaveSession()
+    {
+        if (Exchanges.Count == 0)
+        {
+            StatusMessage = Loc.Get("Sessions_NothingToSave");
+            return;
+        }
+
+        try
+        {
+            var session = SessionService.Store.Create(
+                Loc.Format("Sessions_DefaultProxyName", DateTime.Now.ToString("dd.MM HH:mm")),
+                new SessionInfo
+                {
+                    Id = "", Name = "", Created = default,
+                    Source = Loc.Format("Proxy_Status_Listening", Port),
+                    RequestCount = Exchanges.Count,
+                    HostCount = Domains.Count,
+                });
+
+            ProxySessionFile.Save(
+                SessionService.Store.PathTo(session, SessionStore.RequestsFileName),
+                Exchanges.Select(row => row.Exchange));
+
+            StatusMessage = Loc.Format("Sessions_Saved", session.Name);
+            SessionSaved?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            StatusMessage = Loc.Format("Sessions_SaveFailed", ex.Message);
+        }
+    }
+
+    public event EventHandler? SessionSaved;
+
+    /// <summary>Replaces the list with the requests from a saved session, for reading back.</summary>
+    public void LoadSession(SessionInfo session)
+    {
+        ClearExchanges();
+
+        var saved = ProxySessionFile.Load(SessionService.Store.PathTo(session, SessionStore.RequestsFileName));
+        foreach (var exchange in saved)
+            _incoming.Enqueue(exchange);
+
+        Drain();
+        StatusMessage = Loc.Format("Sessions_Opened", session.Name, saved.Count);
     }
 
     [RelayCommand]

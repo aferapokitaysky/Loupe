@@ -50,6 +50,13 @@ public partial class PacketCapturePage : UserControl
         _gridScroller?.ScrollToEnd();
     }
 
+    /// <summary>Ctrl+F: put the caret in this page's search box, text selected.</summary>
+    public void FocusSearch()
+    {
+        SearchBox.Focus();
+        SearchBox.SelectAll();
+    }
+
     // ---------------------------------------------------------------- context menus
 
     /// <summary>Right-click on a host: hide it, hide its programs, or show only its traffic.</summary>
