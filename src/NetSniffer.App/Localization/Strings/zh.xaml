@@ -38,9 +38,10 @@
     <sys:String x:Key="Pkt_Status_NpcapLaunching">Npcap 安装程序已启动 —— 请完成安装向导，然后点击刷新。</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallFailed">无法安装 Npcap：{0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Npcap 安装程序已关闭但未完成安装。请点击“安装 Npcap”重试。</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Packets">  |  数据包：{0}</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Bytes">  |  字节：{0:N0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Packets">数据包：{0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Bytes">字节：{0:N0}</sys:String>
     <sys:String x:Key="Pkt_EmptyState">开始抓包以在此查看数据包</sys:String>
+    <sys:String x:Key="Pkt_SelectPacket">选择一个数据包以查看其分层和字节</sys:String>
 
     <sys:String x:Key="Proxy_Port">端口：</sys:String>
     <sys:String x:Key="Proxy_Start">开始</sys:String>
@@ -68,6 +69,7 @@
     <sys:String x:Key="Proxy_Status_Error">错误</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">（尚无响应）</sys:String>
     <sys:String x:Key="Proxy_EmptyState">启动代理并让客户端指向它，即可在此查看请求</sys:String>
+    <sys:String x:Key="Proxy_SelectExchange">选择一个请求以查看其标头和正文</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">正在监听 127.0.0.1:{0}。请将客户端代理设置指向此地址。</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">启动失败：{0}</sys:String>
     <sys:String x:Key="Proxy_Status_CertInstalled">根证书已在当前 Windows 用户下设为受信任。</sys:String>

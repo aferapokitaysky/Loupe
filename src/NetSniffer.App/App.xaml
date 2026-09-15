@@ -8,20 +8,51 @@
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemesDictionary Theme="Dark" />
                 <ui:ControlsDictionary />
-                <ResourceDictionary Source="pack://application:,,,/Styles/GlassTheme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Styles/Theme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Styles/Flags.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <SolidColorBrush x:Key="StreamBrushClient" Color="#569CD6" />
-            <SolidColorBrush x:Key="StreamBrushServer" Color="#4EC9B0" />
+            <!--
+                WPF-UI's accent defaults to the user's Windows accent colour, which is
+                why primary buttons and checkboxes showed up magenta here. This app is
+                deliberately monochrome - accent is near-white on near-black, and hue is
+                reserved for meaning (protocol, status). Entries declared directly in
+                this dictionary override the merged theme dictionary above.
+            -->
+            <Color x:Key="SystemAccentColor">#E9ECEF</Color>
+            <Color x:Key="SystemAccentColorPrimary">#E9ECEF</Color>
+            <Color x:Key="SystemAccentColorSecondary">#D4D9DE</Color>
+            <Color x:Key="SystemAccentColorTertiary">#BFC5CB</Color>
+            <SolidColorBrush x:Key="SystemAccentColorBrush" Color="#E9ECEF" />
+            <SolidColorBrush x:Key="SystemAccentColorPrimaryBrush" Color="#E9ECEF" />
+            <SolidColorBrush x:Key="SystemAccentColorSecondaryBrush" Color="#D4D9DE" />
+            <SolidColorBrush x:Key="SystemAccentColorTertiaryBrush" Color="#BFC5CB" />
+            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#E9ECEF" />
+            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#D4D9DE" />
+            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#BFC5CB" />
+            <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="#2B3036" />
+            <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="#E9ECEF" />
+            <SolidColorBrush x:Key="AccentTextFillColorSecondaryBrush" Color="#D4D9DE" />
+            <SolidColorBrush x:Key="AccentTextFillColorTertiaryBrush" Color="#BFC5CB" />
+            <SolidColorBrush x:Key="AccentTextFillColorDisabledBrush" Color="#70777E" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#0A0B0D" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="#14181C" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorDisabledBrush" Color="#70777E" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorSelectedTextBrush" Color="#0A0B0D" />
+            <SolidColorBrush x:Key="AccentControlElevationBorderBrush" Color="#33FFFFFF" />
 
-            <!-- Per-protocol row accents: translucent glass tints, in the spirit of Wireshark's coloring rules -->
-            <SolidColorBrush x:Key="ProtocolColorTls" Color="#3322C55E" />
-            <SolidColorBrush x:Key="ProtocolColorHttp" Color="#33F59E0B" />
-            <SolidColorBrush x:Key="ProtocolColorDns" Color="#333B82F6" />
-            <SolidColorBrush x:Key="ProtocolColorTcp" Color="#14FFFFFF" />
-            <SolidColorBrush x:Key="ProtocolColorUdp" Color="#2622D3EE" />
-            <SolidColorBrush x:Key="ProtocolColorArp" Color="#337C6CFF" />
-            <SolidColorBrush x:Key="ProtocolColorIcmp" Color="#33EF4444" />
+            <!--
+                Per-protocol row tints, in the spirit of Wireshark's coloring rules but
+                dialled way down: a ~10% wash so the row still reads as grey, with the
+                hue carrying the protocol family. Anything unclassified stays neutral.
+            -->
+            <SolidColorBrush x:Key="ProtocolColorTls" Color="#1A3FB950" />
+            <SolidColorBrush x:Key="ProtocolColorHttp" Color="#1AD29922" />
+            <SolidColorBrush x:Key="ProtocolColorDns" Color="#1A58A6FF" />
+            <SolidColorBrush x:Key="ProtocolColorTcp" Color="#0AFFFFFF" />
+            <SolidColorBrush x:Key="ProtocolColorUdp" Color="#142DD4BF" />
+            <SolidColorBrush x:Key="ProtocolColorArp" Color="#16C9A0FF" />
+            <SolidColorBrush x:Key="ProtocolColorIcmp" Color="#1AF85149" />
             <SolidColorBrush x:Key="ProtocolColorDefault" Color="Transparent" />
         </ResourceDictionary>
     </Application.Resources>

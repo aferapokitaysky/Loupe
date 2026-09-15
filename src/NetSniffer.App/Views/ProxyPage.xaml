@@ -13,11 +13,12 @@
         <conv:InverseBooleanConverter x:Key="InverseBoolean" />
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
         <conv:CountToVisibilityConverter x:Key="CountToVisibility" />
+        <conv:NullToVisibilityConverter x:Key="NullToVisibility" />
 
-        <Style x:Key="ExchangeRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource GlassDataGridRowStyle}">
+        <Style x:Key="ExchangeRow" TargetType="DataGridRow" BasedOn="{StaticResource AppDataGridRow}">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsError}" Value="True">
-                    <Setter Property="Background" Value="#332E2E" />
+                    <Setter Property="Background" Value="#1AF85149" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -34,140 +35,132 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Toolbar -->
-        <Border Grid.Row="0" Style="{StaticResource GlassCard}" Padding="14,10">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="{DynamicResource Proxy_Port}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
-                <ui:TextBox Width="80" Margin="0,0,12,0"
+        <!-- Toolbar: wraps instead of clipping -->
+        <Border Grid.Row="0" Style="{StaticResource ToolbarCard}">
+            <WrapPanel Orientation="Horizontal" ItemHeight="34">
+                <TextBlock Text="{DynamicResource Proxy_Port}" Style="{StaticResource ToolbarLabel}" />
+                <ui:TextBox Width="76" Margin="0,0,10,0" VerticalAlignment="Center"
                             Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"
                             IsEnabled="{Binding IsRunning, Converter={StaticResource InverseBoolean}}" />
 
                 <ui:Button Content="{DynamicResource Proxy_Start}" Icon="{ui:SymbolIcon Play24}" Appearance="Primary"
-                           Style="{StaticResource LiquidButtonStyle}"
-                           Command="{Binding StartProxyCommand}"
-                           Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibilityInverse}}"
-                           Margin="0,0,8,0" />
+                           Style="{StaticResource AppButton}" Command="{Binding StartProxyCommand}"
+                           Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibilityInverse}}" />
                 <ui:Button Content="{DynamicResource Proxy_Stop}" Icon="{ui:SymbolIcon Stop24}" Appearance="Danger"
-                           Style="{StaticResource LiquidButtonStyle}"
-                           Command="{Binding StopProxyCommand}"
-                           Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibility}}"
-                           Margin="0,0,8,0" />
+                           Style="{StaticResource AppButton}" Command="{Binding StopProxyCommand}"
+                           Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibility}}" />
 
-                <ui:Button Content="{DynamicResource Proxy_Clear}" Icon="{ui:SymbolIcon Broom24}" Style="{StaticResource LiquidButtonStyle}" Command="{Binding ClearExchangesCommand}" Margin="0,0,20,0" />
+                <ui:Button Content="{DynamicResource Proxy_Clear}" Icon="{ui:SymbolIcon Broom24}"
+                           Style="{StaticResource AppButton}" Command="{Binding ClearExchangesCommand}" Margin="0,0,14,0" />
 
-                <ui:Button Content="{DynamicResource Proxy_InstallCert}"
-                           Icon="{ui:SymbolIcon ShieldCheckmark24}" Style="{StaticResource LiquidButtonStyle}"
-                           Command="{Binding InstallRootCertificateCommand}"
-                           Visibility="{Binding IsCaInstalled, Converter={StaticResource BoolToVisibilityInverse}}"
-                           Margin="0,0,8,0" />
-                <ui:Button Content="{DynamicResource Proxy_UninstallCert}" Icon="{ui:SymbolIcon ShieldError24}" Style="{StaticResource LiquidButtonStyle}"
-                           Command="{Binding UninstallRootCertificateCommand}"
-                           Visibility="{Binding IsCaInstalled, Converter={StaticResource BoolToVisibility}}"
-                           Margin="0,0,8,0" />
-                <ui:Button Content="{DynamicResource Proxy_ExportCert}" Icon="{ui:SymbolIcon ArrowExportUp24}" Style="{StaticResource LiquidButtonStyle}"
-                           Command="{Binding ExportRootCertificateCommand}" Margin="0,0,20,0" />
+                <ui:Button Content="{DynamicResource Proxy_InstallCert}" Icon="{ui:SymbolIcon ShieldCheckmark24}"
+                           Style="{StaticResource AppButton}" Command="{Binding InstallRootCertificateCommand}"
+                           Visibility="{Binding IsCaInstalled, Converter={StaticResource BoolToVisibilityInverse}}" />
+                <ui:Button Content="{DynamicResource Proxy_UninstallCert}" Icon="{ui:SymbolIcon ShieldError24}"
+                           Style="{StaticResource AppButton}" Command="{Binding UninstallRootCertificateCommand}"
+                           Visibility="{Binding IsCaInstalled, Converter={StaticResource BoolToVisibility}}" />
+                <ui:Button Content="{DynamicResource Proxy_ExportCert}" Icon="{ui:SymbolIcon ArrowExportUp24}"
+                           Style="{StaticResource AppButton}" Command="{Binding ExportRootCertificateCommand}" Margin="0,0,14,0" />
 
-                <ui:Button Content="{DynamicResource Proxy_EnableSystemProxy}" Icon="{ui:SymbolIcon Wifi124}" Style="{StaticResource LiquidButtonStyle}"
-                           Command="{Binding EnableSystemProxyCommand}"
-                           Visibility="{Binding IsSystemProxyEnabled, Converter={StaticResource BoolToVisibilityInverse}}"
-                           Margin="0,0,8,0" />
-                <ui:Button Content="{DynamicResource Proxy_DisableSystemProxy}" Icon="{ui:SymbolIcon WifiOff24}" Style="{StaticResource LiquidButtonStyle}"
-                           Command="{Binding DisableSystemProxyCommand}"
-                           Visibility="{Binding IsSystemProxyEnabled, Converter={StaticResource BoolToVisibility}}"
-                           Margin="0,0,8,0" />
-            </StackPanel>
+                <ui:Button Content="{DynamicResource Proxy_EnableSystemProxy}" Icon="{ui:SymbolIcon Wifi124}"
+                           Style="{StaticResource AppButton}" Command="{Binding EnableSystemProxyCommand}"
+                           Visibility="{Binding IsSystemProxyEnabled, Converter={StaticResource BoolToVisibilityInverse}}" />
+                <ui:Button Content="{DynamicResource Proxy_DisableSystemProxy}" Icon="{ui:SymbolIcon WifiOff24}"
+                           Style="{StaticResource AppButton}" Command="{Binding DisableSystemProxyCommand}"
+                           Visibility="{Binding IsSystemProxyEnabled, Converter={StaticResource BoolToVisibility}}" />
+            </WrapPanel>
         </Border>
 
-        <!-- Ethics/scope banner + live status -->
-        <Border Grid.Row="2" Style="{StaticResource GlassCard}" Padding="14,10">
+        <!-- Scope note + live status -->
+        <Border Grid.Row="2" Style="{StaticResource Card}" Padding="12,10">
             <StackPanel>
-                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextSecondaryBrush}">
+                <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource TextTertiaryBrush}">
                     <Run Text="{DynamicResource Proxy_Banner}" />
+                    <Run Text="  " />
+                    <Run Text="{DynamicResource Proxy_CaLabel}" Foreground="{StaticResource TextSecondaryBrush}" />
                     <Run Text=" " />
-                    <Run FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Text="{DynamicResource Proxy_CaLabel}" />
-                    <Run Text=" " />
-                    <Run FontFamily="Consolas" Foreground="{DynamicResource AccentBrightBrush}" Text="{Binding CaThumbprint, Mode=OneWay}" />
+                    <Run FontFamily="Cascadia Mono, Consolas" Text="{Binding CaThumbprint, Mode=OneWay}"
+                         Foreground="{StaticResource TextSecondaryBrush}" />
                 </TextBlock>
-                <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource TextTertiaryBrush}" FontStyle="Italic" Margin="0,6,0,0" />
+                <TextBlock Text="{Binding StatusMessage}" Margin="0,8,0,0" FontSize="12.5"
+                           TextWrapping="Wrap" Foreground="{StaticResource TextPrimaryBrush}" />
             </StackPanel>
         </Border>
 
         <!-- Exchange list -->
-        <Border Grid.Row="4" Style="{StaticResource GlassCard}" Padding="1">
-            <Grid>
+        <Border Grid.Row="4" Style="{StaticResource Card}" Padding="1">
+            <Grid ClipToBounds="True">
                 <DataGrid x:Name="ExchangeGrid"
-                          Background="Transparent" RowStyle="{StaticResource ExchangeRowStyle}"
+                          Background="Transparent" BorderThickness="0"
+                          RowStyle="{StaticResource ExchangeRow}"
                           ItemsSource="{Binding Exchanges}"
                           SelectedItem="{Binding SelectedExchange}"
                           AutoGenerateColumns="False" IsReadOnly="True"
-                          GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                          GridLinesVisibility="None" HeadersVisibility="Column"
                           SelectionMode="Single" SelectionUnit="FullRow"
                           EnableRowVirtualization="True" EnableColumnVirtualization="True"
                           VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Time}" Binding="{Binding Time}" Width="100" />
-                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Method}" Binding="{Binding Method}" Width="70" />
-                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Scheme}" Binding="{Binding Scheme}" Width="60" />
-                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Host}" Binding="{Binding Host}" Width="220" />
+                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Time}" Binding="{Binding Time}" Width="96" />
+                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Method}" Binding="{Binding Method}" Width="72" />
+                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Scheme}" Binding="{Binding Scheme}" Width="62" />
+                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Host}" Binding="{Binding Host}" Width="190" />
                         <DataGridTextColumn Header="{DynamicResource Proxy_Col_Path}" Binding="{Binding Path}" Width="*" />
-                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Status}" Binding="{Binding Status}" Width="70" />
-                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Detail}" Binding="{Binding StatusDetail}" Width="160" />
-                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Size}" Binding="{Binding ResponseSize}" Width="80" />
-                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Duration}" Binding="{Binding Duration}" Width="90" />
+                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Status}" Binding="{Binding Status}" Width="68" />
+                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Detail}" Binding="{Binding StatusDetail}" Width="140" />
+                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Size}" Binding="{Binding ResponseSize}" Width="72" />
+                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Duration}" Binding="{Binding Duration}" Width="112" />
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!-- Empty state -->
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
-                            Visibility="{Binding Exchanges.Count, Converter={StaticResource CountToVisibility}}"
-                            IsHitTestVisible="False">
-                    <ui:SymbolIcon Symbol="ShieldCheckmark24" Style="{StaticResource EmptyStateIconStyle}" />
-                    <TextBlock Text="{DynamicResource Proxy_EmptyState}" Style="{StaticResource EmptyStateTextStyle}"
-                               MaxWidth="320" TextWrapping="Wrap" TextAlignment="Center" />
+                <StackPanel Style="{StaticResource EmptyState}"
+                            Visibility="{Binding Exchanges.Count, Converter={StaticResource CountToVisibility}}">
+                    <ui:SymbolIcon Symbol="ShieldKeyhole24" Style="{StaticResource EmptyStateIcon}" />
+                    <TextBlock Text="{DynamicResource Proxy_EmptyState}" Style="{StaticResource EmptyStateText}" />
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- Request/response detail -->
-        <Border Grid.Row="6" Style="{StaticResource GlassCard}" Padding="4" Height="264">
-            <TabControl Background="Transparent" BorderThickness="0">
+        <Border Grid.Row="6" Style="{StaticResource Card}" Padding="6" Height="268">
+            <Grid>
+                <TextBlock Style="{StaticResource EmptyStateText}" VerticalAlignment="Center" Panel.ZIndex="1"
+                           IsHitTestVisible="False" Text="{DynamicResource Proxy_SelectExchange}"
+                           Visibility="{Binding SelectedExchange, Converter={StaticResource NullToVisibility}}" />
+                <TabControl Background="Transparent" BorderThickness="0"
+                            Visibility="{Binding SelectedExchange, Converter={StaticResource NullToVisibility}, ConverterParameter=Invert}">
                 <TabItem Header="{DynamicResource Proxy_Tab_Request}">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" MaxHeight="90" />
+                            <RowDefinition Height="Auto" MaxHeight="84" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
-                            <TextBox Text="{Binding SelectedExchange.RequestHeadersText, Mode=OneWay}"
-                                     FontFamily="Cascadia Mono, Consolas" FontSize="12" IsReadOnly="True"
-                                     BorderThickness="0" Background="Transparent" TextWrapping="NoWrap" />
+                        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto"
+                                      Background="{StaticResource SurfaceSunkenBrush}">
+                            <TextBox Text="{Binding SelectedExchange.RequestHeadersText, Mode=OneWay}" Style="{StaticResource MonoText}" />
                         </ScrollViewer>
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                            <TextBox Text="{Binding SelectedExchange.RequestBodyText, Mode=OneWay}"
-                                     FontFamily="Cascadia Mono, Consolas" FontSize="12" IsReadOnly="True"
-                                     BorderThickness="0" Background="Transparent" TextWrapping="NoWrap" />
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="0,6,0,0">
+                            <TextBox Text="{Binding SelectedExchange.RequestBodyText, Mode=OneWay}" Style="{StaticResource MonoText}" />
                         </ScrollViewer>
                     </Grid>
                 </TabItem>
                 <TabItem Header="{DynamicResource Proxy_Tab_Response}">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" MaxHeight="90" />
+                            <RowDefinition Height="Auto" MaxHeight="84" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
-                            <TextBox Text="{Binding SelectedExchange.ResponseHeadersText, Mode=OneWay}"
-                                     FontFamily="Cascadia Mono, Consolas" FontSize="12" IsReadOnly="True"
-                                     BorderThickness="0" Background="Transparent" TextWrapping="NoWrap" />
+                        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto"
+                                      Background="{StaticResource SurfaceSunkenBrush}">
+                            <TextBox Text="{Binding SelectedExchange.ResponseHeadersText, Mode=OneWay}" Style="{StaticResource MonoText}" />
                         </ScrollViewer>
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                            <TextBox Text="{Binding SelectedExchange.ResponseBodyText, Mode=OneWay}"
-                                     FontFamily="Cascadia Mono, Consolas" FontSize="12" IsReadOnly="True"
-                                     BorderThickness="0" Background="Transparent" TextWrapping="NoWrap" />
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="0,6,0,0">
+                            <TextBox Text="{Binding SelectedExchange.ResponseBodyText, Mode=OneWay}" Style="{StaticResource MonoText}" />
                         </ScrollViewer>
                     </Grid>
                 </TabItem>
-            </TabControl>
+                </TabControl>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>
