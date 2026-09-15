@@ -9,7 +9,8 @@
                  MinWidth="880" MinHeight="560"
                  WindowStartupLocation="CenterScreen"
                  ExtendsContentIntoTitleBar="True"
-                 WindowBackdropType="Mica">
+                 WindowBackdropType="Mica"
+                 KeyDown="OnWindowKeyDown">
 
     <Window.Resources>
         <conv:ResourceBrushConverter x:Key="ResourceBrush" />
@@ -65,6 +66,15 @@
                                 <TextBlock Text="{DynamicResource Nav_Proxy}" Style="{StaticResource NavLabel}" />
                             </StackPanel>
                         </RadioButton>
+
+                        <RadioButton x:Name="SessionsNavButton" GroupName="Nav" Style="{StaticResource NavButtonStyle}"
+                                     AutomationProperties.Name="{DynamicResource Nav_Sessions}"
+                                     Checked="OnSessionsNavChecked">
+                            <StackPanel>
+                                <ui:SymbolIcon Symbol="Bookmark24" FontSize="22" HorizontalAlignment="Center" />
+                                <TextBlock Text="{DynamicResource Nav_Sessions}" Style="{StaticResource NavLabel}" />
+                            </StackPanel>
+                        </RadioButton>
                     </StackPanel>
 
                     <!-- Language: flag chip in the rail, full list in a popup so long names aren't clipped -->
@@ -103,6 +113,7 @@
             <Grid Grid.Column="2">
                 <views:PacketCapturePage x:Name="PacketsPage" />
                 <views:ProxyPage x:Name="ProxyPageControl" Visibility="Collapsed" Opacity="0" />
+                <views:SessionsPage x:Name="SessionsPageControl" Visibility="Collapsed" Opacity="0" />
             </Grid>
         </Grid>
     </Grid>

@@ -36,6 +36,13 @@ public partial class ProxyPage : UserControl
         }
     }
 
+    /// <summary>Ctrl+F: put the caret in this page's search box, text selected.</summary>
+    public void FocusSearch()
+    {
+        SearchBox.Focus();
+        SearchBox.SelectAll();
+    }
+
     /// <summary>Right-click in the sidebar: a domain offers to hide itself, a request its domain and app.</summary>
     private void OnDomainTreeContextMenuOpening(object sender, ContextMenuEventArgs e)
     {
