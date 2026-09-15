@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -16,6 +17,7 @@ using NetSniffer.App.Services;
 using NetSniffer.Core.Model;
 using NetSniffer.Core.Naming;
 using NetSniffer.Core.Parsing;
+using NetSniffer.Core.Sessions;
 using NetSniffer.Core.Tcp;
 
 namespace NetSniffer.App.ViewModels;
@@ -84,10 +86,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// transfer is otherwise hundreds of lines that differ only in sequence number.</summary>
     [ObservableProperty] private bool _collapseRepeats = true;
 
-    /// <summary>Host picked in the hosts panel; narrows the packet list to its traffic.</summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsFiltered))]
-    private HostRowViewModel? _selectedHost;
+    /// <summary>Row highlighted in the hosts panel. Highlighting alone filters nothing - the
+    /// tick boxes do that, so several hosts can be watched at once.</summary>
+    [ObservableProperty] private HostRowViewModel? _selectedHost;
+
+    /// <summary>Addresses of the ticked hosts. Empty means "everything".</summary>
+    private readonly HashSet<IPAddress> _hostFilter = [];
+
+    public int FilteredHostCount => _hostFilter.Count;
 
     /// <summary>Free-text search over endpoints, domains, protocol, program and summary.</summary>
     [ObservableProperty]
@@ -96,7 +102,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty] private string _filterSummary = "";
 
-    public bool IsFiltered => SelectedHost is not null || !string.IsNullOrWhiteSpace(SearchText);
+    public bool IsFiltered => _hostFilter.Count > 0 || !string.IsNullOrWhiteSpace(SearchText);
+
+    /// <summary>What the filter chip says: the single host by name, or how many are ticked.</summary>
+    public string FilterScope => _hostFilter.Count switch
+    {
+        0 => "",
+        1 => Hosts.FirstOrDefault(h => h.IsChecked)?.Name ?? "",
+        var many => Loc.Format("Filter_HostCount", many),
+    };
     [ObservableProperty] private PacketRowViewModel? _selectedPacket;
     [ObservableProperty] private string _statusMessage = "";
     [ObservableProperty] private bool _isCaptureEngineAvailable = true;
@@ -136,6 +150,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         IgnoreListStore.Rules.Changed += OnIgnoreRulesChanged;
         ApplyFilter();
         ApplyHostFilter();
+        ApplyHostSort();
 
         _drainTimer = new DispatcherTimer(DispatcherPriority.Background)
         {
@@ -146,12 +161,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         // Below normal priority: the UI thread must always win. Background so it can't keep
         // the process alive if Dispose is missed.
-        new Thread(ParseLoop)
+        _parseThread = new Thread(ParseLoop)
         {
             IsBackground = true,
             Name = "NetSniffer.Parse",
             Priority = ThreadPriority.BelowNormal,
-        }.Start();
+        };
+        _parseThread.Start();
 
         RefreshAdapters();
 
@@ -250,7 +266,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         _session = new CaptureSession(SelectedAdapter);
         _session.PacketArrived += (_, e) => Enqueue(e.Packet);
-        _session.Stopped += (_, e) => Application.Current.Dispatcher.BeginInvoke(() =>
+        // Application.Current is null once WPF has shut down, and this fires from the capture
+        // thread - an NRE there is an unhandled exception on a non-UI thread.
+        _session.Stopped += (_, e) => Application.Current?.Dispatcher.BeginInvoke(() =>
         {
             IsCapturing = false;
             StatusMessage = e.ErrorReason is null
@@ -330,18 +348,105 @@ public partial class MainViewModel : ObservableObject, IDisposable
         StatusMessage = Loc.Format("Pkt_Status_Saved", frames.Count, dialog.FileName);
     }
 
+    /// <summary>
+    /// Saves everything on screen as a named session - the capture as an ordinary .pcap, so it
+    /// also opens in Wireshark, plus what it was and how big it was.
+    /// </summary>
+    [RelayCommand]
+    private void SaveSession()
+    {
+        var frames = Packets
+            .SelectMany(row => row.AllPackets)
+            .Select(p => new CapturedPacket(p.Number, p.Timestamp, p.RawData, p.OriginalLength))
+            .ToList();
+
+        if (frames.Count == 0)
+        {
+            StatusMessage = Loc.Get("Sessions_NothingToSave");
+            return;
+        }
+
+        try
+        {
+            var session = SessionService.Store.Create(
+                Loc.Format("Sessions_DefaultName", DateTime.Now.ToString("dd.MM HH:mm")),
+                new SessionInfo
+                {
+                    Id = "", Name = "", Created = default,
+                    Source = SelectedAdapter?.Description,
+                    PacketCount = frames.Count,
+                    ByteCount = TotalBytes,
+                    HostCount = Hosts.Count,
+                });
+
+            PcapFile.Write(SessionService.Store.PathTo(session, SessionStore.CaptureFileName), frames);
+            StatusMessage = Loc.Format("Sessions_Saved", session.Name);
+            SessionSaved?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            StatusMessage = Loc.Format("Sessions_SaveFailed", ex.Message);
+        }
+    }
+
+    /// <summary>Lets the window refresh the sessions list without it polling the disk.</summary>
+    public event EventHandler? SessionSaved;
+
     [RelayCommand]
     private void OpenCapture()
     {
         var dialog = new OpenFileDialog { Filter = "pcap files (*.pcap)|*.pcap" };
         if (dialog.ShowDialog() != true) return;
 
+        LoadCaptureFile(dialog.FileName);
+    }
+
+    /// <summary>
+    /// Reads a .pcap into the pipeline off the UI thread. A capture file can be gigabytes, so
+    /// reading it inline froze the window, and pushing it through the same bounded queue as a
+    /// live adapter silently dropped everything past the cap - a file has no reason to lose
+    /// packets, so this one waits for room instead.
+    /// </summary>
+    public void LoadCaptureFile(string path)
+    {
+        // Mixing a file into a running capture would interleave two unrelated timelines.
+        if (IsCapturing) StopCapture();
+
         ClearPackets();
         _captureStart = DateTimeOffset.Now;
-        foreach (var captured in PcapFile.Read(dialog.FileName))
-            Enqueue(captured);
+        StatusMessage = Loc.Format("Pkt_Status_Loading", Path.GetFileName(path));
 
-        StatusMessage = Loc.Format("Pkt_Status_Loaded", dialog.FileName);
+        var token = _parseCancellation.Token;
+        Task.Run(() =>
+        {
+            long count = 0;
+            string message;
+
+            try
+            {
+                foreach (var captured in PcapFile.Read(path))
+                {
+                    if (token.IsCancellationRequested) return;
+
+                    // Backpressure rather than dropping: the parser is never far behind.
+                    while (Interlocked.Read(ref _queuedCount) >= MaxQueuedPackets && !token.IsCancellationRequested)
+                        Thread.Sleep(5);
+
+                    Enqueue(captured);
+                    count++;
+                }
+
+                message = Loc.Format("Pkt_Status_Loaded", Path.GetFileName(path));
+            }
+            catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException
+                                           or ArgumentException or NotSupportedException)
+            {
+                // A truncated or foreign file: keep whatever parsed and say what happened.
+                message = Loc.Format("Pkt_Status_LoadFailed", ex.Message);
+            }
+
+            Application.Current?.Dispatcher.BeginInvoke(() => StatusMessage = message);
+        }, token);
     }
 
     /// <summary>
@@ -350,6 +455,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// </summary>
     private void Enqueue(CapturedPacket captured)
     {
+        if (_disposed) return; // a capture callback can outlive the view model by a moment
+
         if (Interlocked.Read(ref _queuedCount) >= MaxQueuedPackets)
         {
             Interlocked.Increment(ref _droppedCount);
@@ -361,7 +468,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         // The parser drains the whole queue per wake-up, so one spare release is enough to
         // guarantee it looks again; letting the count run up would just spin it.
-        if (_parseSignal.CurrentCount == 0) _parseSignal.Release();
+        try
+        {
+            if (_parseSignal.CurrentCount == 0) _parseSignal.Release();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Raced with shutdown. The packet is already queued and simply won't be parsed.
+        }
     }
 
     /// <summary>
@@ -379,9 +493,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             {
                 _parseSignal.Wait(token);
             }
-            catch (OperationCanceledException)
+            catch (Exception e) when (e is OperationCanceledException or ObjectDisposedException)
             {
-                return;
+                return; // shutting down
             }
 
             while (_incoming.TryDequeue(out var captured))
@@ -492,19 +606,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
             }
 
             var row = new HostRowViewModel(host, _favicons);
+            row.PropertyChanged += OnHostCheckedChanged;
             _hostRows[key] = row;
             Hosts.Add(row);
         }
 
-        // Re-sort only when the order actually changed: moving items in an ObservableCollection
-        // is visible to the user, so doing it every tick would make the list jump constantly.
-        var ordered = Hosts.OrderByDescending(h => h.Bytes).ToList();
-        for (int i = 0; i < ordered.Count; i++)
-        {
-            int current = Hosts.IndexOf(ordered[i]);
-            if (current != i) Hosts.Move(current, i);
-        }
-
+        // Ordering is the view's job (see ApplyHostSort), not a hand-rolled Move loop: the user
+        // can choose the key, and live sorting keeps it right as the numbers move.
         OnPropertyChanged(nameof(HostsCountText));
     }
 
@@ -512,7 +620,26 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private DispatcherTimer? _searchDebounce;
 
-    partial void OnSelectedHostChanged(HostRowViewModel? value) => ApplyFilter();
+    /// <summary>Called when a host row is ticked or unticked in the panel.</summary>
+    private void OnHostCheckedChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(HostRowViewModel.IsChecked) || sender is not HostRowViewModel row) return;
+
+        if (row.IsChecked) _hostFilter.Add(row.AddressValue);
+        else _hostFilter.Remove(row.AddressValue);
+
+        ApplyFilter();
+        OnPropertyChanged(nameof(IsFiltered));
+        OnPropertyChanged(nameof(FilterScope));
+        OnPropertyChanged(nameof(FilteredHostCount));
+    }
+
+    /// <summary>Ticks one host and unticks every other - "show me only this".</summary>
+    public void ShowOnly(HostRowViewModel host)
+    {
+        foreach (var row in Hosts)
+            row.IsChecked = ReferenceEquals(row, host);
+    }
 
     /// <summary>Typing re-filters 50k rows; wait for a pause instead of doing it per keystroke.</summary>
     partial void OnSearchTextChanged(string value)
@@ -536,7 +663,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ClearFilter()
     {
-        SelectedHost = null;
+        foreach (var row in Hosts.Where(h => h.IsChecked).ToList())
+            row.IsChecked = false;
+
         SearchText = "";
         _searchDebounce?.Stop();
         ApplyFilter();
@@ -549,18 +678,21 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void ApplyFilter()
     {
         var view = System.Windows.Data.CollectionViewSource.GetDefaultView(Packets);
-        var host = SelectedHost?.AddressValue;
         string search = SearchText.Trim();
         var rules = IgnoreListStore.Rules;
 
-        view.Filter = host is null && search.Length == 0 && rules.IsEmpty
+        // Snapshot the ticked hosts: the predicate runs for every row, and must not race with
+        // the panel being ticked while a refresh is in flight.
+        var hosts = _hostFilter.Count == 0 ? null : _hostFilter.ToHashSet();
+
+        view.Filter = hosts is null && search.Length == 0 && rules.IsEmpty
             ? null // no predicate at all: nothing to evaluate per row
-            : item => item is PacketRowViewModel row && Matches(row, host, search, rules);
+            : item => item is PacketRowViewModel row && Matches(row, hosts, search, rules);
 
         UpdateFilterSummary();
     }
 
-    private static bool Matches(PacketRowViewModel row, IPAddress? host, string search, IgnoreRules rules)
+    private static bool Matches(PacketRowViewModel row, HashSet<IPAddress>? hosts, string search, IgnoreRules rules)
     {
         var packet = row.Packet;
 
@@ -568,7 +700,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
             && (rules.IsProcessIgnored(packet.ProcessName) || rules.IsHostIgnored(row.RemoteHost)))
             return false;
 
-        if (host is not null && !host.Equals(packet.SourceAddress) && !host.Equals(packet.DestinationAddress))
+        // Any of the ticked hosts, at either end.
+        if (hosts is not null
+            && !(packet.SourceAddress is { } source && hosts.Contains(source))
+            && !(packet.DestinationAddress is { } destination && hosts.Contains(destination)))
             return false;
 
         if (search.Length == 0) return true;
@@ -605,6 +740,47 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     partial void OnHostSearchTextChanged(string value) => ApplyHostFilter();
 
+    /// <summary>How the hosts panel is ordered. Volume first by default - the loudest host is
+    /// usually the question - but "most recent" and "by name" are what you want once you know
+    /// which host you are looking for.</summary>
+    public IReadOnlyList<SortOption> HostSortOptions { get; } =
+    [
+        new("Bytes", "Sort_Bytes"),
+        new("Packets", "Sort_Packets"),
+        new("Recent", "Sort_Recent"),
+        new("Name", "Sort_Name"),
+    ];
+
+    [ObservableProperty] private SortOption _hostSort = new("Bytes", "Sort_Bytes");
+
+    partial void OnHostSortChanged(SortOption value) => ApplyHostSort();
+
+    private void ApplyHostSort()
+    {
+        if (System.Windows.Data.CollectionViewSource.GetDefaultView(Hosts) is not System.Windows.Data.ListCollectionView view)
+            return;
+
+        view.CustomSort = HostSort.Key switch
+        {
+            "Packets" => Comparer<object>.Create((a, b) => Compare(b, a, h => h.Packets)),
+            "Recent" => Comparer<object>.Create((a, b) => Compare(b, a, h => h.LastSeen)),
+            "Name" => Comparer<object>.Create((a, b) =>
+                string.Compare(((HostRowViewModel)a).Name, ((HostRowViewModel)b).Name, StringComparison.OrdinalIgnoreCase)),
+            _ => Comparer<object>.Create((a, b) => Compare(b, a, h => h.Bytes)),
+        };
+
+        // Live sorting, so a host climbing the list moves as its traffic grows rather than only
+        // when something else forces a refresh.
+        view.IsLiveSorting = true;
+        foreach (string property in new[] { nameof(HostRowViewModel.Bytes), nameof(HostRowViewModel.Packets), nameof(HostRowViewModel.LastSeen), nameof(HostRowViewModel.Name) })
+        {
+            if (!view.LiveSortingProperties.Contains(property)) view.LiveSortingProperties.Add(property);
+        }
+
+        static int Compare<TKey>(object a, object b, Func<HostRowViewModel, TKey> key) where TKey : IComparable<TKey> =>
+            key((HostRowViewModel)a).CompareTo(key((HostRowViewModel)b));
+    }
+
     public bool HasHidden => !IgnoreListStore.Rules.IsEmpty;
     /// <summary>"Hidden: powershell, github.com" - plus the shown count when no other filter chip
     /// is on screen to carry it.</summary>
@@ -622,6 +798,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void OnIgnoreRulesChanged(object? sender, EventArgs e)
     {
         // A hidden host can't stay the selected one - the grid would be filtered to nothing.
+        // A host that just became hidden must not keep filtering the grid from out of sight.
+        foreach (var row in Hosts.Where(h => h.IsChecked && IsHostHidden(h)).ToList())
+            row.IsChecked = false;
+
         if (SelectedHost is { } selected && IsHostHidden(selected)) SelectedHost = null;
 
         ApplyFilter();
@@ -705,6 +885,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
+
         // LanguageChanged is static - not unsubscribing would keep this view model alive.
         LocalizationService.LanguageChanged -= OnLanguageChanged;
         IgnoreListStore.Rules.Changed -= OnIgnoreRulesChanged;
@@ -712,8 +895,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _session?.Dispose();
         _favicons.Dispose();
 
+        // Order matters. The parser thread blocks on the semaphore, so cancelling alone can
+        // leave it there; it is woken, then joined, and only then are the primitives disposed.
+        // Disposing them first would throw ObjectDisposedException on a background thread -
+        // which is an unhandled exception, i.e. the process dies on the way out.
         _parseCancellation.Cancel();
+        try { _parseSignal.Release(); } catch (ObjectDisposedException) { }
+        _parseThread?.Join(TimeSpan.FromSeconds(2));
+
         _parseCancellation.Dispose();
         _parseSignal.Dispose();
     }
+
+    private volatile bool _disposed;
+    private Thread? _parseThread;
 }

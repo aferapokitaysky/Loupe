@@ -37,6 +37,13 @@ public sealed partial class HostRowViewModel : ObservableObject
     [ObservableProperty] private string _ports = "";
     [ObservableProperty] private ImageSource? _favicon;
 
+    /// <summary>Ticked in the hosts panel to filter the packet list by this host. Several can be
+    /// ticked at once - watching two or three domains against each other is the normal case.</summary>
+    [ObservableProperty] private bool _isChecked;
+
+    /// <summary>Timestamp of the last packet, for "most recent first" sorting.</summary>
+    [ObservableProperty] private DateTimeOffset _lastSeen;
+
     /// <summary>Programs that talked to this host - "chrome", or "chrome, Telegram" for a CDN.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasProcess))]
@@ -66,6 +73,7 @@ public sealed partial class HostRowViewModel : ObservableObject
             HasName = host.HasName;
             Packets = host.Packets;
             Bytes = host.Bytes;
+            LastSeen = host.LastSeen;
             BytesText = FormatBytes(host.Bytes);
             Protocols = string.Join(" · ", host.Protocols.OrderBy(p => p));
             Ports = string.Join(", ", host.Ports.OrderBy(p => p).Take(6));
