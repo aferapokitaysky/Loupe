@@ -45,6 +45,9 @@
     <sys:String x:Key="Pkt_Hosts_PacketsSuffix">paq.</sys:String>
     <sys:String x:Key="Pkt_Hosts_EmptyState">Los dominios aparecerán aquí con el tráfico</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Hosts">Hosts: {0}</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats">Agrupar repeticiones</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats_Tip">Plegar series de paquetes idénticos en una fila con contador</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Dropped">Descartados: {0}</sys:String>
     <sys:String x:Key="Pkt_SelectPacket">Selecciona un paquete para ver sus capas y bytes</sys:String>
     <sys:String x:Key="Npcap_Title">Se necesita Npcap para capturar paquetes</sys:String>
     <sys:String x:Key="Npcap_Desc">NetSniffer está descargando el instalador oficial de Npcap y lo abrirá. Completa el asistente y la captura estará disponible automáticamente.</sys:String>

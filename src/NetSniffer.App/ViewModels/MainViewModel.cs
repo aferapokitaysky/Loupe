@@ -21,10 +21,32 @@ namespace NetSniffer.App.ViewModels;
 
 public partial class MainViewModel : ObservableObject, IDisposable
 {
-    private const int MaxDisplayedPackets = 250_000;
-    private const int DrainBudgetMs = 25;
+    /// <summary>
+    /// How many rows the grid keeps. Every row pins the packet's raw bytes, so this is really a
+    /// memory setting: at ~1 KB a frame, 50k rows is around 50 MB. The old 250k quietly grew to
+    /// a third of a gigabyte on a busy link.
+    /// </summary>
+    private const int MaxDisplayedPackets = 50_000;
+
+    /// <summary>
+    /// Ceiling on packets waiting to be parsed. A gigabit link can out-run any UI; without a
+    /// bound the queue is where the memory goes. Past this, packets are dropped and counted -
+    /// a visibly dropped count is honest, silently eating all the RAM is not.
+    /// </summary>
+    private const int MaxQueuedPackets = 200_000;
+
+    private const int DrainBudgetMs = 12;
+
+    /// <summary>Rows appended to the grid per tick. Beyond this nobody can read them anyway, and
+    /// every row costs layout; the counters and the hosts panel still see every packet.</summary>
+    private const int MaxRowsPerTick = 400;
 
     private readonly ConcurrentQueue<CapturedPacket> _incoming = new();
+    private readonly ConcurrentQueue<PacketRowViewModel> _parsed = new();
+    private readonly SemaphoreSlim _parseSignal = new(0);
+    private readonly CancellationTokenSource _parseCancellation = new();
+    private long _queuedCount;
+    private long _droppedCount;
     private readonly DispatcherTimer _drainTimer;
     private readonly TcpStreamReassembler _reassembler = new();
     private readonly HostNameRegistry _names = new();
@@ -56,6 +78,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _filterText = "";
     [ObservableProperty] private bool _isCapturing;
     [ObservableProperty] private bool _autoScroll = true;
+
+    /// <summary>Fold runs of identical packets into one counted row. On by default: a bulk
+    /// transfer is otherwise hundreds of lines that differ only in sequence number.</summary>
+    [ObservableProperty] private bool _collapseRepeats = true;
     [ObservableProperty] private PacketRowViewModel? _selectedPacket;
     [ObservableProperty] private string _statusMessage = "";
     [ObservableProperty] private bool _isCaptureEngineAvailable = true;
@@ -72,6 +98,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(BytesCountText))]
     private long _totalBytes;
+
+    /// <summary>Packets the capture engine handed over but that were dropped because the parser
+    /// was behind. Surfaced rather than hidden - a silent gap in a capture is a trap.</summary>
+    public long DroppedPackets => Interlocked.Read(ref _droppedCount);
+
+    public bool HasDropped => DroppedPackets > 0;
+    public string DroppedText => Loc.Format("Pkt_StatusBar_Dropped", DroppedPackets);
 
     public string PacketsCountText => Loc.Format("Pkt_StatusBar_Packets", TotalPackets);
     public string BytesCountText => Loc.Format("Pkt_StatusBar_Bytes", TotalBytes);
@@ -90,6 +123,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
         };
         _drainTimer.Tick += (_, _) => DrainIncomingPackets();
         _drainTimer.Start();
+
+        // Below normal priority: the UI thread must always win. Background so it can't keep
+        // the process alive if Dispose is missed.
+        new Thread(ParseLoop)
+        {
+            IsBackground = true,
+            Name = "NetSniffer.Parse",
+            Priority = ThreadPriority.BelowNormal,
+        }.Start();
 
         RefreshAdapters();
 
@@ -187,7 +229,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (SelectedAdapter is null) return;
 
         _session = new CaptureSession(SelectedAdapter);
-        _session.PacketArrived += (_, e) => _incoming.Enqueue(e.Packet);
+        _session.PacketArrived += (_, e) => Enqueue(e.Packet);
         _session.Stopped += (_, e) => Application.Current.Dispatcher.BeginInvoke(() =>
         {
             IsCapturing = false;
@@ -224,6 +266,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ClearPackets()
     {
+        // Drop rows the parser already produced too, or they'd stream straight back in.
+        while (_parsed.TryDequeue(out _)) { }
+
         Packets.Clear();
         Hosts.Clear();
         _hostRows.Clear();
@@ -233,10 +278,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // The name registry deliberately survives a clear: names learned from DNS answers
         // earlier in the session still describe the addresses that keep showing up, and those
         // answers won't be repeated until the TTL expires.
+        Interlocked.Exchange(ref _livePackets, 0);
+        Interlocked.Exchange(ref _liveBytes, 0);
+        Interlocked.Exchange(ref _droppedCount, 0);
         TotalPackets = 0;
         TotalBytes = 0;
         SelectedPacket = null;
         OnPropertyChanged(nameof(HostsCountText));
+        OnPropertyChanged(nameof(DroppedText));
+        OnPropertyChanged(nameof(HasDropped));
     }
 
     [RelayCommand]
@@ -245,9 +295,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
         var dialog = new SaveFileDialog { Filter = "pcap files (*.pcap)|*.pcap", FileName = "capture.pcap" };
         if (dialog.ShowDialog() != true) return;
 
-        PcapFile.Write(dialog.FileName, Packets.Select(p => new CapturedPacket(
-            p.Packet.Number, p.Packet.Timestamp, p.Packet.RawData, p.Packet.OriginalLength)));
-        StatusMessage = Loc.Format("Pkt_Status_Saved", Packets.Count, dialog.FileName);
+        // SelectMany over AllPackets, not one frame per row: rows that folded a run of identical
+        // packets still write every frame, so a saved capture matches the wire rather than the grid.
+        var frames = Packets
+            .SelectMany(row => row.AllPackets)
+            .Select(p => new CapturedPacket(p.Number, p.Timestamp, p.RawData, p.OriginalLength))
+            .ToList();
+
+        PcapFile.Write(dialog.FileName, frames);
+        StatusMessage = Loc.Format("Pkt_Status_Saved", frames.Count, dialog.FileName);
     }
 
     [RelayCommand]
@@ -259,35 +315,123 @@ public partial class MainViewModel : ObservableObject, IDisposable
         ClearPackets();
         _captureStart = DateTimeOffset.Now;
         foreach (var captured in PcapFile.Read(dialog.FileName))
-            _incoming.Enqueue(captured);
+            Enqueue(captured);
 
         StatusMessage = Loc.Format("Pkt_Status_Loaded", dialog.FileName);
     }
 
-    private void DrainIncomingPackets()
+    /// <summary>
+    /// Hands a frame to the parser thread. Called straight from the capture callback, so it does
+    /// as little as possible: a bounded enqueue and a signal.
+    /// </summary>
+    private void Enqueue(CapturedPacket captured)
     {
-        // Bounded by time, not by a fixed count: a live adapter trickles packets in and stays
-        // well under the budget, while opening a large .pcap (which dumps the whole file into
-        // the queue at once) still fills the grid in a few ticks instead of minutes.
-        var budget = Stopwatch.StartNew();
-        int drained = 0;
-
-        int namesBefore = _names.Count;
-
-        while (budget.ElapsedMilliseconds < DrainBudgetMs && _incoming.TryDequeue(out var captured))
+        if (Interlocked.Read(ref _queuedCount) >= MaxQueuedPackets)
         {
-            var parsed = PacketParser.Parse(captured);
-            _reassembler.Ingest(parsed);
-            _names.Ingest(parsed);
-            _hosts.Ingest(parsed, _names);
-
-            Packets.Add(new PacketRowViewModel(parsed, _captureStart, _names));
-            TotalPackets++;
-            TotalBytes += parsed.OriginalLength;
-            drained++;
+            Interlocked.Increment(ref _droppedCount);
+            return;
         }
 
-        if (drained == 0) return;
+        Interlocked.Increment(ref _queuedCount);
+        _incoming.Enqueue(captured);
+
+        // The parser drains the whole queue per wake-up, so one spare release is enough to
+        // guarantee it looks again; letting the count run up would just spin it.
+        if (_parseSignal.CurrentCount == 0) _parseSignal.Release();
+    }
+
+    /// <summary>
+    /// Parses captured frames off the UI thread. Dissection, reassembly and the name and host
+    /// rollups all happen here; the UI thread only ever appends already-finished rows. Doing
+    /// this work in the dispatcher tick was what made the window stutter on a busy link.
+    /// </summary>
+    private void ParseLoop()
+    {
+        var token = _parseCancellation.Token;
+
+        while (!token.IsCancellationRequested)
+        {
+            try
+            {
+                _parseSignal.Wait(token);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+
+            while (_incoming.TryDequeue(out var captured))
+            {
+                Interlocked.Decrement(ref _queuedCount);
+
+                ParsedPacket parsed;
+                try
+                {
+                    parsed = PacketParser.Parse(captured);
+                }
+                catch (Exception e) when (e is IndexOutOfRangeException or ArgumentException)
+                {
+                    // A dissector bug must never take the capture down with it.
+                    continue;
+                }
+
+                _reassembler.Ingest(parsed);
+                _names.Ingest(parsed);
+                _hosts.Ingest(parsed, _names);
+
+                Interlocked.Add(ref _liveBytes, parsed.OriginalLength);
+                Interlocked.Increment(ref _livePackets);
+
+                _parsed.Enqueue(new PacketRowViewModel(parsed, _captureStart, _names));
+            }
+        }
+    }
+
+    private long _livePackets;
+    private long _liveBytes;
+
+    private void DrainIncomingPackets()
+    {
+        // Counters come from the parser thread and cover every packet, including the ones whose
+        // rows are skipped below - the totals must match the wire, not the grid.
+        long packets = Interlocked.Read(ref _livePackets);
+        long bytes = Interlocked.Read(ref _liveBytes);
+        if (packets != TotalPackets) TotalPackets = packets;
+        if (bytes != TotalBytes) TotalBytes = bytes;
+
+        var budget = Stopwatch.StartNew();
+        int appended = 0;
+        int namesBefore = _names.Count;
+
+        while (appended < MaxRowsPerTick
+               && budget.ElapsedMilliseconds < DrainBudgetMs
+               && _parsed.TryDequeue(out var row))
+        {
+            // Consecutive packets of the same shape collapse into one row with a count. A
+            // bulk transfer is hundreds of identical lines; as one "x420" row it is readable,
+            // and the row still opens the first packet of the run for dissection.
+            if (CollapseRepeats && Packets.Count > 0 && Packets[^1].TryCollapse(row))
+                continue;
+
+            Packets.Add(row);
+            appended++;
+        }
+
+        // Anything still queued past the retention window is dropped rather than displayed:
+        // scrolling 20,000 rows through the grid to throw them away costs more than it's worth.
+        if (_parsed.Count > MaxDisplayedPackets)
+        {
+            while (_parsed.Count > MaxDisplayedPackets / 2 && _parsed.TryDequeue(out _)) { }
+        }
+
+        if (HasDropped)
+        {
+            OnPropertyChanged(nameof(DroppedPackets));
+            OnPropertyChanged(nameof(DroppedText));
+            OnPropertyChanged(nameof(HasDropped));
+        }
+
+        if (appended == 0) return;
 
         while (Packets.Count > MaxDisplayedPackets)
             Packets.RemoveAt(0);
@@ -295,11 +439,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
         RefreshHosts();
 
         // A name usually turns up after the first packets to an address, so rows already on
-        // screen would otherwise keep showing the bare IP for the rest of the capture.
+        // screen would otherwise keep showing the bare IP. Only the tail is refreshed: those
+        // are the rows anyone can still see, and sweeping 50k of them per tick is what turned
+        // a new domain into a visible hitch.
         if (_names.Count != namesBefore)
         {
-            foreach (var row in Packets)
-                row.RefreshNames();
+            for (int i = Math.Max(0, Packets.Count - 500); i < Packets.Count; i++)
+                Packets[i].RefreshNames();
         }
 
         PacketsAppended?.Invoke(this, EventArgs.Empty);
@@ -368,5 +514,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _drainTimer.Stop();
         _session?.Dispose();
         _favicons.Dispose();
+
+        _parseCancellation.Cancel();
+        _parseCancellation.Dispose();
+        _parseSignal.Dispose();
     }
 }

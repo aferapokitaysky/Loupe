@@ -158,7 +158,13 @@ int __stdcall NsRunCaptureLoop(
         reason = std::string("capture error: ") + pcap_geterr(entry->pcap);
         SetLastError(reason);
     } else if (rc == -2) {
-        reason.clear(); // clean pcap_breakloop() stop
+        reason.clear(); // clean pcap_breakloop() stop - the only silent case
+    } else if (!entry->stopRequested.load(std::memory_order_relaxed)) {
+        // pcap_loop returned without an error and without anyone asking it to stop. With
+        // cnt = -1 that should not happen; when it does (an adapter reset or a driver hiccup)
+        // it must not be reported as a clean user stop, or the capture just dies in silence.
+        reason = "capture ended unexpectedly (pcap_loop returned " + std::to_string(rc) + ")";
+        SetLastError(reason);
     }
 
     if (onStopped) onStopped(reason.c_str(), userContext);

@@ -15,6 +15,7 @@ public sealed partial class PacketRowViewModel : ObservableObject
         Packet = packet;
         _names = names;
         RelativeTimeSeconds = (packet.Timestamp - captureStart).TotalSeconds;
+        _totalLength = packet.OriginalLength;
     }
 
     public ParsedPacket Packet { get; }
@@ -49,8 +50,72 @@ public sealed partial class PacketRowViewModel : ObservableObject
         OnPropertyChanged(nameof(Destination));
     }
 
+    /// <summary>How many packets this row stands for. 1 unless a run was folded into it.</summary>
+    [ObservableProperty] private int _repeatCount = 1;
+
+    public bool IsRepeated => RepeatCount > 1;
+    public string RepeatText => RepeatCount > 1 ? $"×{RepeatCount}" : "";
+
+    /// <summary>Total bytes across the folded run, so a collapsed row still reports real volume.</summary>
+    [ObservableProperty] private int _totalLength;
+
+    /// <summary>
+    /// Folds <paramref name="next"/> into this row when it is another packet of the same shape -
+    /// same endpoints, protocol and summary. Bulk transfers are otherwise hundreds of rows that
+    /// differ only in sequence number, which is exactly what makes a busy capture unreadable.
+    /// </summary>
+    public bool TryCollapse(PacketRowViewModel next)
+    {
+        if (!SameShapeAs(next)) return false;
+
+        // Collapsing is a display decision, never a data one: the folded packets are kept so a
+        // saved .pcap still contains every frame that was on the wire.
+        (_folded ??= []).Add(next.Packet);
+
+        RepeatCount++;
+        TotalLength += next.Packet.OriginalLength;
+        OnPropertyChanged(nameof(IsRepeated));
+        OnPropertyChanged(nameof(RepeatText));
+        OnPropertyChanged(nameof(Length));
+        return true;
+    }
+
+    private List<ParsedPacket>? _folded;
+
+    /// <summary>Every packet this row stands for, in capture order.</summary>
+    public IEnumerable<ParsedPacket> AllPackets
+    {
+        get
+        {
+            yield return Packet;
+            if (_folded is null) yield break;
+            foreach (var packet in _folded) yield return packet;
+        }
+    }
+
+    private bool SameShapeAs(PacketRowViewModel other) =>
+        Packet.Protocol == other.Packet.Protocol
+        && Packet.SourcePort == other.Packet.SourcePort
+        && Packet.DestinationPort == other.Packet.DestinationPort
+        && Equals(Packet.SourceAddress, other.Packet.SourceAddress)
+        && Equals(Packet.DestinationAddress, other.Packet.DestinationAddress)
+        // Info carries sequence numbers, which differ every packet; compare the part before
+        // them so a run of ordinary data segments still folds, while a SYN or a DNS query -
+        // whose wording differs - never folds into its neighbour.
+        && SummaryShape(Packet.Info) == SummaryShape(other.Packet.Info);
+
+    private static string SummaryShape(string info)
+    {
+        int seq = info.IndexOf(" Seq=", StringComparison.Ordinal);
+        if (seq >= 0) return info[..seq];
+
+        int len = info.IndexOf(" Len=", StringComparison.Ordinal);
+        return len >= 0 ? info[..len] : info;
+    }
+
     public string Protocol => Packet.Protocol;
-    public int Length => Packet.OriginalLength;
+    /// <summary>Bytes on the wire - for a collapsed row, the whole run rather than one packet.</summary>
+    public int Length => TotalLength;
     public string Info => Packet.Info;
 
     /// <summary>Row accent color key, resolved against App.xaml resources - mirrors Wireshark's protocol coloring rules.</summary>

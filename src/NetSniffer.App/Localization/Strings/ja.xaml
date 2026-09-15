@@ -45,6 +45,9 @@
     <sys:String x:Key="Pkt_Hosts_PacketsSuffix">パケット</sys:String>
     <sys:String x:Key="Pkt_Hosts_EmptyState">通信が始まるとドメインがここに表示されます</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Hosts">ホスト: {0}</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats">重複をまとめる</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats_Tip">同一パケットの連続を件数付きの1行に折りたたむ</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Dropped">破棄: {0}</sys:String>
     <sys:String x:Key="Pkt_SelectPacket">パケットを選ぶとレイヤーとバイト列が表示されます</sys:String>
     <sys:String x:Key="Npcap_Title">パケットキャプチャには Npcap が必要です</sys:String>
     <sys:String x:Key="Npcap_Desc">NetSniffer は公式の Npcap インストーラーをダウンロードして開きます。ウィザードを完了するとキャプチャが自動的に利用可能になります。</sys:String>

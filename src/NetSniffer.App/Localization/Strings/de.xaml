@@ -45,6 +45,9 @@
     <sys:String x:Key="Pkt_Hosts_PacketsSuffix">Pkt.</sys:String>
     <sys:String x:Key="Pkt_Hosts_EmptyState">Domains erscheinen hier, sobald Verkehr fließt</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Hosts">Hosts: {0}</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats">Wiederholungen bündeln</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats_Tip">Serien identischer Pakete zu einer gezählten Zeile zusammenfassen</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Dropped">Verworfen: {0}</sys:String>
     <sys:String x:Key="Pkt_SelectPacket">Wähle ein Paket, um Schichten und Bytes zu sehen</sys:String>
     <sys:String x:Key="Npcap_Title">Für die Paketaufzeichnung wird Npcap benötigt</sys:String>
     <sys:String x:Key="Npcap_Desc">NetSniffer lädt den offiziellen Npcap-Installer herunter und öffnet ihn. Schließe den Assistenten ab, dann ist die Aufzeichnung automatisch verfügbar.</sys:String>

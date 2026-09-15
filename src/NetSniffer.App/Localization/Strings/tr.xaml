@@ -45,6 +45,9 @@
     <sys:String x:Key="Pkt_Hosts_PacketsSuffix">pkt</sys:String>
     <sys:String x:Key="Pkt_Hosts_EmptyState">Trafik aktıkça alan adları burada belirir</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Hosts">Sunucular: {0}</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats">Tekrarları grupla</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats_Tip">Aynı paket dizilerini sayaçlı tek satırda topla</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Dropped">Düşen: {0}</sys:String>
     <sys:String x:Key="Pkt_SelectPacket">Katmanlarını ve baytlarını görmek için bir paket seçin</sys:String>
     <sys:String x:Key="Npcap_Title">Paket yakalama için Npcap gerekli</sys:String>
     <sys:String x:Key="Npcap_Desc">NetSniffer resmi Npcap kurulumunu indiriyor ve açacak. Sihirbazı tamamlayın; yakalama otomatik olarak kullanılabilir olur.</sys:String>

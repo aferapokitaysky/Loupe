@@ -45,6 +45,9 @@
     <sys:String x:Key="Pkt_Hosts_PacketsSuffix">пак.</sys:String>
     <sys:String x:Key="Pkt_Hosts_EmptyState">Домени з'являться тут у міру трафіку</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Hosts">Хостів: {0}</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats">Групувати повтори</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats_Tip">Згортати серії однакових пакетів в один рядок із лічильником</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Dropped">Втрачено: {0}</sys:String>
     <sys:String x:Key="Pkt_SelectPacket">Виберіть пакет, щоб розібрати його за шарами та байтами</sys:String>
     <sys:String x:Key="Npcap_Title">Для захоплення пакетів потрібен Npcap</sys:String>
     <sys:String x:Key="Npcap_Desc">NetSniffer завантажує офіційний інсталятор Npcap і відкриє його. Пройдіть майстер — захоплення стане доступним автоматично.</sys:String>

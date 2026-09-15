@@ -47,6 +47,9 @@
     <sys:String x:Key="Pkt_Hosts_PacketsSuffix">pkt</sys:String>
     <sys:String x:Key="Pkt_Hosts_EmptyState">Domains show up here as traffic flows</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Hosts">Hosts: {0}</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats">Group repeats</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats_Tip">Fold runs of identical packets into one counted row</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Dropped">Dropped: {0}</sys:String>
     <sys:String x:Key="Pkt_SelectPacket">Select a packet to inspect its layers and bytes</sys:String>
     <sys:String x:Key="Npcap_Title">Npcap is required for packet capture</sys:String>
     <sys:String x:Key="Npcap_Desc">NetSniffer is fetching the official Npcap installer and will open it. Complete its wizard, and capture becomes available automatically.</sys:String>

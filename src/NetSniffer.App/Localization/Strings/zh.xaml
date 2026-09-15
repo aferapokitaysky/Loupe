@@ -45,6 +45,9 @@
     <sys:String x:Key="Pkt_Hosts_PacketsSuffix">包</sys:String>
     <sys:String x:Key="Pkt_Hosts_EmptyState">有流量时域名会显示在这里</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Hosts">主机: {0}</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats">合并重复</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats_Tip">将连续相同的数据包折叠为一行并计数</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Dropped">丢弃: {0}</sys:String>
     <sys:String x:Key="Pkt_SelectPacket">选择一个数据包以查看其分层和字节</sys:String>
     <sys:String x:Key="Npcap_Title">抓包需要 Npcap</sys:String>
     <sys:String x:Key="Npcap_Desc">NetSniffer 正在下载官方 Npcap 安装程序并将打开它。完成安装向导后，抓包功能将自动可用。</sys:String>

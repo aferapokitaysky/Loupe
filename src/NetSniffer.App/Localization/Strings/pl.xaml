@@ -45,6 +45,9 @@
     <sys:String x:Key="Pkt_Hosts_PacketsSuffix">pak.</sys:String>
     <sys:String x:Key="Pkt_Hosts_EmptyState">Domeny pojawią się tutaj wraz z ruchem</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Hosts">Hosty: {0}</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats">Grupuj powtórzenia</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats_Tip">Zwijaj serie identycznych pakietów w jeden wiersz z licznikiem</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Dropped">Odrzucone: {0}</sys:String>
     <sys:String x:Key="Pkt_SelectPacket">Wybierz pakiet, aby zobaczyć jego warstwy i bajty</sys:String>
     <sys:String x:Key="Npcap_Title">Do przechwytywania pakietów wymagany jest Npcap</sys:String>
     <sys:String x:Key="Npcap_Desc">NetSniffer pobiera oficjalny instalator Npcap i go otworzy. Ukończ kreatora, a przechwytywanie stanie się dostępne automatycznie.</sys:String>

@@ -64,6 +64,9 @@
 
                 <CheckBox Content="{DynamicResource Pkt_AutoScroll}" IsChecked="{Binding AutoScroll}"
                           VerticalAlignment="Center" Margin="8,0,0,0" />
+                <CheckBox Content="{DynamicResource Pkt_CollapseRepeats}" IsChecked="{Binding CollapseRepeats}"
+                          ToolTip="{DynamicResource Pkt_CollapseRepeats_Tip}"
+                          VerticalAlignment="Center" Margin="14,0,0,0" />
             </WrapPanel>
         </Border>
 
@@ -177,6 +180,21 @@
                         <DataGridTextColumn Header="{DynamicResource Pkt_Col_Destination}" Binding="{Binding Destination}" Width="176" />
                         <DataGridTextColumn Header="{DynamicResource Pkt_Col_Protocol}" Binding="{Binding Protocol}" Width="80" />
                         <DataGridTextColumn Header="{DynamicResource Pkt_Col_Length}" Binding="{Binding Length}" Width="68" />
+
+                        <!-- Blank for ordinary rows; "x420" where a run of identical packets folded -->
+                        <DataGridTemplateColumn Header="" Width="58">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource SurfaceSelectedBrush}" CornerRadius="4"
+                                            Padding="5,1" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                            Visibility="{Binding IsRepeated, Converter={StaticResource BoolToVisibility}}">
+                                        <TextBlock Text="{Binding RepeatText}" FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
                         <DataGridTextColumn Header="{DynamicResource Pkt_Col_Info}" Binding="{Binding Info}" Width="*" />
                     </DataGrid.Columns>
                 </DataGrid>
@@ -279,6 +297,20 @@
                 <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" TextTrimming="CharacterEllipsis"
                            Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <!-- Only visible when packets were actually dropped: a silent gap in a
+                         capture is worse than an ugly status bar. -->
+                    <StackPanel Orientation="Horizontal"
+                                Visibility="{Binding HasDropped, Converter={StaticResource BoolToVisibility}}">
+                        <ui:SymbolIcon Symbol="Warning24" FontSize="13" VerticalAlignment="Center"
+                                       Foreground="{StaticResource WarnBrush}" Margin="0,0,6,0" />
+                        <TextBlock Text="{Binding DroppedText}" Foreground="{StaticResource WarnBrush}" FontSize="12" />
+                        <Border Width="1" Height="12" Margin="12,0" VerticalAlignment="Center"
+                                Background="{StaticResource BorderBrush}" />
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding HostsCountText}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                    <Border Width="1" Height="12" Margin="12,0" VerticalAlignment="Center"
+                            Background="{StaticResource BorderBrush}" />
                     <TextBlock Text="{Binding PacketsCountText}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
                     <Border Width="1" Height="12" Margin="12,0" VerticalAlignment="Center"
                             Background="{StaticResource BorderBrush}" />
