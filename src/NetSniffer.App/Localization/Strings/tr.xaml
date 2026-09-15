@@ -142,4 +142,15 @@
     <sys:String x:Key="Sessions_DefaultProxyName">İstekler {0}</sys:String>
     <sys:String x:Key="Pkt_Status_Loading">{0} yükleniyor…</sys:String>
     <sys:String x:Key="Pkt_Status_LoadFailed">Dosya okunamadı: {0}</sys:String>
+    <sys:String x:Key="Sort_Tip">Sıralama</sys:String>
+    <sys:String x:Key="Sort_Bytes">Hacme göre</sys:String>
+    <sys:String x:Key="Sort_Packets">Pakete göre</sys:String>
+    <sys:String x:Key="Sort_Recent">En yeniler</sys:String>
+    <sys:String x:Key="Sort_Name">Ada göre</sys:String>
+    <sys:String x:Key="Sort_Requests">İsteğe göre</sys:String>
+    <sys:String x:Key="Filter_HostCount">{0} alan adı</sys:String>
+    <sys:String x:Key="Filter_TickToFilter">Filtrelemek için işaretle; karşılaştırmak için birkaçını işaretle</sys:String>
+    <sys:String x:Key="Sessions_Export">Dışa aktar (HAR / pcap)</sys:String>
+    <sys:String x:Key="Sessions_Exported">{0} konumuna aktarıldı</sys:String>
+    <sys:String x:Key="Sessions_ExportFailed">Dışa aktarılamadı: {0}</sys:String>
 </ResourceDictionary>

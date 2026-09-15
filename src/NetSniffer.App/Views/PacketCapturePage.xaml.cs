@@ -72,7 +72,7 @@ public partial class PacketCapturePage : UserControl
         menu.Items.Clear();
 
         menu.Items.Add(ContextMenus.Item(Loc.Format("Ignore_OnlyThisHost", host.Name), "Filter24",
-            () => ViewModel.SelectedHost = host));
+            () => ViewModel.ShowOnly(host)));
         menu.Items.Add(new Separator());
         menu.Items.Add(ContextMenus.Item(Loc.Format("Ignore_HideHost", host.Name), "EyeOff24",
             () => ViewModel.HideHost(host.HasName ? host.Name : host.Address)));

@@ -142,4 +142,15 @@
     <sys:String x:Key="Sessions_DefaultProxyName">Запити {0}</sys:String>
     <sys:String x:Key="Pkt_Status_Loading">Завантаження {0}…</sys:String>
     <sys:String x:Key="Pkt_Status_LoadFailed">Не вдалося прочитати файл: {0}</sys:String>
+    <sys:String x:Key="Sort_Tip">Сортування</sys:String>
+    <sys:String x:Key="Sort_Bytes">За обсягом</sys:String>
+    <sys:String x:Key="Sort_Packets">За пакетами</sys:String>
+    <sys:String x:Key="Sort_Recent">Спочатку нові</sys:String>
+    <sys:String x:Key="Sort_Name">За назвою</sys:String>
+    <sys:String x:Key="Sort_Requests">За запитами</sys:String>
+    <sys:String x:Key="Filter_HostCount">Доменів: {0}</sys:String>
+    <sys:String x:Key="Filter_TickToFilter">Позначте, щоб фільтрувати за ним; можна позначити кілька</sys:String>
+    <sys:String x:Key="Sessions_Export">Експорт (HAR / pcap)</sys:String>
+    <sys:String x:Key="Sessions_Exported">Експортовано в {0}</sys:String>
+    <sys:String x:Key="Sessions_ExportFailed">Не вдалося експортувати: {0}</sys:String>
 </ResourceDictionary>

@@ -147,6 +147,8 @@ NamingTests.Run();
 
 SessionTests.Run();
 
+HarTests.Run();
+
 await ProxyTests.RunAsync();
 
 await TransparentTests.RunAsync();

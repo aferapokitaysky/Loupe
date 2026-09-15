@@ -59,10 +59,77 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _isRunning;
     [ObservableProperty] private string _statusMessage = "";
     [ObservableProperty] private HttpExchangeRowViewModel? _selectedExchange;
-    /// <summary>Domain picked in the sidebar; narrows the request list to it.</summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsFiltered))]
-    private DomainGroupViewModel? _selectedDomain;
+    /// <summary>Domain highlighted in the sidebar. The tick boxes do the filtering, so more than
+    /// one domain can be compared at a time.</summary>
+    [ObservableProperty] private DomainGroupViewModel? _selectedDomain;
+
+    private readonly HashSet<string> _domainFilter = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>The chip's text: one domain by name, or how many are ticked.</summary>
+    public string FilterScope => _domainFilter.Count switch
+    {
+        0 => "",
+        1 => _domainFilter.First(),
+        var many => Loc.Format("Filter_HostCount", many),
+    };
+
+    /// <summary>Called when a domain is ticked or unticked.</summary>
+    private void OnDomainCheckedChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(DomainGroupViewModel.IsChecked) || sender is not DomainGroupViewModel domain) return;
+
+        if (domain.IsChecked) _domainFilter.Add(domain.Host);
+        else _domainFilter.Remove(domain.Host);
+
+        ApplyFilter();
+        OnPropertyChanged(nameof(IsFiltered));
+        OnPropertyChanged(nameof(FilterScope));
+    }
+
+    /// <summary>Ticks one domain and unticks the rest.</summary>
+    public void ShowOnly(DomainGroupViewModel domain)
+    {
+        foreach (var row in Domains)
+            row.IsChecked = ReferenceEquals(row, domain);
+    }
+
+    // ---- sorting
+
+    public IReadOnlyList<SortOption> DomainSortOptions { get; } =
+    [
+        new("Recent", "Sort_Recent"),
+        new("Requests", "Sort_Requests"),
+        new("Bytes", "Sort_Bytes"),
+        new("Name", "Sort_Name"),
+    ];
+
+    [ObservableProperty] private SortOption _domainSort = new("Recent", "Sort_Recent");
+
+    partial void OnDomainSortChanged(SortOption value) => ApplyDomainSort();
+
+    private void ApplyDomainSort()
+    {
+        if (System.Windows.Data.CollectionViewSource.GetDefaultView(Domains) is not System.Windows.Data.ListCollectionView view)
+            return;
+
+        view.CustomSort = DomainSort.Key switch
+        {
+            "Requests" => Comparer<object>.Create((a, b) => Compare(b, a, d => d.RequestCount)),
+            "Bytes" => Comparer<object>.Create((a, b) => Compare(b, a, d => d.TotalBytes)),
+            "Name" => Comparer<object>.Create((a, b) =>
+                string.Compare(((DomainGroupViewModel)a).Host, ((DomainGroupViewModel)b).Host, StringComparison.OrdinalIgnoreCase)),
+            _ => Comparer<object>.Create((a, b) => Compare(b, a, d => d.LastActivity)),
+        };
+
+        view.IsLiveSorting = true;
+        foreach (string property in new[] { nameof(DomainGroupViewModel.RequestCount), nameof(DomainGroupViewModel.TotalBytes), nameof(DomainGroupViewModel.LastActivity), nameof(DomainGroupViewModel.Host) })
+        {
+            if (!view.LiveSortingProperties.Contains(property)) view.LiveSortingProperties.Add(property);
+        }
+
+        static int Compare<TKey>(object a, object b, Func<DomainGroupViewModel, TKey> key) where TKey : IComparable<TKey> =>
+            key((DomainGroupViewModel)a).CompareTo(key((DomainGroupViewModel)b));
+    }
 
     /// <summary>Search over URL, method, status and the sending app.</summary>
     [ObservableProperty]
@@ -71,16 +138,16 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
 
     [ObservableProperty] private string _filterSummary = "";
 
-    public bool IsFiltered => SelectedDomain is not null || !string.IsNullOrWhiteSpace(SearchText);
-
-    partial void OnSelectedDomainChanged(DomainGroupViewModel? value) => ApplyFilter();
+    public bool IsFiltered => _domainFilter.Count > 0 || !string.IsNullOrWhiteSpace(SearchText);
 
     partial void OnSearchTextChanged(string value) => ApplyFilter(); // request lists stay small enough
 
     [RelayCommand]
     private void ClearFilter()
     {
-        SelectedDomain = null;
+        foreach (var domain in Domains.Where(d => d.IsChecked).ToList())
+            domain.IsChecked = false;
+
         SearchText = "";
         ApplyFilter();
     }
@@ -157,15 +224,15 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     private void ApplyFilter()
     {
         var view = System.Windows.Data.CollectionViewSource.GetDefaultView(Exchanges);
-        string? host = SelectedDomain?.Host;
+        var hosts = _domainFilter.Count == 0 ? null : _domainFilter.ToHashSet(StringComparer.OrdinalIgnoreCase);
         string search = SearchText.Trim();
         bool hiding = !IgnoreListStore.Rules.IsEmpty;
 
-        view.Filter = host is null && search.Length == 0 && !hiding
+        view.Filter = hosts is null && search.Length == 0 && !hiding
             ? null
             : item => item is HttpExchangeRowViewModel row
                       && !IsExchangeHidden(row)
-                      && (host is null || string.Equals(row.Host, host, StringComparison.OrdinalIgnoreCase))
+                      && (hosts is null || hosts.Contains(row.Host))
                       && (search.Length == 0
                           || row.Url.Contains(search, StringComparison.OrdinalIgnoreCase)
                           || row.Method.Contains(search, StringComparison.OrdinalIgnoreCase)
@@ -208,6 +275,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         IgnoreListStore.Rules.Changed += OnIgnoreRulesChanged;
         ApplyFilter();
         ApplyDomainFilter();
+        ApplyDomainSort();
     }
 
     private bool CanStart() => !IsRunning;
@@ -499,6 +567,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             index++;
         }
 
+        group.PropertyChanged += OnDomainCheckedChanged;
         Domains.Insert(index, group);
         ApplyGroupFilter(group, hiding: !IgnoreListStore.Rules.IsEmpty);
         return group;

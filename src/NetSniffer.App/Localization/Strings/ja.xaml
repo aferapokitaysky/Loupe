@@ -142,4 +142,15 @@
     <sys:String x:Key="Sessions_DefaultProxyName">リクエスト {0}</sys:String>
     <sys:String x:Key="Pkt_Status_Loading">{0} を読み込み中…</sys:String>
     <sys:String x:Key="Pkt_Status_LoadFailed">ファイルを読めません: {0}</sys:String>
+    <sys:String x:Key="Sort_Tip">並べ替え</sys:String>
+    <sys:String x:Key="Sort_Bytes">通信量順</sys:String>
+    <sys:String x:Key="Sort_Packets">パケット数順</sys:String>
+    <sys:String x:Key="Sort_Recent">新しい順</sys:String>
+    <sys:String x:Key="Sort_Name">名前順</sys:String>
+    <sys:String x:Key="Sort_Requests">リクエスト数順</sys:String>
+    <sys:String x:Key="Filter_HostCount">{0} ドメイン</sys:String>
+    <sys:String x:Key="Filter_TickToFilter">チェックで絞り込み。複数選べます</sys:String>
+    <sys:String x:Key="Sessions_Export">エクスポート (HAR / pcap)</sys:String>
+    <sys:String x:Key="Sessions_Exported">{0} に書き出しました</sys:String>
+    <sys:String x:Key="Sessions_ExportFailed">エクスポートできません: {0}</sys:String>
 </ResourceDictionary>

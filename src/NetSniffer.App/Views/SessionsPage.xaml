@@ -94,6 +94,11 @@
                                                        AutomationProperties.Name="{DynamicResource Sessions_Rename}"
                                                        Command="{Binding DataContext.BeginRenameCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                        CommandParameter="{Binding}" />
+                                            <ui:Button Icon="{ui:SymbolIcon ArrowExportUp24}" Style="{StaticResource AppButton}"
+                                                       ToolTip="{DynamicResource Sessions_Export}"
+                                                       AutomationProperties.Name="{DynamicResource Sessions_Export}"
+                                                       Command="{Binding DataContext.ExportCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                       CommandParameter="{Binding}" />
                                             <ui:Button Icon="{ui:SymbolIcon FolderOpen24}" Style="{StaticResource AppButton}"
                                                        ToolTip="{DynamicResource Sessions_Reveal}"
                                                        AutomationProperties.Name="{DynamicResource Sessions_Reveal}"

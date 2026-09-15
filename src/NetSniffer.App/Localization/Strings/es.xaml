@@ -142,4 +142,15 @@
     <sys:String x:Key="Sessions_DefaultProxyName">Solicitudes {0}</sys:String>
     <sys:String x:Key="Pkt_Status_Loading">Cargando {0}…</sys:String>
     <sys:String x:Key="Pkt_Status_LoadFailed">No se pudo leer el archivo: {0}</sys:String>
+    <sys:String x:Key="Sort_Tip">Ordenar por</sys:String>
+    <sys:String x:Key="Sort_Bytes">Por volumen</sys:String>
+    <sys:String x:Key="Sort_Packets">Por paquetes</sys:String>
+    <sys:String x:Key="Sort_Recent">Más recientes</sys:String>
+    <sys:String x:Key="Sort_Name">Por nombre</sys:String>
+    <sys:String x:Key="Sort_Requests">Por solicitudes</sys:String>
+    <sys:String x:Key="Filter_HostCount">{0} dominios</sys:String>
+    <sys:String x:Key="Filter_TickToFilter">Marca para filtrar por este; marca varios para comparar</sys:String>
+    <sys:String x:Key="Sessions_Export">Exportar (HAR / pcap)</sys:String>
+    <sys:String x:Key="Sessions_Exported">Exportado a {0}</sys:String>
+    <sys:String x:Key="Sessions_ExportFailed">No se pudo exportar: {0}</sys:String>
 </ResourceDictionary>

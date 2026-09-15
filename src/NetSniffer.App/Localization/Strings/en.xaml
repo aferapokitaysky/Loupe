@@ -144,4 +144,15 @@
     <sys:String x:Key="Sessions_DefaultProxyName">Requests {0}</sys:String>
     <sys:String x:Key="Pkt_Status_Loading">Loading {0}…</sys:String>
     <sys:String x:Key="Pkt_Status_LoadFailed">Could not read the file: {0}</sys:String>
+    <sys:String x:Key="Sort_Tip">Sort by</sys:String>
+    <sys:String x:Key="Sort_Bytes">By volume</sys:String>
+    <sys:String x:Key="Sort_Packets">By packets</sys:String>
+    <sys:String x:Key="Sort_Recent">Most recent</sys:String>
+    <sys:String x:Key="Sort_Name">By name</sys:String>
+    <sys:String x:Key="Sort_Requests">By requests</sys:String>
+    <sys:String x:Key="Filter_HostCount">{0} domains</sys:String>
+    <sys:String x:Key="Filter_TickToFilter">Tick to filter by this one; tick several to compare</sys:String>
+    <sys:String x:Key="Sessions_Export">Export (HAR / pcap)</sys:String>
+    <sys:String x:Key="Sessions_Exported">Exported to {0}</sys:String>
+    <sys:String x:Key="Sessions_ExportFailed">Could not export: {0}</sys:String>
 </ResourceDictionary>

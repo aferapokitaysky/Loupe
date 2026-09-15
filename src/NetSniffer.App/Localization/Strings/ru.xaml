@@ -142,4 +142,15 @@
     <sys:String x:Key="Sessions_DefaultProxyName">Запросы {0}</sys:String>
     <sys:String x:Key="Pkt_Status_Loading">Загрузка {0}…</sys:String>
     <sys:String x:Key="Pkt_Status_LoadFailed">Не удалось прочитать файл: {0}</sys:String>
+    <sys:String x:Key="Sort_Tip">Сортировка</sys:String>
+    <sys:String x:Key="Sort_Bytes">По объёму</sys:String>
+    <sys:String x:Key="Sort_Packets">По пакетам</sys:String>
+    <sys:String x:Key="Sort_Recent">Сначала новые</sys:String>
+    <sys:String x:Key="Sort_Name">По имени</sys:String>
+    <sys:String x:Key="Sort_Requests">По запросам</sys:String>
+    <sys:String x:Key="Filter_HostCount">Доменов: {0}</sys:String>
+    <sys:String x:Key="Filter_TickToFilter">Отметьте, чтобы фильтровать по нему; можно отметить несколько</sys:String>
+    <sys:String x:Key="Sessions_Export">Экспорт (HAR / pcap)</sys:String>
+    <sys:String x:Key="Sessions_Exported">Экспортировано в {0}</sys:String>
+    <sys:String x:Key="Sessions_ExportFailed">Не удалось экспортировать: {0}</sys:String>
 </ResourceDictionary>

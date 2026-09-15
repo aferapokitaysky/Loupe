@@ -142,4 +142,15 @@
     <sys:String x:Key="Sessions_DefaultProxyName">请求 {0}</sys:String>
     <sys:String x:Key="Pkt_Status_Loading">正在加载 {0}…</sys:String>
     <sys:String x:Key="Pkt_Status_LoadFailed">无法读取文件：{0}</sys:String>
+    <sys:String x:Key="Sort_Tip">排序</sys:String>
+    <sys:String x:Key="Sort_Bytes">按流量</sys:String>
+    <sys:String x:Key="Sort_Packets">按包数</sys:String>
+    <sys:String x:Key="Sort_Recent">最新优先</sys:String>
+    <sys:String x:Key="Sort_Name">按名称</sys:String>
+    <sys:String x:Key="Sort_Requests">按请求数</sys:String>
+    <sys:String x:Key="Filter_HostCount">{0} 个域名</sys:String>
+    <sys:String x:Key="Filter_TickToFilter">勾选以按其筛选；可勾选多个进行对比</sys:String>
+    <sys:String x:Key="Sessions_Export">导出 (HAR / pcap)</sys:String>
+    <sys:String x:Key="Sessions_Exported">已导出到 {0}</sys:String>
+    <sys:String x:Key="Sessions_ExportFailed">无法导出：{0}</sys:String>
 </ResourceDictionary>

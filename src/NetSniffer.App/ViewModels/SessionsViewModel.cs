@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using NetSniffer.App.Localization;
 using NetSniffer.App.Services;
 using NetSniffer.Core.Sessions;
+using NetSniffer.Proxy.Http;
 
 namespace NetSniffer.App.ViewModels;
 
@@ -96,6 +97,47 @@ public partial class SessionsViewModel : ObservableObject
     {
         if (row is null) return;
         OpenRequested?.Invoke(this, row.Info);
+    }
+
+    /// <summary>
+    /// Exports a session to somewhere the user picks, in the format other tools read: HAR for
+    /// requests (Proxyman, Charles, DevTools all open it) and plain .pcap for a capture.
+    /// </summary>
+    [RelayCommand]
+    private void Export(SessionRowViewModel? row)
+    {
+        if (row is null) return;
+
+        string requests = _store.PathTo(row.Info, SessionStore.RequestsFileName);
+        string capture = _store.PathTo(row.Info, SessionStore.CaptureFileName);
+        bool hasRequests = File.Exists(requests);
+
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = hasRequests ? "HAR (*.har)|*.har" : "pcap (*.pcap)|*.pcap",
+            FileName = Sanitize(row.Name) + (hasRequests ? ".har" : ".pcap"),
+        };
+
+        if (dialog.ShowDialog() != true) return;
+
+        try
+        {
+            if (hasRequests) HarFile.Write(dialog.FileName, ProxySessionFile.Load(requests));
+            else File.Copy(capture, dialog.FileName, overwrite: true);
+
+            StatusMessage = Loc.Format("Sessions_Exported", dialog.FileName);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            StatusMessage = Loc.Format("Sessions_ExportFailed", e.Message);
+        }
+    }
+
+    /// <summary>Session names are free text; a file name is not.</summary>
+    private static string Sanitize(string name)
+    {
+        var safe = name.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c).ToArray();
+        return new string(safe).Trim();
     }
 
     [RelayCommand]

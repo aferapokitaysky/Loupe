@@ -28,6 +28,12 @@ public sealed partial class DomainGroupViewModel : ObservableObject
     [ObservableProperty] private ImageSource? _favicon;
     [ObservableProperty] private bool _isExpanded = true;
 
+    /// <summary>Ticked in the sidebar to filter the request list. Several at once is the point.</summary>
+    [ObservableProperty] private bool _isChecked;
+
+    /// <summary>When the latest request to this domain started, for "most recent" sorting.</summary>
+    [ObservableProperty] private DateTimeOffset _lastActivity;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Summary))]
     private int _requestCount;
@@ -52,6 +58,7 @@ public sealed partial class DomainGroupViewModel : ObservableObject
     public void Add(HttpExchangeRowViewModel row)
     {
         Exchanges.Insert(0, row);
+        LastActivity = row.Exchange.StartTime;
         Recount();
     }
 

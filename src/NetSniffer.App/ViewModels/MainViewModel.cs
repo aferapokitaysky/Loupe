@@ -86,10 +86,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// transfer is otherwise hundreds of lines that differ only in sequence number.</summary>
     [ObservableProperty] private bool _collapseRepeats = true;
 
-    /// <summary>Host picked in the hosts panel; narrows the packet list to its traffic.</summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsFiltered))]
-    private HostRowViewModel? _selectedHost;
+    /// <summary>Row highlighted in the hosts panel. Highlighting alone filters nothing - the
+    /// tick boxes do that, so several hosts can be watched at once.</summary>
+    [ObservableProperty] private HostRowViewModel? _selectedHost;
+
+    /// <summary>Addresses of the ticked hosts. Empty means "everything".</summary>
+    private readonly HashSet<IPAddress> _hostFilter = [];
+
+    public int FilteredHostCount => _hostFilter.Count;
 
     /// <summary>Free-text search over endpoints, domains, protocol, program and summary.</summary>
     [ObservableProperty]
@@ -98,7 +102,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty] private string _filterSummary = "";
 
-    public bool IsFiltered => SelectedHost is not null || !string.IsNullOrWhiteSpace(SearchText);
+    public bool IsFiltered => _hostFilter.Count > 0 || !string.IsNullOrWhiteSpace(SearchText);
+
+    /// <summary>What the filter chip says: the single host by name, or how many are ticked.</summary>
+    public string FilterScope => _hostFilter.Count switch
+    {
+        0 => "",
+        1 => Hosts.FirstOrDefault(h => h.IsChecked)?.Name ?? "",
+        var many => Loc.Format("Filter_HostCount", many),
+    };
     [ObservableProperty] private PacketRowViewModel? _selectedPacket;
     [ObservableProperty] private string _statusMessage = "";
     [ObservableProperty] private bool _isCaptureEngineAvailable = true;
@@ -138,6 +150,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         IgnoreListStore.Rules.Changed += OnIgnoreRulesChanged;
         ApplyFilter();
         ApplyHostFilter();
+        ApplyHostSort();
 
         _drainTimer = new DispatcherTimer(DispatcherPriority.Background)
         {
@@ -593,19 +606,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
             }
 
             var row = new HostRowViewModel(host, _favicons);
+            row.PropertyChanged += OnHostCheckedChanged;
             _hostRows[key] = row;
             Hosts.Add(row);
         }
 
-        // Re-sort only when the order actually changed: moving items in an ObservableCollection
-        // is visible to the user, so doing it every tick would make the list jump constantly.
-        var ordered = Hosts.OrderByDescending(h => h.Bytes).ToList();
-        for (int i = 0; i < ordered.Count; i++)
-        {
-            int current = Hosts.IndexOf(ordered[i]);
-            if (current != i) Hosts.Move(current, i);
-        }
-
+        // Ordering is the view's job (see ApplyHostSort), not a hand-rolled Move loop: the user
+        // can choose the key, and live sorting keeps it right as the numbers move.
         OnPropertyChanged(nameof(HostsCountText));
     }
 
@@ -613,7 +620,26 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private DispatcherTimer? _searchDebounce;
 
-    partial void OnSelectedHostChanged(HostRowViewModel? value) => ApplyFilter();
+    /// <summary>Called when a host row is ticked or unticked in the panel.</summary>
+    private void OnHostCheckedChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(HostRowViewModel.IsChecked) || sender is not HostRowViewModel row) return;
+
+        if (row.IsChecked) _hostFilter.Add(row.AddressValue);
+        else _hostFilter.Remove(row.AddressValue);
+
+        ApplyFilter();
+        OnPropertyChanged(nameof(IsFiltered));
+        OnPropertyChanged(nameof(FilterScope));
+        OnPropertyChanged(nameof(FilteredHostCount));
+    }
+
+    /// <summary>Ticks one host and unticks every other - "show me only this".</summary>
+    public void ShowOnly(HostRowViewModel host)
+    {
+        foreach (var row in Hosts)
+            row.IsChecked = ReferenceEquals(row, host);
+    }
 
     /// <summary>Typing re-filters 50k rows; wait for a pause instead of doing it per keystroke.</summary>
     partial void OnSearchTextChanged(string value)
@@ -637,7 +663,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ClearFilter()
     {
-        SelectedHost = null;
+        foreach (var row in Hosts.Where(h => h.IsChecked).ToList())
+            row.IsChecked = false;
+
         SearchText = "";
         _searchDebounce?.Stop();
         ApplyFilter();
@@ -650,18 +678,21 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void ApplyFilter()
     {
         var view = System.Windows.Data.CollectionViewSource.GetDefaultView(Packets);
-        var host = SelectedHost?.AddressValue;
         string search = SearchText.Trim();
         var rules = IgnoreListStore.Rules;
 
-        view.Filter = host is null && search.Length == 0 && rules.IsEmpty
+        // Snapshot the ticked hosts: the predicate runs for every row, and must not race with
+        // the panel being ticked while a refresh is in flight.
+        var hosts = _hostFilter.Count == 0 ? null : _hostFilter.ToHashSet();
+
+        view.Filter = hosts is null && search.Length == 0 && rules.IsEmpty
             ? null // no predicate at all: nothing to evaluate per row
-            : item => item is PacketRowViewModel row && Matches(row, host, search, rules);
+            : item => item is PacketRowViewModel row && Matches(row, hosts, search, rules);
 
         UpdateFilterSummary();
     }
 
-    private static bool Matches(PacketRowViewModel row, IPAddress? host, string search, IgnoreRules rules)
+    private static bool Matches(PacketRowViewModel row, HashSet<IPAddress>? hosts, string search, IgnoreRules rules)
     {
         var packet = row.Packet;
 
@@ -669,7 +700,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
             && (rules.IsProcessIgnored(packet.ProcessName) || rules.IsHostIgnored(row.RemoteHost)))
             return false;
 
-        if (host is not null && !host.Equals(packet.SourceAddress) && !host.Equals(packet.DestinationAddress))
+        // Any of the ticked hosts, at either end.
+        if (hosts is not null
+            && !(packet.SourceAddress is { } source && hosts.Contains(source))
+            && !(packet.DestinationAddress is { } destination && hosts.Contains(destination)))
             return false;
 
         if (search.Length == 0) return true;
@@ -706,6 +740,47 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     partial void OnHostSearchTextChanged(string value) => ApplyHostFilter();
 
+    /// <summary>How the hosts panel is ordered. Volume first by default - the loudest host is
+    /// usually the question - but "most recent" and "by name" are what you want once you know
+    /// which host you are looking for.</summary>
+    public IReadOnlyList<SortOption> HostSortOptions { get; } =
+    [
+        new("Bytes", "Sort_Bytes"),
+        new("Packets", "Sort_Packets"),
+        new("Recent", "Sort_Recent"),
+        new("Name", "Sort_Name"),
+    ];
+
+    [ObservableProperty] private SortOption _hostSort = new("Bytes", "Sort_Bytes");
+
+    partial void OnHostSortChanged(SortOption value) => ApplyHostSort();
+
+    private void ApplyHostSort()
+    {
+        if (System.Windows.Data.CollectionViewSource.GetDefaultView(Hosts) is not System.Windows.Data.ListCollectionView view)
+            return;
+
+        view.CustomSort = HostSort.Key switch
+        {
+            "Packets" => Comparer<object>.Create((a, b) => Compare(b, a, h => h.Packets)),
+            "Recent" => Comparer<object>.Create((a, b) => Compare(b, a, h => h.LastSeen)),
+            "Name" => Comparer<object>.Create((a, b) =>
+                string.Compare(((HostRowViewModel)a).Name, ((HostRowViewModel)b).Name, StringComparison.OrdinalIgnoreCase)),
+            _ => Comparer<object>.Create((a, b) => Compare(b, a, h => h.Bytes)),
+        };
+
+        // Live sorting, so a host climbing the list moves as its traffic grows rather than only
+        // when something else forces a refresh.
+        view.IsLiveSorting = true;
+        foreach (string property in new[] { nameof(HostRowViewModel.Bytes), nameof(HostRowViewModel.Packets), nameof(HostRowViewModel.LastSeen), nameof(HostRowViewModel.Name) })
+        {
+            if (!view.LiveSortingProperties.Contains(property)) view.LiveSortingProperties.Add(property);
+        }
+
+        static int Compare<TKey>(object a, object b, Func<HostRowViewModel, TKey> key) where TKey : IComparable<TKey> =>
+            key((HostRowViewModel)a).CompareTo(key((HostRowViewModel)b));
+    }
+
     public bool HasHidden => !IgnoreListStore.Rules.IsEmpty;
     /// <summary>"Hidden: powershell, github.com" - plus the shown count when no other filter chip
     /// is on screen to carry it.</summary>
@@ -723,6 +798,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void OnIgnoreRulesChanged(object? sender, EventArgs e)
     {
         // A hidden host can't stay the selected one - the grid would be filtered to nothing.
+        // A host that just became hidden must not keep filtering the grid from out of sight.
+        foreach (var row in Hosts.Where(h => h.IsChecked && IsHostHidden(h)).ToList())
+            row.IsChecked = false;
+
         if (SelectedHost is { } selected && IsHostHidden(selected)) SelectedHost = null;
 
         ApplyFilter();
