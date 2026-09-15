@@ -119,6 +119,69 @@ public static class NamingTests
         T.Check("remote port recorded", hosts[0].Ports.Contains(443));
         T.Check("direction split kept", hosts[0].SentBytes > 0 && hosts[0].ReceivedBytes == 0);
 
+        // ---- Process attribution picks OUR port, in both directions
+        var asked = new List<(bool Tcp, ushort Port)>();
+        var attributing = new HostTrafficTracker(
+            [IPAddress.Parse("192.168.1.5")],
+            (tcp, port) =>
+            {
+                asked.Add((tcp, port));
+                return port == 40000 ? new LocalProcess("chrome", @"C:\chrome.exe")
+                     : port == 55123 ? new LocalProcess("Telegram", null)
+                     : null;
+            });
+
+        var sent = Parse(B.Ethernet(0x0800, B.IPv4(6, "192.168.1.5", "140.82.121.4",
+            B.Tcp(40000, 443, 1, 1, 0x18, [1]))));
+        attributing.Ingest(sent, registry);
+        var received = Parse(B.Ethernet(0x0800, B.IPv4(17, "149.154.167.51", "192.168.1.5",
+            B.Udp(443, 55123, [0x40, 1, 2, 3]))));
+        attributing.Ingest(received, registry);
+
+        T.Check("outbound packet asks about its source port, over TCP", asked.Contains((true, 40000)),
+            string.Join(",", asked));
+        T.Check("inbound packet asks about its destination port, over UDP", asked.Contains((false, 55123)),
+            string.Join(",", asked));
+        T.Eq("packet labelled with its program", "chrome", sent.ProcessName ?? "");
+        T.Eq("inbound packet labelled too", "Telegram", received.ProcessName ?? "");
+        T.Check("host remembers which programs used it",
+            attributing.Snapshot().Single(h => h.Address.ToString() == "140.82.121.4").Processes.ContainsKey("chrome"));
+
+        var icmpOnly = Parse(B.Ethernet(0x0800, B.IPv4(1, "192.168.1.5", "8.8.8.8", [8, 0, 0, 0, 0, 1, 0, 1])));
+        int before = asked.Count;
+        attributing.Ingest(icmpOnly, registry);
+        T.Eq("ICMP never asks for a process (no sockets)", before, asked.Count);
+
+        // ---- Ignore rules: hiding a noisy program or site
+        var ignore = new IgnoreRules();
+        int changes = 0;
+        ignore.Changed += (_, _) => changes++;
+
+        T.Check("empty rules hide nothing", !ignore.IsProcessIgnored("powershell") && !ignore.IsHostIgnored("github.com"));
+        ignore.AddProcess("PowerShell");
+        T.Check("process match is case-insensitive", ignore.IsProcessIgnored("powershell"));
+        T.Check("adding the same process twice is not a change", !ignore.AddProcess("powershell"));
+
+        ignore.AddHost("github.com:443");
+        T.Check("host entry ignores its port", ignore.IsHostIgnored("github.com"));
+        T.Check("hiding a domain hides its subdomains", ignore.IsHostIgnored("api.github.com")
+                                                       && ignore.IsHostIgnored("a.b.GITHUB.com."));
+        T.Check("...but not look-alike domains", !ignore.IsHostIgnored("notgithub.com") && !ignore.IsHostIgnored("github.com.evil.net"));
+        T.Check("a domain never matches its bare TLD", !ignore.IsHostIgnored("com") && !ignore.IsHostIgnored("gitlab.com"));
+
+        ignore.AddHost("104.29.159.151");
+        T.Check("addresses match exactly", ignore.IsHostIgnored("104.29.159.151") && !ignore.IsHostIgnored("29.159.151"));
+        ignore.AddHost("2001:db8::1");
+        T.Check("IPv6 address colons are not mistaken for a port", ignore.IsHostIgnored("2001:db8::1"));
+
+        T.Eq("summary lists what is hidden", "PowerShell, github.com, 104.29.159.151 +1", ignore.Describe());
+        T.Eq("each real change raised Changed", 4, changes);
+
+        ignore.Remove("github.com");
+        T.Check("removing a rule shows the host again", !ignore.IsHostIgnored("api.github.com"));
+        ignore.Clear();
+        T.Check("clear empties everything", ignore.IsEmpty);
+
         // Broadcast and multicast would otherwise swamp the host list.
         tracker.Ingest(Parse(B.Ethernet(0x0800, B.IPv4(17, "192.168.1.5", "239.255.255.250",
             B.Udp(50000, 1900, [1, 2, 3])))), registry);

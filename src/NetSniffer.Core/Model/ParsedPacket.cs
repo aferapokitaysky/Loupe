@@ -32,6 +32,20 @@ public sealed class ParsedPacket
     public ushort SourcePort { get; set; }
     public ushort DestinationPort { get; set; }
 
+    /// <summary>
+    /// The local program that sent or received this packet, when it could be attributed from the
+    /// OS socket tables. Null for packets that belong to no local socket (someone else's traffic
+    /// seen in promiscuous mode, broadcasts) or whose socket was already gone.
+    /// </summary>
+    public string? ProcessName { get; set; }
+
+    /// <summary>The far end of the conversation, as decided by the host tracker. Null until the
+    /// packet has been through it, and for traffic that belongs to no remote host.</summary>
+    public IPAddress? RemoteAddress { get; set; }
+
+    /// <summary>Full path of <see cref="ProcessName"/>'s executable, for its icon. Often null.</summary>
+    public string? ProcessImagePath { get; set; }
+
     /// <summary>Names this packet revealed (DNS answers, TLS SNI, HTTP Host). Usually empty.</summary>
     public List<HostNameHint>? NameHints { get; set; }
 

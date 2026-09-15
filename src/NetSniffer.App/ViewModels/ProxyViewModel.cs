@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using NetSniffer.App.Localization;
 using NetSniffer.App.Services;
+using NetSniffer.Capture.Processes;
 using NetSniffer.Proxy;
 using NetSniffer.Proxy.Ca;
 using NetSniffer.Proxy.Http;
@@ -57,6 +58,136 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _isRunning;
     [ObservableProperty] private string _statusMessage = "";
     [ObservableProperty] private HttpExchangeRowViewModel? _selectedExchange;
+    /// <summary>Domain picked in the sidebar; narrows the request list to it.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsFiltered))]
+    private DomainGroupViewModel? _selectedDomain;
+
+    /// <summary>Search over URL, method, status and the sending app.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsFiltered))]
+    private string _searchText = "";
+
+    [ObservableProperty] private string _filterSummary = "";
+
+    public bool IsFiltered => SelectedDomain is not null || !string.IsNullOrWhiteSpace(SearchText);
+
+    partial void OnSelectedDomainChanged(DomainGroupViewModel? value) => ApplyFilter();
+
+    partial void OnSearchTextChanged(string value) => ApplyFilter(); // request lists stay small enough
+
+    [RelayCommand]
+    private void ClearFilter()
+    {
+        SelectedDomain = null;
+        SearchText = "";
+        ApplyFilter();
+    }
+
+    // ---------------------------------------------------------------- hiding & domain search
+
+    /// <summary>Search over the domain sidebar: host name, or an app that talked to it.</summary>
+    [ObservableProperty] private string _domainSearchText = "";
+
+    partial void OnDomainSearchTextChanged(string value) => ApplyDomainFilter();
+
+    public bool HasHidden => !IgnoreListStore.Rules.IsEmpty;
+    public string HiddenSummary => Loc.Format("Ignore_Summary", IgnoreListStore.Rules.Describe());
+
+    private HashSet<string> _hiddenDomains = new(StringComparer.OrdinalIgnoreCase);
+
+    public void HideDomain(string? host) => IgnoreListStore.Rules.AddHost(host);
+    public void HideClient(string? client) => IgnoreListStore.Rules.AddProcess(client);
+
+    [RelayCommand]
+    private void ShowHidden() => IgnoreListStore.Rules.Clear();
+
+    private void OnIgnoreRulesChanged(object? sender, EventArgs e)
+    {
+        if (SelectedDomain is { } selected && IsDomainHidden(selected)) SelectedDomain = null;
+
+        ApplyFilter();
+        ApplyDomainFilter();
+        OnPropertyChanged(nameof(HasHidden));
+        OnPropertyChanged(nameof(HiddenSummary));
+    }
+
+    private static bool IsExchangeHidden(HttpExchangeRowViewModel row)
+    {
+        var rules = IgnoreListStore.Rules;
+        return !rules.IsEmpty && (rules.IsHostIgnored(row.Host) || rules.IsProcessIgnored(row.Exchange.Client?.Name));
+    }
+
+    /// <summary>Hidden by name, or because every request to it came from a hidden app.</summary>
+    private static bool IsDomainHidden(DomainGroupViewModel domain)
+    {
+        var rules = IgnoreListStore.Rules;
+        if (rules.IsEmpty) return false;
+        if (rules.IsHostIgnored(domain.Host)) return true;
+        return domain.Exchanges.Count > 0 && domain.Exchanges.All(IsExchangeHidden);
+    }
+
+    private void ApplyDomainFilter()
+    {
+        var view = System.Windows.Data.CollectionViewSource.GetDefaultView(Domains);
+        string search = DomainSearchText.Trim();
+        bool hiding = !IgnoreListStore.Rules.IsEmpty;
+
+        view.Filter = search.Length == 0 && !hiding
+            ? null
+            : item => item is DomainGroupViewModel domain
+                      && !IsDomainHidden(domain)
+                      && (search.Length == 0
+                          || domain.Host.Contains(search, StringComparison.OrdinalIgnoreCase)
+                          || domain.Exchanges.Any(x => x.Client.Contains(search, StringComparison.OrdinalIgnoreCase)
+                                                       || x.Path.Contains(search, StringComparison.OrdinalIgnoreCase)));
+
+        // Requests from a hidden app disappear from under their domain too, not just from the grid.
+        foreach (var domain in Domains)
+            ApplyGroupFilter(domain, hiding);
+    }
+
+    private static void ApplyGroupFilter(DomainGroupViewModel domain, bool hiding)
+    {
+        var view = System.Windows.Data.CollectionViewSource.GetDefaultView(domain.Exchanges);
+        view.Filter = hiding ? item => item is HttpExchangeRowViewModel row && !IsExchangeHidden(row) : null;
+    }
+
+    private void ApplyFilter()
+    {
+        var view = System.Windows.Data.CollectionViewSource.GetDefaultView(Exchanges);
+        string? host = SelectedDomain?.Host;
+        string search = SearchText.Trim();
+        bool hiding = !IgnoreListStore.Rules.IsEmpty;
+
+        view.Filter = host is null && search.Length == 0 && !hiding
+            ? null
+            : item => item is HttpExchangeRowViewModel row
+                      && !IsExchangeHidden(row)
+                      && (host is null || string.Equals(row.Host, host, StringComparison.OrdinalIgnoreCase))
+                      && (search.Length == 0
+                          || row.Url.Contains(search, StringComparison.OrdinalIgnoreCase)
+                          || row.Method.Contains(search, StringComparison.OrdinalIgnoreCase)
+                          || row.Status.Contains(search, StringComparison.OrdinalIgnoreCase)
+                          || row.Client.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+        UpdateFilterSummary();
+    }
+
+    private void UpdateFilterSummary()
+    {
+        if (!IsFiltered)
+        {
+            FilterSummary = "";
+            return;
+        }
+
+        int shown = System.Windows.Data.CollectionViewSource.GetDefaultView(Exchanges) is System.Windows.Data.ListCollectionView list
+            ? list.Count
+            : Exchanges.Count;
+        FilterSummary = Loc.Format("Filter_ShowingOf", shown, Exchanges.Count);
+    }
+
     [ObservableProperty] private bool _isCaInstalled;
     [ObservableProperty] private bool _isSystemProxyEnabled;
 
@@ -71,6 +202,11 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         _drainTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(150) };
         _drainTimer.Tick += (_, _) => Drain();
         _drainTimer.Start();
+
+        // Shared with the packet page and persisted, so it may already hide things at launch.
+        IgnoreListStore.Rules.Changed += OnIgnoreRulesChanged;
+        ApplyFilter();
+        ApplyDomainFilter();
     }
 
     private bool CanStart() => !IsRunning;
@@ -83,6 +219,10 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             {
                 Port = Port,
                 TransparentPort = TransparentEnabled ? TransparentPort : 0,
+                ResolveClientApplication = endPoint =>
+                    ProcessPortMap.Shared.LookupTcpClient(endPoint) is { } owner
+                        ? new ClientApplication(owner.Name, owner.ImagePath)
+                        : null,
             },
             _ca);
         server.ExchangeStarted += (_, exchange) => _incoming.Enqueue(exchange);
@@ -145,6 +285,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ClearExchanges()
     {
+        SelectedDomain = null;
         Exchanges.Clear();
         _rowsById.Clear();
         Domains.Clear();
@@ -251,6 +392,21 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         foreach (var domain in touchedDomains)
             domain.Recount();
 
+        if (processed > 0 && (IsFiltered || HasHidden)) UpdateFilterSummary();
+
+        // A domain's hidden state depends on which apps have used it, which only settles as its
+        // requests arrive. Re-filter the sidebar when that actually flips, not on every tick -
+        // a TreeView refresh is visible.
+        if (processed > 0 && HasHidden)
+        {
+            var nowHidden = Domains.Where(IsDomainHidden).Select(d => d.Host).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            if (!nowHidden.SetEquals(_hiddenDomains))
+            {
+                _hiddenDomains = nowHidden;
+                System.Windows.Data.CollectionViewSource.GetDefaultView(Domains).Refresh();
+            }
+        }
+
         while (Exchanges.Count > MaxExchanges)
         {
             var oldest = Exchanges[0];
@@ -262,6 +418,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             domain.Exchanges.Remove(oldest);
             if (domain.Exchanges.Count == 0)
             {
+                if (SelectedDomain == domain) SelectedDomain = null;
                 Domains.Remove(domain);
                 _domainsByHost.Remove(oldest.Host);
             }
@@ -290,6 +447,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         }
 
         Domains.Insert(index, group);
+        ApplyGroupFilter(group, hiding: !IgnoreListStore.Rules.IsEmpty);
         return group;
     }
 
@@ -301,6 +459,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
         _drainTimer.Stop();
+        IgnoreListStore.Rules.Changed -= OnIgnoreRulesChanged;
         _server?.Stop();
         RestoreSystemProxy();
         _favicons.Dispose();

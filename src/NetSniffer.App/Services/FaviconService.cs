@@ -59,8 +59,35 @@ public sealed class FaviconService : IDisposable
         if (string.IsNullOrWhiteSpace(host) || !IsFetchableHost(host))
             return Task.FromResult<ImageSource?>(null);
 
-        return _inFlight.GetOrAdd(host, LoadAsync);
+        // One icon per site, not per hostname: CDN and API subdomains
+        // ("c-waw06-c83c7b4d.discord.media", "s-part-0016.t-0009.t-msedge.net") never serve a
+        // favicon of their own, and asking each of them would be dozens of pointless requests.
+        return _inFlight.GetOrAdd(RegistrableDomain(host), LoadAsync);
     }
+
+    /// <summary>
+    /// A close-enough eTLD+1: the last two labels, or three under a common two-part public
+    /// suffix (co.uk, com.au, ...). Not the full Public Suffix List - a wrong guess only costs a
+    /// missing icon, which isn't worth shipping and updating a 200 KB list for.
+    /// </summary>
+    internal static string RegistrableDomain(string host)
+    {
+        string[] labels = host.TrimEnd('.').ToLowerInvariant().Split('.');
+        if (labels.Length <= 2) return string.Join('.', labels);
+
+        string lastTwo = labels[^2] + "." + labels[^1];
+        bool twoPartSuffix = TwoPartSuffixes.Contains(lastTwo)
+                             || (labels[^1].Length == 2 && labels[^2] is "co" or "com" or "net" or "org" or "gov" or "edu" or "ac");
+
+        return twoPartSuffix
+            ? labels[^3] + "." + lastTwo
+            : lastTwo;
+    }
+
+    private static readonly HashSet<string> TwoPartSuffixes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "github.io", "pages.dev", "vercel.app", "netlify.app", "herokuapp.com", "blogspot.com",
+    };
 
     private async Task<ImageSource?> LoadAsync(string host)
     {

@@ -30,6 +30,13 @@ public sealed class ProxyOptions
     /// </summary>
     public bool AllowInsecureUpstream { get; init; }
 
+    /// <summary>
+    /// Optional: identifies the program behind an accepted connection, given the client's
+    /// endpoint. Called once per connection, while the socket is still open (the OS forgets the
+    /// owner the moment it closes). Left to the host because it is platform-specific.
+    /// </summary>
+    public Func<System.Net.EndPoint?, Http.ClientApplication?>? ResolveClientApplication { get; init; }
+
     /// <summary>How much of each request/response body to keep in memory for display; the rest is still relayed correctly, just not shown.</summary>
     public long MaxCapturedBodyBytes { get; init; } = 5 * 1024 * 1024;
 }
