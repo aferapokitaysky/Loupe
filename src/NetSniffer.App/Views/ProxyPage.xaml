@@ -96,7 +96,7 @@
                           ItemsSource="{Binding Exchanges}"
                           SelectedItem="{Binding SelectedExchange}"
                           AutoGenerateColumns="False" IsReadOnly="True"
-                          GridLinesVisibility="None" HeadersVisibility="Column"
+                          GridLinesVisibility="None" HeadersVisibility="Column" ColumnHeaderStyle="{StaticResource AppColumnHeader}"
                           SelectionMode="Single" SelectionUnit="FullRow"
                           EnableRowVirtualization="True" EnableColumnVirtualization="True"
                           VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">

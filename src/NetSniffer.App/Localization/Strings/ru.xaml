@@ -35,13 +35,16 @@
     <sys:String x:Key="Pkt_Status_Saved">Сохранено {0} пакетов в {1}</sys:String>
     <sys:String x:Key="Pkt_Status_Loaded">Загружено: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapDownloading">Загрузка установщика Npcap…</sys:String>
-    <sys:String x:Key="Pkt_Status_NpcapLaunching">Установщик Npcap запущен — завершите мастер установки, затем нажмите «Обновить».</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapLaunching">Установщик Npcap запущен — завершите мастер установки. Захват включится автоматически после завершения.</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallFailed">Не удалось установить Npcap: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Установщик Npcap закрыт без завершения. Нажмите «Установить Npcap», чтобы повторить.</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Packets">Пакетов: {0}</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Bytes">Байт: {0:N0}</sys:String>
     <sys:String x:Key="Pkt_EmptyState">Начните захват, чтобы увидеть пакеты здесь</sys:String>
     <sys:String x:Key="Pkt_SelectPacket">Выберите пакет, чтобы разобрать его по слоям и байтам</sys:String>
+    <sys:String x:Key="Npcap_Title">Для захвата пакетов нужен Npcap</sys:String>
+    <sys:String x:Key="Npcap_Desc">NetSniffer скачивает официальный установщик Npcap и откроет его. Пройдите мастер установки — захват станет доступен автоматически.</sys:String>
+    <sys:String x:Key="Npcap_Retry">Скачать и установить снова</sys:String>
 
     <sys:String x:Key="Proxy_Port">Порт:</sys:String>
     <sys:String x:Key="Proxy_Start">Старт</sys:String>

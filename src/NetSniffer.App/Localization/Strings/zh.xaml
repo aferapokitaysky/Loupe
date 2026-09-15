@@ -35,13 +35,16 @@
     <sys:String x:Key="Pkt_Status_Saved">已将 {0} 个数据包保存到 {1}</sys:String>
     <sys:String x:Key="Pkt_Status_Loaded">已加载：{0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapDownloading">正在下载 Npcap 安装程序…</sys:String>
-    <sys:String x:Key="Pkt_Status_NpcapLaunching">Npcap 安装程序已启动 —— 请完成安装向导，然后点击刷新。</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapLaunching">Npcap 安装程序已打开 —— 请完成安装向导。完成后将自动开始抓包。</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallFailed">无法安装 Npcap：{0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Npcap 安装程序已关闭但未完成安装。请点击“安装 Npcap”重试。</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Packets">数据包：{0}</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Bytes">字节：{0:N0}</sys:String>
     <sys:String x:Key="Pkt_EmptyState">开始抓包以在此查看数据包</sys:String>
     <sys:String x:Key="Pkt_SelectPacket">选择一个数据包以查看其分层和字节</sys:String>
+    <sys:String x:Key="Npcap_Title">抓包需要 Npcap</sys:String>
+    <sys:String x:Key="Npcap_Desc">NetSniffer 正在下载官方 Npcap 安装程序并将打开它。完成安装向导后，抓包功能将自动可用。</sys:String>
+    <sys:String x:Key="Npcap_Retry">重新下载并安装</sys:String>
 
     <sys:String x:Key="Proxy_Port">端口：</sys:String>
     <sys:String x:Key="Proxy_Start">开始</sys:String>

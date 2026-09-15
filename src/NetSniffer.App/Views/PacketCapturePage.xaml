@@ -43,11 +43,6 @@
                 <ui:Button Content="{DynamicResource Pkt_Refresh}" Icon="{ui:SymbolIcon ArrowClockwise24}"
                            Style="{StaticResource AppButton}" Command="{Binding RefreshAdaptersCommand}" />
 
-                <ui:Button Content="{DynamicResource Pkt_InstallNpcap}" Icon="{ui:SymbolIcon ArrowDownload24}"
-                           Style="{StaticResource AppButton}" Appearance="Primary"
-                           Command="{Binding InstallNpcapCommand}"
-                           Visibility="{Binding IsCaptureEngineAvailable, Converter={StaticResource BoolToVisibilityInverse}}" />
-
                 <TextBlock Text="{DynamicResource Pkt_Filter}" Style="{StaticResource ToolbarLabel}" Margin="10,0,6,0" />
                 <ui:TextBox MinWidth="180" MaxWidth="240" Margin="0,0,10,0" VerticalAlignment="Center"
                             PlaceholderText="{DynamicResource Pkt_FilterPlaceholder}"
@@ -87,7 +82,7 @@
                           ItemsSource="{Binding Packets}"
                           SelectedItem="{Binding SelectedPacket}"
                           AutoGenerateColumns="False" IsReadOnly="True"
-                          GridLinesVisibility="None" HeadersVisibility="Column"
+                          GridLinesVisibility="None" HeadersVisibility="Column" ColumnHeaderStyle="{StaticResource AppColumnHeader}"
                           SelectionMode="Single" SelectionUnit="FullRow"
                           EnableRowVirtualization="True" EnableColumnVirtualization="True"
                           VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
@@ -152,6 +147,42 @@
                                Visibility="{Binding SelectedPacket, Converter={StaticResource NullToVisibility}}" />
                 </Grid>
             </Grid>
+        </Border>
+
+        <!-- Npcap setup overlay: covers the list while the capture engine is missing -->
+        <Border Grid.Row="2" CornerRadius="10" Background="#FB101318"
+                BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1"
+                Visibility="{Binding IsCaptureEngineAvailable, Converter={StaticResource BoolToVisibilityInverse}}">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="420">
+                <Border Width="72" Height="72" CornerRadius="36" HorizontalAlignment="Center"
+                        Background="{StaticResource SurfaceRaisedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="34" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                </Border>
+                <TextBlock Text="{DynamicResource Npcap_Title}" FontSize="16" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center"
+                           TextAlignment="Center" Margin="0,18,0,0" />
+                <TextBlock Text="{DynamicResource Npcap_Desc}" Foreground="{StaticResource TextSecondaryBrush}"
+                           FontSize="12.5" TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,0" />
+
+                <!-- Busy: ring on its own line, wrapping status below -->
+                <StackPanel HorizontalAlignment="Center" Margin="0,20,0,0"
+                            Visibility="{Binding NpcapBusy, Converter={StaticResource BoolToVisibility}}">
+                    <ui:ProgressRing IsIndeterminate="True" Width="26" Height="26" HorizontalAlignment="Center" />
+                    <TextBlock Text="{Binding NpcapStatus}" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="12.5" TextAlignment="Center" TextWrapping="Wrap" Margin="0,12,0,0" />
+                </StackPanel>
+
+                <!-- Failed / cancelled: message + retry -->
+                <StackPanel HorizontalAlignment="Center" Margin="0,20,0,0"
+                            Visibility="{Binding NpcapCanRetry, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{Binding NpcapStatus}" Foreground="{StaticResource WarnBrush}"
+                               FontSize="12.5" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,14" />
+                    <ui:Button Content="{DynamicResource Npcap_Retry}" Icon="{ui:SymbolIcon ArrowClockwise24}"
+                               Appearance="Primary" Style="{StaticResource AppButton}" HorizontalAlignment="Center"
+                               Command="{Binding RetryNpcapCommand}" />
+                </StackPanel>
+            </StackPanel>
         </Border>
 
         <!-- Status bar -->

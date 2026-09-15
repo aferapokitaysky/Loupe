@@ -35,13 +35,16 @@
     <sys:String x:Key="Pkt_Status_Saved">Se guardaron {0} paquetes en {1}</sys:String>
     <sys:String x:Key="Pkt_Status_Loaded">Cargado: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapDownloading">Descargando el instalador de Npcap…</sys:String>
-    <sys:String x:Key="Pkt_Status_NpcapLaunching">Instalador de Npcap iniciado: complete el asistente y luego pulse Actualizar.</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapLaunching">Instalador de Npcap abierto — completa el asistente. La captura se inicia automáticamente al terminar.</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallFailed">No se pudo instalar Npcap: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">El instalador de Npcap se cerró sin terminar. Pulse Instalar Npcap para volver a intentarlo.</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Packets">Paquetes: {0}</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Bytes">Bytes: {0:N0}</sys:String>
     <sys:String x:Key="Pkt_EmptyState">Inicia la captura para ver paquetes aquí</sys:String>
     <sys:String x:Key="Pkt_SelectPacket">Selecciona un paquete para ver sus capas y bytes</sys:String>
+    <sys:String x:Key="Npcap_Title">Se necesita Npcap para capturar paquetes</sys:String>
+    <sys:String x:Key="Npcap_Desc">NetSniffer está descargando el instalador oficial de Npcap y lo abrirá. Completa el asistente y la captura estará disponible automáticamente.</sys:String>
+    <sys:String x:Key="Npcap_Retry">Descargar e instalar de nuevo</sys:String>
 
     <sys:String x:Key="Proxy_Port">Puerto:</sys:String>
     <sys:String x:Key="Proxy_Start">Iniciar</sys:String>

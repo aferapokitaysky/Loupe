@@ -25,7 +25,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private CaptureSession? _session;
     private DateTimeOffset _captureStart;
-    private bool _isInstallingNpcap;
 
     public ObservableCollection<CaptureDeviceInfo> Adapters { get; } = [];
     public ObservableCollection<PacketRowViewModel> Packets { get; } = [];
@@ -37,6 +36,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private PacketRowViewModel? _selectedPacket;
     [ObservableProperty] private string _statusMessage = "";
     [ObservableProperty] private bool _isCaptureEngineAvailable = true;
+
+    // Npcap-setup overlay state, shown over the packet list while the engine is missing.
+    [ObservableProperty] private bool _npcapBusy;
+    [ObservableProperty] private bool _npcapCanRetry;
+    [ObservableProperty] private string _npcapStatus = "";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PacketsCountText))]
@@ -61,6 +65,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _drainTimer.Start();
 
         RefreshAdapters();
+
+        // No Npcap on this machine? Don't make the user hunt for a button - offer to
+        // fetch and run the official installer right away. This only kicks off the same
+        // download flow the manual "retry" uses; it never installs silently (the official
+        // installer shows its own wizard and Windows shows its own elevation prompt).
+        if (!IsCaptureEngineAvailable)
+            _ = EnsureNpcapAsync();
     }
 
     [RelayCommand]
@@ -97,19 +108,21 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    private bool CanInstallNpcap() => !_isInstallingNpcap;
+    [RelayCommand]
+    private Task RetryNpcap() => EnsureNpcapAsync();
 
-    [RelayCommand(CanExecute = nameof(CanInstallNpcap))]
-    private async Task InstallNpcapAsync()
+    private async Task EnsureNpcapAsync()
     {
-        _isInstallingNpcap = true;
-        InstallNpcapCommand.NotifyCanExecuteChanged();
+        if (NpcapBusy) return;
 
-        var progress = new Progress<NpcapInstallStage>(stage => StatusMessage = stage switch
+        NpcapBusy = true;
+        NpcapCanRetry = false;
+
+        var progress = new Progress<NpcapInstallStage>(stage => NpcapStatus = stage switch
         {
             NpcapInstallStage.Downloading => Loc.Get("Pkt_Status_NpcapDownloading"),
             NpcapInstallStage.Launching => Loc.Get("Pkt_Status_NpcapLaunching"),
-            _ => StatusMessage,
+            _ => NpcapStatus,
         });
 
         try
@@ -117,16 +130,19 @@ public partial class MainViewModel : ObservableObject, IDisposable
             await NpcapInstaller.RunInstallerAsync(progress);
             RefreshAdapters();
             if (!IsCaptureEngineAvailable)
-                StatusMessage = Loc.Get("Pkt_Status_NpcapInstallCancelled");
+            {
+                NpcapStatus = Loc.Get("Pkt_Status_NpcapInstallCancelled");
+                NpcapCanRetry = true;
+            }
         }
         catch (Exception ex)
         {
-            StatusMessage = Loc.Format("Pkt_Status_NpcapInstallFailed", ex.Message);
+            NpcapStatus = Loc.Format("Pkt_Status_NpcapInstallFailed", ex.Message);
+            NpcapCanRetry = true;
         }
         finally
         {
-            _isInstallingNpcap = false;
-            InstallNpcapCommand.NotifyCanExecuteChanged();
+            NpcapBusy = false;
         }
     }
 

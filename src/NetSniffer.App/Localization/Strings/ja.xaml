@@ -35,13 +35,16 @@
     <sys:String x:Key="Pkt_Status_Saved">{0} 個のパケットを {1} に保存しました</sys:String>
     <sys:String x:Key="Pkt_Status_Loaded">読み込み完了: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapDownloading">Npcap インストーラーをダウンロード中…</sys:String>
-    <sys:String x:Key="Pkt_Status_NpcapLaunching">Npcap インストーラーを起動しました。セットアップを完了してから「更新」をクリックしてください。</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapLaunching">Npcap インストーラーを開きました —— ウィザードを完了してください。完了後、自動的にキャプチャが始まります。</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallFailed">Npcap をインストールできませんでした: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Npcap インストーラーが完了せずに閉じられました。「Npcap をインストール」をもう一度クリックしてください。</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Packets">パケット数: {0}</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Bytes">バイト数: {0:N0}</sys:String>
     <sys:String x:Key="Pkt_EmptyState">キャプチャを開始するとここにパケットが表示されます</sys:String>
     <sys:String x:Key="Pkt_SelectPacket">パケットを選ぶとレイヤーとバイト列が表示されます</sys:String>
+    <sys:String x:Key="Npcap_Title">パケットキャプチャには Npcap が必要です</sys:String>
+    <sys:String x:Key="Npcap_Desc">NetSniffer は公式の Npcap インストーラーをダウンロードして開きます。ウィザードを完了するとキャプチャが自動的に利用可能になります。</sys:String>
+    <sys:String x:Key="Npcap_Retry">もう一度ダウンロードしてインストール</sys:String>
 
     <sys:String x:Key="Proxy_Port">ポート:</sys:String>
     <sys:String x:Key="Proxy_Start">開始</sys:String>
