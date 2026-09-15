@@ -89,6 +89,35 @@ public static class B
         return [.. body];
     }
 
+    /// <summary>A DNS response: one question echoed back, then one A or AAAA answer for it.</summary>
+    public static byte[] DnsResponse(ushort id, string name, System.Net.IPAddress address)
+    {
+        var body = new List<byte>();
+        body.AddRange([(byte)(id >> 8), (byte)id, 0x81, 0x80, 0, 1, 0, 1, 0, 0, 0, 0]);
+
+        var encodedName = new List<byte>();
+        foreach (var label in name.Split('.'))
+        {
+            encodedName.Add((byte)label.Length);
+            encodedName.AddRange(System.Text.Encoding.ASCII.GetBytes(label));
+        }
+        encodedName.Add(0);
+
+        byte[] rdata = address.GetAddressBytes();
+        ushort qtype = (ushort)(rdata.Length == 4 ? 1 : 28);
+
+        body.AddRange(encodedName);                                       // question
+        body.AddRange([(byte)(qtype >> 8), (byte)qtype, 0, 1]);
+
+        // Answer: a compression pointer back to the question's name, as a real resolver sends.
+        body.AddRange([0xC0, 0x0C]);
+        body.AddRange([(byte)(qtype >> 8), (byte)qtype, 0, 1]);           // type, class IN
+        body.AddRange([0, 0, 0x01, 0x2C]);                                // TTL 300
+        body.AddRange([(byte)(rdata.Length >> 8), (byte)rdata.Length]);
+        body.AddRange(rdata);
+        return [.. body];
+    }
+
     /// <summary>TLS 1.2-style ClientHello carrying a server_name (SNI) extension.</summary>
     public static byte[] TlsClientHello(string sni)
     {

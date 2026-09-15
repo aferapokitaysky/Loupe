@@ -5,6 +5,7 @@ using System.Security.Authentication;
 using System.Text;
 using NetSniffer.Proxy.Ca;
 using NetSniffer.Proxy.Http;
+using NetSniffer.Proxy.Transparent;
 
 namespace NetSniffer.Proxy;
 
@@ -31,6 +32,7 @@ public sealed class ProxyServer : IDisposable
     private readonly ProxyOptions _options;
     private readonly LeafCertificateFactory _leafCertificates;
     private TcpListener? _listener;
+    private TcpListener? _transparentListener;
     private CancellationTokenSource? _cts;
     private long _nextExchangeId;
 
@@ -54,7 +56,14 @@ public sealed class ProxyServer : IDisposable
         _listener = new TcpListener(IPAddress.Parse(_options.ListenAddress), _options.Port);
         _listener.Start();
         IsRunning = true;
-        _ = AcceptLoopAsync(_cts.Token);
+        _ = AcceptLoopAsync(_listener, explicitProxy: true, _cts.Token);
+
+        if (_options.TransparentPort > 0)
+        {
+            _transparentListener = new TcpListener(IPAddress.Parse(_options.ListenAddress), _options.TransparentPort);
+            _transparentListener.Start();
+            _ = AcceptLoopAsync(_transparentListener, explicitProxy: false, _cts.Token);
+        }
     }
 
     public void Stop()
@@ -62,26 +71,132 @@ public sealed class ProxyServer : IDisposable
         IsRunning = false;
         try { _cts?.Cancel(); } catch { /* already disposed */ }
         try { _listener?.Stop(); } catch { /* already stopped */ }
+        try { _transparentListener?.Stop(); } catch { /* already stopped */ }
         try { _cts?.Dispose(); } catch { /* already disposed */ }
         _cts = null;
         _listener = null;
+        _transparentListener = null;
     }
 
     public void Dispose() => Stop();
 
-    private async Task AcceptLoopAsync(CancellationToken ct)
+    private async Task AcceptLoopAsync(TcpListener listener, bool explicitProxy, CancellationToken ct)
     {
         try
         {
             while (!ct.IsCancellationRequested)
             {
-                var client = await _listener!.AcceptTcpClientAsync(ct).ConfigureAwait(false);
-                _ = HandleClientAsync(client, ct);
+                var client = await listener.AcceptTcpClientAsync(ct).ConfigureAwait(false);
+                _ = explicitProxy
+                    ? HandleClientAsync(client, ct)
+                    : HandleTransparentClientAsync(client, ct);
             }
         }
         catch (OperationCanceledException) { }
         catch (ObjectDisposedException) { }
         catch (SocketException) { }
+    }
+
+    /// <summary>
+    /// Handles a connection that arrived with no proxy protocol at all - the client believes it
+    /// is talking to the origin server. The destination comes from the TLS SNI, or from the Host
+    /// header for plaintext HTTP, and the peeked bytes are replayed so the real handshake sees
+    /// exactly what the client sent.
+    /// </summary>
+    private async Task HandleTransparentClientAsync(TcpClient client, CancellationToken ct)
+    {
+        using var disposeClient = client;
+        client.NoDelay = true;
+        await using var socketStream = client.GetStream();
+
+        try
+        {
+            // One ClientHello fits comfortably; a larger one (many extensions) still gives us
+            // the SNI, which sits near the front.
+            var peeked = new byte[4096];
+            int read = await socketStream.ReadAsync(peeked.AsMemory(), ct).ConfigureAwait(false);
+            if (read <= 0) return;
+
+            var prefix = peeked[..read];
+            var stream = new PrefixedStream(prefix, socketStream);
+
+            if (ClientHelloSniffer.LooksLikeTls(prefix))
+            {
+                if (!ClientHelloSniffer.TryGetServerName(prefix, out string sni))
+                {
+                    // No SNI means nothing in the connection says where it was going, and a
+                    // transparent proxy has no other source for that.
+                    ConnectionError?.Invoke(this, "Transparent TLS connection without an SNI - cannot tell which host it was for.");
+                    return;
+                }
+
+                await InterceptTransparentTlsAsync(stream, sni, ct).ConfigureAwait(false);
+                return;
+            }
+
+            // Plaintext: origin-form request line plus a Host header.
+            var reader = new HttpLineReader(stream);
+            var head = await HttpMessageIo.ReadRequestHeadAsync(reader, ct).ConfigureAwait(false);
+            if (head is null) return;
+
+            var hostHeaders = head.Headers
+                .Where(h => string.Equals(h.Name, "Host", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            if (hostHeaders.Count == 0) return;
+
+            string hostHeader = hostHeaders[0].Value;
+            if (string.IsNullOrWhiteSpace(hostHeader)) return;
+
+            var (host, port) = ParseAuthority(hostHeader, defaultPort: 80);
+            await RelayTransparentPlainHttpLoopAsync(head, reader, stream, host, port, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            ConnectionError?.Invoke(this, ex.Message);
+        }
+    }
+
+    private async Task InterceptTransparentTlsAsync(Stream clientStream, string host, CancellationToken ct)
+    {
+        var leafCertificate = _leafCertificates.GetOrCreate(host);
+
+        await using var sslStream = new SslStream(clientStream, leaveInnerStreamOpen: false);
+        try
+        {
+            await sslStream.AuthenticateAsServerAsync(new SslServerAuthenticationOptions
+            {
+                ServerCertificate = leafCertificate,
+                ApplicationProtocols = [SslApplicationProtocol.Http11],
+                EnabledSslProtocols = SslProtocols.None,
+            }, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            ConnectionError?.Invoke(this, $"TLS handshake with client failed for {host}: {ex.Message}");
+            return;
+        }
+
+        var tlsReader = new HttpLineReader(sslStream);
+        await RelayHttpsLoopAsync(tlsReader, sslStream, host, _options.TransparentTlsUpstreamPort, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Like the proxy-style plaintext loop, but the request line is origin-form ("/path"), so
+    /// the destination is carried alongside instead of being parsed out of an absolute URL.
+    /// </summary>
+    private async Task RelayTransparentPlainHttpLoopAsync(
+        RequestHead firstHead, HttpLineReader clientReader, Stream clientStream,
+        string host, int port, CancellationToken ct)
+    {
+        RequestHead? head = firstHead;
+        while (head is not null && !ct.IsCancellationRequested)
+        {
+            var exchange = NewExchange(isHttps: false, host, port, head);
+            if (!await RunExchangeAsync(exchange, clientReader, clientStream, ct).ConfigureAwait(false))
+                return;
+
+            head = await HttpMessageIo.ReadRequestHeadAsync(clientReader, ct).ConfigureAwait(false);
+        }
     }
 
     private async Task HandleClientAsync(TcpClient client, CancellationToken ct)
@@ -226,7 +341,12 @@ public sealed class ProxyServer : IDisposable
         Stream upstreamStream = upstreamClient.GetStream();
         if (exchange.IsHttps)
         {
-            var upstreamSsl = new SslStream(upstreamStream, leaveInnerStreamOpen: false);
+            // The client can no longer check the server itself - it is talking to us - so this
+            // leg is verified normally unless the user explicitly opted out.
+            var upstreamSsl = _options.AllowInsecureUpstream
+                ? new SslStream(upstreamStream, leaveInnerStreamOpen: false, (_, _, _, _) => true)
+                : new SslStream(upstreamStream, leaveInnerStreamOpen: false);
+
             await upstreamSsl.AuthenticateAsClientAsync(new SslClientAuthenticationOptions
             {
                 TargetHost = exchange.Host,

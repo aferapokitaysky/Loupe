@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
@@ -40,7 +40,14 @@
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Інсталятор Npcap закрито без завершення. Натисніть «Встановити Npcap», щоб спробувати ще раз.</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Packets">Пакетів: {0}</sys:String>
     <sys:String x:Key="Pkt_StatusBar_Bytes">Байтів: {0:N0}</sys:String>
-    <sys:String x:Key="Pkt_EmptyState">Почніть захоплення, щоб побачити пакети тут</sys:String>
+    <sys:String x:Key="Pkt_EmptyState">Почніть захоплення, щоб побачити пакети тут</sys:String>
+    <sys:String x:Key="Pkt_Hosts">ХОСТИ</sys:String>
+    <sys:String x:Key="Pkt_Hosts_PacketsSuffix">пак.</sys:String>
+    <sys:String x:Key="Pkt_Hosts_EmptyState">Домени з'являться тут у міру трафіку</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Hosts">Хостів: {0}</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats">Групувати повтори</sys:String>
+    <sys:String x:Key="Pkt_CollapseRepeats_Tip">Згортати серії однакових пакетів в один рядок із лічильником</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Dropped">Втрачено: {0}</sys:String>
     <sys:String x:Key="Pkt_SelectPacket">Виберіть пакет, щоб розібрати його за шарами та байтами</sys:String>
     <sys:String x:Key="Npcap_Title">Для захоплення пакетів потрібен Npcap</sys:String>
     <sys:String x:Key="Npcap_Desc">NetSniffer завантажує офіційний інсталятор Npcap і відкриє його. Пройдіть майстер — захоплення стане доступним автоматично.</sys:String>
@@ -71,7 +78,12 @@
     <sys:String x:Key="Proxy_Status_Stopped">Зупинено</sys:String>
     <sys:String x:Key="Proxy_Status_Error">Помилка</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(відповіді ще немає)</sys:String>
-    <sys:String x:Key="Proxy_EmptyState">Запустіть проксі та спрямуйте на нього клієнта, щоб побачити запити тут</sys:String>
+    <sys:String x:Key="Proxy_EmptyState">Запустіть проксі та спрямуйте на нього клієнта, щоб побачити запити тут</sys:String>
+    <sys:String x:Key="Proxy_Domains">ДОМЕНИ</sys:String>
+    <sys:String x:Key="Proxy_Domains_EmptyState">Запити з'являться тут, згруповані за доменами</sys:String>
+    <sys:String x:Key="Proxy_Transparent">Прозорий порт</sys:String>
+    <sys:String x:Key="Proxy_Transparent_Tip">Приймає звичайні з'єднання без налаштувань проксі: маршрут за TLS SNI або заголовком Host. Спрямуйте сюди програми, що ігнорують системний проксі.</sys:String>
+    <sys:String x:Key="Proxy_Status_ListeningTransparent">Слухає на {0}, прозорий на {1}</sys:String>
     <sys:String x:Key="Proxy_SelectExchange">Виберіть запит, щоб переглянути заголовки та тіло</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">Слухає 127.0.0.1:{0}. Вкажіть цю адресу в налаштуваннях проксі клієнта.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Не вдалося запустити: {0}</sys:String>
