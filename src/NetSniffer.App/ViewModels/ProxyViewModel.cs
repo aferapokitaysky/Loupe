@@ -24,6 +24,13 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
 
     private ProxyServer? _server;
 
+    /// <summary>
+    /// Whether *this app* turned the Windows system proxy on. Pointing Windows at a proxy
+    /// that is no longer listening takes the machine offline, so anything that stops the
+    /// proxy - including closing the app - has to undo our own change.
+    /// </summary>
+    private bool _weEnabledSystemProxy;
+
     public ObservableCollection<HttpExchangeRowViewModel> Exchanges { get; } = [];
 
     [ObservableProperty] private int _port = 8080;
@@ -80,10 +87,31 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         _server?.Stop();
         _server = null;
         IsRunning = false;
+        RestoreSystemProxy();
         StatusMessage = Loc.Get("Proxy_Status_Stopped");
 
         StartProxyCommand.NotifyCanExecuteChanged();
         StopProxyCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>Undoes our own system-proxy change so traffic isn't left pointed at a dead port.</summary>
+    private void RestoreSystemProxy()
+    {
+        if (!_weEnabledSystemProxy) return;
+
+        try
+        {
+            WindowsProxySettings.Disable();
+            IsSystemProxyEnabled = false;
+        }
+        catch
+        {
+            // Nothing useful to say at shutdown; the user can turn it off in Windows settings.
+        }
+        finally
+        {
+            _weEnabledSystemProxy = false;
+        }
     }
 
     [RelayCommand]
@@ -141,6 +169,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         {
             WindowsProxySettings.Enable("127.0.0.1", Port);
             IsSystemProxyEnabled = true;
+            _weEnabledSystemProxy = true;
             StatusMessage = Loc.Format("Proxy_Status_SystemProxyEnabled", Port);
         }
         catch (Exception ex)
@@ -156,6 +185,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         {
             WindowsProxySettings.Disable();
             IsSystemProxyEnabled = false;
+            _weEnabledSystemProxy = false;
             StatusMessage = Loc.Get("Proxy_Status_SystemProxyDisabled");
         }
         catch (Exception ex)
@@ -199,5 +229,6 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     {
         _drainTimer.Stop();
         _server?.Stop();
+        RestoreSystemProxy();
     }
 }
