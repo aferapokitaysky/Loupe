@@ -3,8 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:conv="clr-namespace:NetSniffer.App.Converters"
-             d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
              xmlns:vm="clr-namespace:NetSniffer.App.ViewModels"
+             d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
 
@@ -12,11 +12,12 @@
         <conv:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverse" />
         <conv:InverseBooleanConverter x:Key="InverseBoolean" />
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
-        <conv:ProtocolColorConverter x:Key="ProtocolColorConverter" />
+        <conv:ResourceBrushConverter x:Key="ResourceBrush" />
         <conv:CountToVisibilityConverter x:Key="CountToVisibility" />
+        <conv:NullToVisibilityConverter x:Key="NullToVisibility" />
 
-        <Style x:Key="PacketRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource GlassDataGridRowStyle}">
-            <Setter Property="Background" Value="{Binding ColorKey, Converter={StaticResource ProtocolColorConverter}}" />
+        <Style x:Key="PacketRow" TargetType="DataGridRow" BasedOn="{StaticResource AppDataGridRow}">
+            <Setter Property="Background" Value="{Binding ColorKey, Converter={StaticResource ResourceBrush}}" />
         </Style>
     </UserControl.Resources>
 
@@ -29,108 +30,102 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Toolbar -->
-        <Border Grid.Row="0" Style="{StaticResource GlassCard}" Padding="14,10">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="{DynamicResource Pkt_Adapter}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
-                <ComboBox Width="320" Margin="0,0,12,0"
+        <!-- Toolbar: wraps to a second line instead of clipping buttons on a narrow window -->
+        <Border Grid.Row="0" Style="{StaticResource ToolbarCard}">
+            <WrapPanel Orientation="Horizontal" ItemHeight="34">
+                <TextBlock Text="{DynamicResource Pkt_Adapter}" Style="{StaticResource ToolbarLabel}" />
+                <ComboBox MinWidth="260" MaxWidth="380" Margin="0,0,10,0" VerticalAlignment="Center"
                           ItemsSource="{Binding Adapters}"
                           SelectedItem="{Binding SelectedAdapter}"
-                          DisplayMemberPath="Description"
+                          DisplayMemberPath="Label"
                           IsEnabled="{Binding IsCapturing, Converter={StaticResource InverseBoolean}}" />
 
                 <ui:Button Content="{DynamicResource Pkt_Refresh}" Icon="{ui:SymbolIcon ArrowClockwise24}"
-                           Style="{StaticResource LiquidButtonStyle}"
-                           Command="{Binding RefreshAdaptersCommand}" Margin="0,0,12,0" />
+                           Style="{StaticResource AppButton}" Command="{Binding RefreshAdaptersCommand}" />
 
-                <ui:Button Content="{DynamicResource Pkt_InstallNpcap}" Icon="{ui:SymbolIcon ArrowDownload24}"
-                           Style="{StaticResource LiquidButtonStyle}"
-                           Appearance="Primary" Command="{Binding InstallNpcapCommand}"
-                           Visibility="{Binding IsCaptureEngineAvailable, Converter={StaticResource BoolToVisibilityInverse}}"
-                           Margin="0,0,12,0" />
-
-                <TextBlock Text="{DynamicResource Pkt_Filter}" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
-                <ui:TextBox Width="260" Margin="0,0,12,0" PlaceholderText="{DynamicResource Pkt_FilterPlaceholder}"
+                <TextBlock Text="{DynamicResource Pkt_Filter}" Style="{StaticResource ToolbarLabel}" Margin="10,0,6,0" />
+                <ui:TextBox MinWidth="180" MaxWidth="240" Margin="0,0,10,0" VerticalAlignment="Center"
+                            PlaceholderText="{DynamicResource Pkt_FilterPlaceholder}"
                             Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" />
 
                 <ui:Button Content="{DynamicResource Pkt_Start}" Icon="{ui:SymbolIcon Play24}" Appearance="Primary"
-                           Style="{StaticResource LiquidButtonStyle}"
-                           Command="{Binding StartCaptureCommand}"
-                           Visibility="{Binding IsCapturing, Converter={StaticResource BoolToVisibilityInverse}}"
-                           Margin="0,0,8,0" />
+                           Style="{StaticResource AppButton}" Command="{Binding StartCaptureCommand}"
+                           Visibility="{Binding IsCapturing, Converter={StaticResource BoolToVisibilityInverse}}" />
                 <ui:Button Content="{DynamicResource Pkt_Stop}" Icon="{ui:SymbolIcon Stop24}" Appearance="Danger"
-                           Style="{StaticResource LiquidButtonStyle}"
-                           Command="{Binding StopCaptureCommand}"
-                           Visibility="{Binding IsCapturing, Converter={StaticResource BoolToVisibility}}"
-                           Margin="0,0,8,0" />
+                           Style="{StaticResource AppButton}" Command="{Binding StopCaptureCommand}"
+                           Visibility="{Binding IsCapturing, Converter={StaticResource BoolToVisibility}}" />
 
-                <ui:Button Content="{DynamicResource Pkt_Clear}" Icon="{ui:SymbolIcon Broom24}" Style="{StaticResource LiquidButtonStyle}" Command="{Binding ClearPacketsCommand}" Margin="0,0,8,0" />
-                <ui:Button Content="{DynamicResource Pkt_OpenPcap}" Icon="{ui:SymbolIcon FolderOpen24}" Style="{StaticResource LiquidButtonStyle}" Command="{Binding OpenCaptureCommand}" Margin="0,0,8,0" />
-                <ui:Button Content="{DynamicResource Pkt_SavePcap}" Icon="{ui:SymbolIcon Save24}" Style="{StaticResource LiquidButtonStyle}" Command="{Binding SaveCaptureCommand}" Margin="0,0,8,0" />
+                <ui:Button Content="{DynamicResource Pkt_Clear}" Icon="{ui:SymbolIcon Broom24}"
+                           Style="{StaticResource AppButton}" Command="{Binding ClearPacketsCommand}" />
+                <ui:Button Content="{DynamicResource Pkt_OpenPcap}" Icon="{ui:SymbolIcon FolderOpen24}"
+                           Style="{StaticResource AppButton}" Command="{Binding OpenCaptureCommand}" />
+                <ui:Button Content="{DynamicResource Pkt_SavePcap}" Icon="{ui:SymbolIcon Save24}"
+                           Style="{StaticResource AppButton}" Command="{Binding SaveCaptureCommand}" />
 
-                <CheckBox Content="{DynamicResource Pkt_AutoScroll}" IsChecked="{Binding AutoScroll}" VerticalAlignment="Center" Margin="12,0,0,0" />
-            </StackPanel>
+                <CheckBox Content="{DynamicResource Pkt_AutoScroll}" IsChecked="{Binding AutoScroll}"
+                          VerticalAlignment="Center" Margin="8,0,0,0" />
+            </WrapPanel>
         </Border>
 
-        <!-- Packet list -->
-        <Border Grid.Row="2" Style="{StaticResource GlassCard}" Padding="1">
+        <!-- Packet list + dissection -->
+        <Border Grid.Row="2" Style="{StaticResource Card}" Padding="1">
             <Grid ClipToBounds="True">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="2*" />
+                    <RowDefinition Height="2*" MinHeight="120" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="1.2*" />
+                    <RowDefinition Height="1.1*" MinHeight="120" />
                 </Grid.RowDefinitions>
 
                 <DataGrid x:Name="PacketGrid" Grid.Row="0"
-                          Background="Transparent" RowStyle="{StaticResource PacketRowStyle}"
+                          Background="Transparent" BorderThickness="0"
+                          RowStyle="{StaticResource PacketRow}"
                           ItemsSource="{Binding Packets}"
                           SelectedItem="{Binding SelectedPacket}"
                           AutoGenerateColumns="False" IsReadOnly="True"
-                          GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                          GridLinesVisibility="None" HeadersVisibility="Column" ColumnHeaderStyle="{StaticResource AppColumnHeader}"
                           SelectionMode="Single" SelectionUnit="FullRow"
                           EnableRowVirtualization="True" EnableColumnVirtualization="True"
                           VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
                           ScrollViewer.CanContentScroll="True">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_No}" Binding="{Binding Number}" Width="70" />
-                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Time}" Binding="{Binding Time}" Width="110" />
-                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Source}" Binding="{Binding Source}" Width="180" />
-                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Destination}" Binding="{Binding Destination}" Width="180" />
+                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_No}" Binding="{Binding Number}" Width="64" />
+                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Time}" Binding="{Binding Time}" Width="104" />
+                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Source}" Binding="{Binding Source}" Width="176" />
+                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Destination}" Binding="{Binding Destination}" Width="176" />
                         <DataGridTextColumn Header="{DynamicResource Pkt_Col_Protocol}" Binding="{Binding Protocol}" Width="80" />
-                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Length}" Binding="{Binding Length}" Width="70" />
+                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Length}" Binding="{Binding Length}" Width="68" />
                         <DataGridTextColumn Header="{DynamicResource Pkt_Col_Info}" Binding="{Binding Info}" Width="*" />
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!-- Empty state -->
-                <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center"
-                            Visibility="{Binding Packets.Count, Converter={StaticResource CountToVisibility}}"
-                            IsHitTestVisible="False">
-                    <ui:SymbolIcon Symbol="Wifi124" Style="{StaticResource EmptyStateIconStyle}" />
-                    <TextBlock Text="{DynamicResource Pkt_EmptyState}" Style="{StaticResource EmptyStateTextStyle}" />
+                <StackPanel Grid.Row="0" Style="{StaticResource EmptyState}"
+                            Visibility="{Binding Packets.Count, Converter={StaticResource CountToVisibility}}">
+                    <ui:SymbolIcon Symbol="Pulse24" Style="{StaticResource EmptyStateIcon}" />
+                    <TextBlock Text="{DynamicResource Pkt_EmptyState}" Style="{StaticResource EmptyStateText}" />
                 </StackPanel>
 
-                <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Height="4" Background="Transparent" />
+                <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Height="5"
+                              Background="{StaticResource BorderSubtleBrush}" />
 
                 <Grid Grid.Row="2">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" MinWidth="200" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" MinWidth="200" />
                     </Grid.ColumnDefinitions>
 
                     <TreeView Grid.Column="0" x:Name="DetailsTree"
                               ItemsSource="{Binding SelectedPacket.Packet.Layers}"
-                              Background="{StaticResource GlassSurfaceSunkenBrush}" BorderThickness="0">
+                              Background="{StaticResource SurfaceSunkenBrush}" BorderThickness="0" Padding="6">
                         <TreeView.ItemTemplate>
                             <HierarchicalDataTemplate ItemsSource="{Binding Fields}">
-                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <HierarchicalDataTemplate.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock>
-                                            <Run Text="{Binding Name, Mode=OneWay}" FontWeight="SemiBold" />
+                                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}">
+                                            <Run Text="{Binding Name, Mode=OneWay}" />
                                             <Run Text=": " />
-                                            <Run Text="{Binding Value, Mode=OneWay}" />
+                                            <Run Text="{Binding Value, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" />
                                         </TextBlock>
                                     </DataTemplate>
                                 </HierarchicalDataTemplate.ItemTemplate>
@@ -138,26 +133,74 @@
                         </TreeView.ItemTemplate>
                     </TreeView>
 
-                    <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="Transparent" />
+                    <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"
+                                  Background="{StaticResource BorderSubtleBrush}" />
 
                     <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
-                                  Background="{StaticResource GlassSurfaceSunkenBrush}">
-                        <TextBox Text="{Binding SelectedPacket.HexDump, Mode=OneWay}"
-                                 FontFamily="Cascadia Mono, Consolas" FontSize="12"
-                                 IsReadOnly="True" BorderThickness="0" Background="Transparent"
-                                 TextWrapping="NoWrap" />
+                                  Background="{StaticResource SurfaceSunkenBrush}">
+                        <TextBox Text="{Binding SelectedPacket.HexDump, Mode=OneWay}" Style="{StaticResource MonoText}" />
                     </ScrollViewer>
+
+                    <TextBlock Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource EmptyStateText}"
+                               VerticalAlignment="Center" IsHitTestVisible="False"
+                               Text="{DynamicResource Pkt_SelectPacket}"
+                               Visibility="{Binding SelectedPacket, Converter={StaticResource NullToVisibility}}" />
                 </Grid>
             </Grid>
         </Border>
 
-        <!-- Status bar -->
-        <Border Grid.Row="4" Style="{StaticResource GlassCard}" Padding="14,8" HorizontalAlignment="Left">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource TextSecondaryBrush}" />
-                <TextBlock Text="{Binding PacketsCountText}" Foreground="{DynamicResource TextTertiaryBrush}" />
-                <TextBlock Text="{Binding BytesCountText}" Foreground="{DynamicResource TextTertiaryBrush}" />
+        <!-- Npcap setup overlay: covers the list while the capture engine is missing -->
+        <Border Grid.Row="2" CornerRadius="10" Background="#FB101318"
+                BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1"
+                Visibility="{Binding IsCaptureEngineAvailable, Converter={StaticResource BoolToVisibilityInverse}}">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="420">
+                <Border Width="72" Height="72" CornerRadius="36" HorizontalAlignment="Center"
+                        Background="{StaticResource SurfaceRaisedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="34" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                </Border>
+                <TextBlock Text="{DynamicResource Npcap_Title}" FontSize="16" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center"
+                           TextAlignment="Center" Margin="0,18,0,0" />
+                <TextBlock Text="{DynamicResource Npcap_Desc}" Foreground="{StaticResource TextSecondaryBrush}"
+                           FontSize="12.5" TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,0" />
+
+                <!-- Busy: ring on its own line, wrapping status below -->
+                <StackPanel HorizontalAlignment="Center" Margin="0,20,0,0"
+                            Visibility="{Binding NpcapBusy, Converter={StaticResource BoolToVisibility}}">
+                    <ui:ProgressRing IsIndeterminate="True" Width="26" Height="26" HorizontalAlignment="Center" />
+                    <TextBlock Text="{Binding NpcapStatus}" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="12.5" TextAlignment="Center" TextWrapping="Wrap" Margin="0,12,0,0" />
+                </StackPanel>
+
+                <!-- Failed / cancelled: message + retry -->
+                <StackPanel HorizontalAlignment="Center" Margin="0,20,0,0"
+                            Visibility="{Binding NpcapCanRetry, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{Binding NpcapStatus}" Foreground="{StaticResource WarnBrush}"
+                               FontSize="12.5" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,14" />
+                    <ui:Button Content="{DynamicResource Npcap_Retry}" Icon="{ui:SymbolIcon ArrowClockwise24}"
+                               Appearance="Primary" Style="{StaticResource AppButton}" HorizontalAlignment="Center"
+                               Command="{Binding RetryNpcapCommand}" />
+                </StackPanel>
             </StackPanel>
+        </Border>
+
+        <!-- Status bar -->
+        <Border Grid.Row="4" Style="{StaticResource Card}" Padding="12,7">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" TextTrimming="CharacterEllipsis"
+                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <TextBlock Text="{Binding PacketsCountText}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                    <Border Width="1" Height="12" Margin="12,0" VerticalAlignment="Center"
+                            Background="{StaticResource BorderBrush}" />
+                    <TextBlock Text="{Binding BytesCountText}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                </StackPanel>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

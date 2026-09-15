@@ -37,12 +37,16 @@
     <sys:String x:Key="Pkt_Status_Saved">Saved {0} packets to {1}</sys:String>
     <sys:String x:Key="Pkt_Status_Loaded">Loaded {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapDownloading">Downloading the Npcap installer…</sys:String>
-    <sys:String x:Key="Pkt_Status_NpcapLaunching">Npcap installer launched - finish its setup wizard, then click Refresh.</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapLaunching">Npcap installer opened — complete its setup wizard. Capture starts automatically when it finishes.</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallFailed">Could not install Npcap: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">The Npcap installer closed without finishing. Click Install Npcap to try again.</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Packets">  |  Packets: {0}</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Bytes">  |  Bytes: {0:N0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Packets">Packets: {0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Bytes">Bytes: {0:N0}</sys:String>
     <sys:String x:Key="Pkt_EmptyState">Start capturing to see packets here</sys:String>
+    <sys:String x:Key="Pkt_SelectPacket">Select a packet to inspect its layers and bytes</sys:String>
+    <sys:String x:Key="Npcap_Title">Npcap is required for packet capture</sys:String>
+    <sys:String x:Key="Npcap_Desc">NetSniffer is fetching the official Npcap installer and will open it. Complete its wizard, and capture becomes available automatically.</sys:String>
+    <sys:String x:Key="Npcap_Retry">Download and install again</sys:String>
 
     <sys:String x:Key="Proxy_Port">Port:</sys:String>
     <sys:String x:Key="Proxy_Start">Start</sys:String>
@@ -70,6 +74,7 @@
     <sys:String x:Key="Proxy_Status_Error">Error</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(no response yet)</sys:String>
     <sys:String x:Key="Proxy_EmptyState">Start the proxy and point a client at it to see requests here</sys:String>
+    <sys:String x:Key="Proxy_SelectExchange">Select a request to inspect its headers and body</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">Listening on 127.0.0.1:{0}. Point a client's proxy settings here.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Failed to start: {0}</sys:String>
     <sys:String x:Key="Proxy_Status_CertInstalled">Root certificate trusted for the current Windows user.</sys:String>

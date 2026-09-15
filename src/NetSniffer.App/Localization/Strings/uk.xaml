@@ -35,12 +35,16 @@
     <sys:String x:Key="Pkt_Status_Saved">Збережено {0} пакетів у {1}</sys:String>
     <sys:String x:Key="Pkt_Status_Loaded">Завантажено: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapDownloading">Завантаження інсталятора Npcap…</sys:String>
-    <sys:String x:Key="Pkt_Status_NpcapLaunching">Інсталятор Npcap запущено — завершіть майстер налаштування, потім натисніть «Оновити».</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapLaunching">Інсталятор Npcap запущено — завершіть майстер. Захоплення увімкнеться автоматично після завершення.</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallFailed">Не вдалося встановити Npcap: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Інсталятор Npcap закрито без завершення. Натисніть «Встановити Npcap», щоб спробувати ще раз.</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Packets">  |  Пакетів: {0}</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Bytes">  |  Байтів: {0:N0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Packets">Пакетів: {0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Bytes">Байтів: {0:N0}</sys:String>
     <sys:String x:Key="Pkt_EmptyState">Почніть захоплення, щоб побачити пакети тут</sys:String>
+    <sys:String x:Key="Pkt_SelectPacket">Виберіть пакет, щоб розібрати його за шарами та байтами</sys:String>
+    <sys:String x:Key="Npcap_Title">Для захоплення пакетів потрібен Npcap</sys:String>
+    <sys:String x:Key="Npcap_Desc">NetSniffer завантажує офіційний інсталятор Npcap і відкриє його. Пройдіть майстер — захоплення стане доступним автоматично.</sys:String>
+    <sys:String x:Key="Npcap_Retry">Завантажити та встановити знову</sys:String>
 
     <sys:String x:Key="Proxy_Port">Порт:</sys:String>
     <sys:String x:Key="Proxy_Start">Старт</sys:String>
@@ -68,6 +72,7 @@
     <sys:String x:Key="Proxy_Status_Error">Помилка</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(відповіді ще немає)</sys:String>
     <sys:String x:Key="Proxy_EmptyState">Запустіть проксі та спрямуйте на нього клієнта, щоб побачити запити тут</sys:String>
+    <sys:String x:Key="Proxy_SelectExchange">Виберіть запит, щоб переглянути заголовки та тіло</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">Слухає 127.0.0.1:{0}. Вкажіть цю адресу в налаштуваннях проксі клієнта.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Не вдалося запустити: {0}</sys:String>
     <sys:String x:Key="Proxy_Status_CertInstalled">Кореневий сертифікат додано до довірених для поточного користувача Windows.</sys:String>

@@ -35,12 +35,16 @@
     <sys:String x:Key="Pkt_Status_Saved">Zapisano {0} pakietów w {1}</sys:String>
     <sys:String x:Key="Pkt_Status_Loaded">Wczytano: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapDownloading">Pobieranie instalatora Npcap…</sys:String>
-    <sys:String x:Key="Pkt_Status_NpcapLaunching">Uruchomiono instalator Npcap - ukończ kreatora, a następnie kliknij Odśwież.</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapLaunching">Instalator Npcap otwarty — ukończ kreatora. Przechwytywanie rozpocznie się automatycznie po zakończeniu.</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallFailed">Nie udało się zainstalować Npcap: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Instalator Npcap został zamknięty bez ukończenia. Kliknij Zainstaluj Npcap, aby spróbować ponownie.</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Packets">  |  Pakiety: {0}</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Bytes">  |  Bajty: {0:N0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Packets">Pakiety: {0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Bytes">Bajty: {0:N0}</sys:String>
     <sys:String x:Key="Pkt_EmptyState">Rozpocznij przechwytywanie, aby zobaczyć tutaj pakiety</sys:String>
+    <sys:String x:Key="Pkt_SelectPacket">Wybierz pakiet, aby zobaczyć jego warstwy i bajty</sys:String>
+    <sys:String x:Key="Npcap_Title">Do przechwytywania pakietów wymagany jest Npcap</sys:String>
+    <sys:String x:Key="Npcap_Desc">NetSniffer pobiera oficjalny instalator Npcap i go otworzy. Ukończ kreatora, a przechwytywanie stanie się dostępne automatycznie.</sys:String>
+    <sys:String x:Key="Npcap_Retry">Pobierz i zainstaluj ponownie</sys:String>
 
     <sys:String x:Key="Proxy_Port">Port:</sys:String>
     <sys:String x:Key="Proxy_Start">Start</sys:String>
@@ -68,6 +72,7 @@
     <sys:String x:Key="Proxy_Status_Error">Błąd</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(jeszcze brak odpowiedzi)</sys:String>
     <sys:String x:Key="Proxy_EmptyState">Uruchom proxy i skieruj do niego klienta, aby zobaczyć tutaj żądania</sys:String>
+    <sys:String x:Key="Proxy_SelectExchange">Wybierz żądanie, aby zobaczyć nagłówki i treść</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">Nasłuchiwanie na 127.0.0.1:{0}. Ustaw ten adres w konfiguracji proxy klienta.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Nie udało się uruchomić: {0}</sys:String>
     <sys:String x:Key="Proxy_Status_CertInstalled">Certyfikat główny zaufany dla bieżącego użytkownika systemu Windows.</sys:String>

@@ -24,6 +24,17 @@ public static class NpcapInstaller
     /// <summary>Downloads the current Npcap installer and runs it, waiting for it to exit. Returns once the installer process exits, whatever the outcome - caller should re-check adapter availability afterwards.</summary>
     public static async Task RunInstallerAsync(IProgress<NpcapInstallStage>? progress = null, CancellationToken ct = default)
     {
+        // Test seam: exercise the UI's download/install states without hitting the
+        // network or launching a real elevated installer. Off unless explicitly set.
+        if (Environment.GetEnvironmentVariable("NETSNIFFER_FAKE_NPCAP") == "1")
+        {
+            progress?.Report(NpcapInstallStage.Downloading);
+            await Task.Delay(1500, ct).ConfigureAwait(false);
+            progress?.Report(NpcapInstallStage.Launching);
+            await Task.Delay(60_000, ct).ConfigureAwait(false);
+            return;
+        }
+
         progress?.Report(NpcapInstallStage.Downloading);
 
         string installerUrl = await ResolveInstallerUrlAsync(ct).ConfigureAwait(false) ?? FallbackInstallerUrl;

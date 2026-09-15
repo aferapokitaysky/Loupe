@@ -36,3 +36,8 @@ jobs:
 
       - name: Build C# solution
         run: dotnet build src\NetSniffer.App\NetSniffer.App.csproj -c Release
+
+      # Hermetic: hand-built frames for the dissector, loopback HTTP for the proxy.
+      # Needs neither Npcap nor internet access.
+      - name: Run tests
+        run: dotnet run --project tests\NetSniffer.Tests -c Release

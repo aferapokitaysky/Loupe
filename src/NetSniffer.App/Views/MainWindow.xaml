@@ -4,12 +4,27 @@
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  xmlns:views="clr-namespace:NetSniffer.App.Views"
                  xmlns:loc="clr-namespace:NetSniffer.App.Localization"
-                 Title="NetSniffer" Height="860" Width="1440"
+                 xmlns:conv="clr-namespace:NetSniffer.App.Converters"
+                 Title="NetSniffer" Height="880" Width="1500"
+                 MinWidth="880" MinHeight="560"
                  WindowStartupLocation="CenterScreen"
                  ExtendsContentIntoTitleBar="True"
                  WindowBackdropType="Mica">
 
-    <Grid Background="{DynamicResource WindowScrimBrush}">
+    <Window.Resources>
+        <conv:ResourceBrushConverter x:Key="ResourceBrush" />
+        <conv:InverseBooleanConverter x:Key="InverseBoolean" />
+
+        <DataTemplate x:Key="LanguageItemTemplate">
+            <StackPanel Orientation="Horizontal" Margin="2,3">
+                <Border Style="{StaticResource FlagSwatch}"
+                        Background="{Binding FlagKey, Converter={StaticResource ResourceBrush}}" />
+                <TextBlock Text="{Binding NativeName}" Margin="10,0,4,0" VerticalAlignment="Center" />
+            </StackPanel>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid Background="{StaticResource WindowScrimBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -19,35 +34,69 @@
 
         <Grid Grid.Row="1" Margin="10,0,10,10">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="84" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="10" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
             <!-- Nav rail -->
-            <Border Grid.Column="0" Style="{StaticResource GlassCard}">
+            <Border Grid.Column="0" Width="96" Style="{StaticResource Card}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Row="0" Margin="0,10,0,0">
+                    <StackPanel Grid.Row="0" Margin="0,8,0,0">
                         <RadioButton x:Name="PacketsNavButton" GroupName="Nav" Style="{StaticResource NavButtonStyle}"
-                                     Tag="Wifi124" Content="{DynamicResource Nav_Packets}" Checked="OnPacketsNavChecked" />
+                                     Checked="OnPacketsNavChecked">
+                            <StackPanel>
+                                <ui:SymbolIcon Symbol="Pulse24" FontSize="22" HorizontalAlignment="Center" />
+                                <TextBlock Text="{DynamicResource Nav_Packets}" Style="{StaticResource NavLabel}" />
+                            </StackPanel>
+                        </RadioButton>
+
                         <RadioButton x:Name="ProxyNavButton" GroupName="Nav" Style="{StaticResource NavButtonStyle}"
-                                     Tag="ShieldCheckmark24" Content="{DynamicResource Nav_Proxy}" Checked="OnProxyNavChecked" />
+                                     Checked="OnProxyNavChecked">
+                            <StackPanel>
+                                <ui:SymbolIcon Symbol="ShieldKeyhole24" FontSize="22" HorizontalAlignment="Center" />
+                                <TextBlock Text="{DynamicResource Nav_Proxy}" Style="{StaticResource NavLabel}" />
+                            </StackPanel>
+                        </RadioButton>
                     </StackPanel>
 
-                    <ComboBox x:Name="LanguageComboBox" Grid.Row="1" Margin="8,4,8,12"
-                              ToolTip="{DynamicResource Nav_Language}"
-                              ItemsSource="{x:Static loc:LocalizationService.AvailableLanguages}"
-                              DisplayMemberPath="Flag"
-                              SelectionChanged="OnLanguageSelectionChanged" />
+                    <!-- Language: flag chip in the rail, full list in a popup so long names aren't clipped -->
+                    <Grid Grid.Row="1" Margin="0,6,0,10">
+                        <!-- Not hit-testable while the popup is open: otherwise the click that dismisses
+                             the popup (StaysOpen=False) also lands on the toggle and reopens it -->
+                        <ToggleButton x:Name="LanguageToggle" Style="{StaticResource FlagChip}"
+                                      HorizontalAlignment="Center" ToolTip="{DynamicResource Nav_Language}"
+                                      IsHitTestVisible="{Binding IsOpen, ElementName=LanguagePopup, Converter={StaticResource InverseBoolean}}">
+                            <Border x:Name="CurrentFlag" Style="{StaticResource FlagSwatch}" />
+                        </ToggleButton>
+
+                        <Popup x:Name="LanguagePopup" PlacementTarget="{Binding ElementName=LanguageToggle}"
+                               Placement="Top" VerticalOffset="-8" HorizontalOffset="6"
+                               StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade"
+                               IsOpen="{Binding IsChecked, ElementName=LanguageToggle, Mode=TwoWay}"
+                               Closed="OnLanguagePopupClosed">
+                            <Border Background="{StaticResource SurfaceRaisedBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                    CornerRadius="10" Padding="6" Margin="8">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="Black" Opacity="0.5" BlurRadius="20" ShadowDepth="4" Direction="270" />
+                                </Border.Effect>
+                                <ListBox x:Name="LanguageList" Background="Transparent" BorderThickness="0"
+                                         ItemsSource="{x:Static loc:LocalizationService.AvailableLanguages}"
+                                         ItemTemplate="{StaticResource LanguageItemTemplate}"
+                                         SelectionChanged="OnLanguageSelectionChanged" />
+                            </Border>
+                        </Popup>
+                    </Grid>
                 </Grid>
             </Border>
 
-            <!-- Content: PacketsPage/ProxyPageControl cross-fade between each other on nav change -->
+            <!-- Content: the two pages cross-fade on nav change -->
             <Grid Grid.Column="2">
                 <views:PacketCapturePage x:Name="PacketsPage" />
                 <views:ProxyPage x:Name="ProxyPageControl" Visibility="Collapsed" Opacity="0" />

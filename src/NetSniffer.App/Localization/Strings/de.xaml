@@ -35,12 +35,16 @@
     <sys:String x:Key="Pkt_Status_Saved">{0} Pakete in {1} gespeichert</sys:String>
     <sys:String x:Key="Pkt_Status_Loaded">Geladen: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapDownloading">Npcap-Installer wird heruntergeladen…</sys:String>
-    <sys:String x:Key="Pkt_Status_NpcapLaunching">Npcap-Installer gestartet - Setup-Assistenten abschließen, dann Aktualisieren klicken.</sys:String>
+    <sys:String x:Key="Pkt_Status_NpcapLaunching">Npcap-Installer geöffnet — schließe den Assistenten ab. Die Aufzeichnung startet danach automatisch.</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallFailed">Npcap konnte nicht installiert werden: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Der Npcap-Installer wurde ohne Abschluss geschlossen. Zum erneuten Versuch auf Npcap installieren klicken.</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Packets">  |  Pakete: {0}</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Bytes">  |  Bytes: {0:N0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Packets">Pakete: {0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Bytes">Bytes: {0:N0}</sys:String>
     <sys:String x:Key="Pkt_EmptyState">Starte die Aufzeichnung, um hier Pakete zu sehen</sys:String>
+    <sys:String x:Key="Pkt_SelectPacket">Wähle ein Paket, um Schichten und Bytes zu sehen</sys:String>
+    <sys:String x:Key="Npcap_Title">Für die Paketaufzeichnung wird Npcap benötigt</sys:String>
+    <sys:String x:Key="Npcap_Desc">NetSniffer lädt den offiziellen Npcap-Installer herunter und öffnet ihn. Schließe den Assistenten ab, dann ist die Aufzeichnung automatisch verfügbar.</sys:String>
+    <sys:String x:Key="Npcap_Retry">Erneut herunterladen und installieren</sys:String>
 
     <sys:String x:Key="Proxy_Port">Port:</sys:String>
     <sys:String x:Key="Proxy_Start">Start</sys:String>
@@ -68,6 +72,7 @@
     <sys:String x:Key="Proxy_Status_Error">Fehler</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(noch keine Antwort)</sys:String>
     <sys:String x:Key="Proxy_EmptyState">Starte den Proxy und richte einen Client darauf aus, um hier Anfragen zu sehen</sys:String>
+    <sys:String x:Key="Proxy_SelectExchange">Wähle eine Anfrage, um Header und Body zu sehen</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">Wartet auf 127.0.0.1:{0}. Diese Adresse in den Proxy-Einstellungen des Clients eintragen.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Start fehlgeschlagen: {0}</sys:String>
     <sys:String x:Key="Proxy_Status_CertInstalled">Stammzertifikat für den aktuellen Windows-Benutzer als vertrauenswürdig eingestuft.</sys:String>
