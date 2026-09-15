@@ -40,9 +40,10 @@
     <sys:String x:Key="Pkt_Status_NpcapLaunching">Npcap installer launched - finish its setup wizard, then click Refresh.</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallFailed">Could not install Npcap: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">The Npcap installer closed without finishing. Click Install Npcap to try again.</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Packets">  |  Packets: {0}</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Bytes">  |  Bytes: {0:N0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Packets">Packets: {0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Bytes">Bytes: {0:N0}</sys:String>
     <sys:String x:Key="Pkt_EmptyState">Start capturing to see packets here</sys:String>
+    <sys:String x:Key="Pkt_SelectPacket">Select a packet to inspect its layers and bytes</sys:String>
 
     <sys:String x:Key="Proxy_Port">Port:</sys:String>
     <sys:String x:Key="Proxy_Start">Start</sys:String>
@@ -70,6 +71,7 @@
     <sys:String x:Key="Proxy_Status_Error">Error</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(no response yet)</sys:String>
     <sys:String x:Key="Proxy_EmptyState">Start the proxy and point a client at it to see requests here</sys:String>
+    <sys:String x:Key="Proxy_SelectExchange">Select a request to inspect its headers and body</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">Listening on 127.0.0.1:{0}. Point a client's proxy settings here.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Failed to start: {0}</sys:String>
     <sys:String x:Key="Proxy_Status_CertInstalled">Root certificate trusted for the current Windows user.</sys:String>

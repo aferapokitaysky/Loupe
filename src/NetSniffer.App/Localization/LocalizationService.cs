@@ -15,18 +15,18 @@ public static class LocalizationService
 {
     public static readonly IReadOnlyList<LanguageInfo> AvailableLanguages =
     [
-        new("en", "English", "🇬🇧"),
-        new("ru", "Русский", "🇷🇺"),
-        new("uk", "Українська", "🇺🇦"),
-        new("es", "Español", "🇪🇸"),
-        new("de", "Deutsch", "🇩🇪"),
-        new("fr", "Français", "🇫🇷"),
-        new("pt", "Português", "🇵🇹"),
-        new("it", "Italiano", "🇮🇹"),
-        new("zh", "中文", "🇨🇳"),
-        new("ja", "日本語", "🇯🇵"),
-        new("tr", "Türkçe", "🇹🇷"),
-        new("pl", "Polski", "🇵🇱"),
+        new("en", "English", "Flag_GB"),
+        new("ru", "Русский", "Flag_RU"),
+        new("uk", "Українська", "Flag_UA"),
+        new("es", "Español", "Flag_ES"),
+        new("de", "Deutsch", "Flag_DE"),
+        new("fr", "Français", "Flag_FR"),
+        new("pt", "Português", "Flag_PT"),
+        new("it", "Italiano", "Flag_IT"),
+        new("zh", "中文", "Flag_CN"),
+        new("ja", "日本語", "Flag_JP"),
+        new("tr", "Türkçe", "Flag_TR"),
+        new("pl", "Polski", "Flag_PL"),
     ];
 
     private const string DefaultLanguageCode = "en";

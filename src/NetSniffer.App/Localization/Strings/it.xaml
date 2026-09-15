@@ -38,9 +38,10 @@
     <sys:String x:Key="Pkt_Status_NpcapLaunching">Installer di Npcap avviato: completa la procedura guidata, poi clicca su Aggiorna.</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallFailed">Impossibile installare Npcap: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">L'installer di Npcap si è chiuso senza completare l'operazione. Clicca su Installa Npcap per riprovare.</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Packets">  |  Pacchetti: {0}</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Bytes">  |  Byte: {0:N0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Packets">Pacchetti: {0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Bytes">Byte: {0:N0}</sys:String>
     <sys:String x:Key="Pkt_EmptyState">Avvia l'acquisizione per vedere i pacchetti qui</sys:String>
+    <sys:String x:Key="Pkt_SelectPacket">Seleziona un pacchetto per vederne livelli e byte</sys:String>
 
     <sys:String x:Key="Proxy_Port">Porta:</sys:String>
     <sys:String x:Key="Proxy_Start">Avvia</sys:String>
@@ -68,6 +69,7 @@
     <sys:String x:Key="Proxy_Status_Error">Errore</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(nessuna risposta ancora)</sys:String>
     <sys:String x:Key="Proxy_EmptyState">Avvia il proxy e punta un client verso di esso per vedere le richieste qui</sys:String>
+    <sys:String x:Key="Proxy_SelectExchange">Seleziona una richiesta per vederne intestazioni e corpo</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">In ascolto su 127.0.0.1:{0}. Imposta questo indirizzo come proxy del client.</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">Avvio non riuscito: {0}</sys:String>
     <sys:String x:Key="Proxy_Status_CertInstalled">Certificato radice considerato attendibile per l'utente Windows corrente.</sys:String>

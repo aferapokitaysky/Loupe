@@ -38,9 +38,10 @@
     <sys:String x:Key="Pkt_Status_NpcapLaunching">Npcap インストーラーを起動しました。セットアップを完了してから「更新」をクリックしてください。</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallFailed">Npcap をインストールできませんでした: {0}</sys:String>
     <sys:String x:Key="Pkt_Status_NpcapInstallCancelled">Npcap インストーラーが完了せずに閉じられました。「Npcap をインストール」をもう一度クリックしてください。</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Packets">  |  パケット数: {0}</sys:String>
-    <sys:String x:Key="Pkt_StatusBar_Bytes">  |  バイト数: {0:N0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Packets">パケット数: {0}</sys:String>
+    <sys:String x:Key="Pkt_StatusBar_Bytes">バイト数: {0:N0}</sys:String>
     <sys:String x:Key="Pkt_EmptyState">キャプチャを開始するとここにパケットが表示されます</sys:String>
+    <sys:String x:Key="Pkt_SelectPacket">パケットを選ぶとレイヤーとバイト列が表示されます</sys:String>
 
     <sys:String x:Key="Proxy_Port">ポート:</sys:String>
     <sys:String x:Key="Proxy_Start">開始</sys:String>
@@ -68,6 +69,7 @@
     <sys:String x:Key="Proxy_Status_Error">エラー</sys:String>
     <sys:String x:Key="Proxy_NoResponseYet">(まだ応答なし)</sys:String>
     <sys:String x:Key="Proxy_EmptyState">プロキシを開始し、クライアントをこれに向けるとここにリクエストが表示されます</sys:String>
+    <sys:String x:Key="Proxy_SelectExchange">リクエストを選ぶとヘッダーと本文が表示されます</sys:String>
     <sys:String x:Key="Proxy_Status_Listening">127.0.0.1:{0} で待機中です。クライアントのプロキシ設定にこのアドレスを指定してください。</sys:String>
     <sys:String x:Key="Proxy_Status_FailedToStart">起動に失敗しました: {0}</sys:String>
     <sys:String x:Key="Proxy_Status_CertInstalled">現在の Windows ユーザーでルート証明書を信頼しました。</sys:String>
