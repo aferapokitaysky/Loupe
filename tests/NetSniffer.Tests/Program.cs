@@ -143,6 +143,8 @@ T.Section("TCP REASSEMBLY");
         1, new TcpStreamKey("1.1.1.1", 80, "2.2.2.2", 9) == new TcpStreamKey("2.2.2.2", 9, "1.1.1.1", 80) ? 1 : 0);
 }
 
+NamingTests.Run();
+
 await ProxyTests.RunAsync();
 
 Console.WriteLine($"\n================  {T.Pass} passed, {T.Fail} failed  ================");
