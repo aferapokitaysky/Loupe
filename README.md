@@ -103,11 +103,11 @@ at key extraction or interception of third-party sessions - the same
 
 It also doesn't vendor/bundle the Npcap installer. Npcap's license doesn't
 permit free redistribution of the installer itself outside npcap.com, so
-"Install Npcap" ([`NpcapInstaller`](src/NetSniffer.Capture/NpcapInstaller.cs))
-downloads the current official installer over HTTPS at the moment you click
-the button and runs it as a normal child process - you still see Npcap's own
-installer UI and accept Npcap's own license; NetSniffer never pre-accepts
-anything or installs silently on your behalf.
+[`NpcapInstaller`](src/NetSniffer.Capture/NpcapInstaller.cs) downloads the
+current official installer over HTTPS - on startup, if Npcap is missing -
+and runs it as a normal child process. You still see Npcap's own installer
+UI and accept Npcap's own license; NetSniffer never pre-accepts anything or
+installs silently on your behalf.
 
 ## Building
 
@@ -127,21 +127,31 @@ anything or installs silently on your behalf.
 
 **Build:**
 
-Open `NetSniffer.sln` in Visual Studio and build (Debug/Release, x64) - it
-builds the native project and all three C# projects together and copies
-`NetSniffer.Native.dll` next to `NetSniffer.exe` automatically.
+```bash
+build.cmd
+```
 
-From the command line, build the native project and the C# app separately -
-`NetSniffer.Native.vcxproj` needs real MSBuild from a **Developer Command
-Prompt for VS 2022** (the `dotnet` CLI can't evaluate `.vcxproj` files, and
-Build Tools' MSBuild can't always resolve SDK-style `.csproj`s side by side
-with it in one `.sln` build), while the C# side builds cleanly with the
-`dotnet` CLI once the native DLL exists:
+That's the whole thing, from any plain shell: it locates MSBuild through
+`vswhere`, builds the native capture DLL, builds the managed projects, and
+runs the test suite. Pass `build.cmd Debug` for a debug build. The result is
+`src\NetSniffer.App\bin\Release\net8.0-windows\NetSniffer.exe`, with
+`NetSniffer.Native.dll` copied next to it.
+
+Opening `NetSniffer.sln` in Visual Studio and building (x64) works too.
+
+What doesn't work is `dotnet build NetSniffer.sln`: the `dotnet` CLI can't
+evaluate `.vcxproj` files, so it stops at the native project with
+`error MSB4278`. That's exactly why `build.cmd` exists - the native DLL
+needs real MSBuild, everything managed is happy with `dotnet`.
+
+**Tests:**
 
 ```bash
-msbuild native\NetSniffer.Native\NetSniffer.Native.vcxproj /p:Configuration=Release /p:Platform=x64 /p:SolutionDir=%CD%\
-dotnet build src\NetSniffer.App\NetSniffer.App.csproj -c Release
+dotnet run --project tests\NetSniffer.Tests -c Release
 ```
+
+50 checks, and they need neither Npcap nor a network: the dissector runs on
+hand-built frames and the proxy runs against a byte-exact local HTTP origin.
 
 ## Running
 
