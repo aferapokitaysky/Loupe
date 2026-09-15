@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Threading;
@@ -17,7 +18,7 @@ namespace NetSniffer.App.ViewModels;
 public partial class MainViewModel : ObservableObject, IDisposable
 {
     private const int MaxDisplayedPackets = 250_000;
-    private const int DrainBatchSize = 500;
+    private const int DrainBudgetMs = 25;
 
     private readonly ConcurrentQueue<CapturedPacket> _incoming = new();
     private readonly DispatcherTimer _drainTimer;
@@ -57,6 +58,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         StatusMessage = Loc.Get("Pkt_Status_Ready");
 
+        // The status-bar counters bake their label into the string, so they'd keep the old
+        // language until the next packet arrived. Re-read them when the language changes.
+        LocalizationService.LanguageChanged += OnLanguageChanged;
+
         _drainTimer = new DispatcherTimer(DispatcherPriority.Background)
         {
             Interval = TimeSpan.FromMilliseconds(150),
@@ -79,12 +84,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         try
         {
+            // Clearing the collection makes the bound ComboBox null out SelectedAdapter, so
+            // remember the user's pick by name and restore it instead of silently jumping
+            // back to the default on every refresh.
+            string? previouslySelected = SelectedAdapter?.Name;
+
             Adapters.Clear();
             foreach (var device in CaptureDeviceManager.ListDevices())
                 Adapters.Add(device);
 
             IsCaptureEngineAvailable = true;
-            SelectedAdapter ??= Adapters.FirstOrDefault();
+            SelectedAdapter = Adapters.FirstOrDefault(a => a.Name == previouslySelected)
+                              ?? CaptureDeviceManager.PickDefault(Adapters);
             StatusMessage = Adapters.Count == 0
                 ? Loc.Get("Pkt_Status_NoAdapters")
                 : Loc.Format("Pkt_Status_AdaptersFound", Adapters.Count);
@@ -225,8 +236,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private void DrainIncomingPackets()
     {
+        // Bounded by time, not by a fixed count: a live adapter trickles packets in and stays
+        // well under the budget, while opening a large .pcap (which dumps the whole file into
+        // the queue at once) still fills the grid in a few ticks instead of minutes.
+        var budget = Stopwatch.StartNew();
         int drained = 0;
-        while (drained < DrainBatchSize && _incoming.TryDequeue(out var captured))
+
+        while (budget.ElapsedMilliseconds < DrainBudgetMs && _incoming.TryDequeue(out var captured))
         {
             var parsed = PacketParser.Parse(captured);
             _reassembler.Ingest(parsed);
@@ -243,8 +259,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
             Packets.RemoveAt(0);
     }
 
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        OnPropertyChanged(nameof(PacketsCountText));
+        OnPropertyChanged(nameof(BytesCountText));
+    }
+
     public void Dispose()
     {
+        // LanguageChanged is static - not unsubscribing would keep this view model alive.
+        LocalizationService.LanguageChanged -= OnLanguageChanged;
         _drainTimer.Stop();
         _session?.Dispose();
     }

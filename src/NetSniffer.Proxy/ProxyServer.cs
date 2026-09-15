@@ -62,6 +62,9 @@ public sealed class ProxyServer : IDisposable
         IsRunning = false;
         try { _cts?.Cancel(); } catch { /* already disposed */ }
         try { _listener?.Stop(); } catch { /* already stopped */ }
+        try { _cts?.Dispose(); } catch { /* already disposed */ }
+        _cts = null;
+        _listener = null;
     }
 
     public void Dispose() => Stop();

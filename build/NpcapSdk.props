@@ -18,7 +18,7 @@
   -->
   <PropertyGroup>
     <NpcapSdkDir Condition="'$(NPCAP_SDK_DIR)' != ''">$(NPCAP_SDK_DIR)</NpcapSdkDir>
-    <NpcapSdkDir Condition="'$(NpcapSdkDir)' == ''">$(SolutionDir)third_party\npcap-sdk\</NpcapSdkDir>
+    <NpcapSdkDir Condition="'$(NpcapSdkDir)' == ''">$(MSBuildThisFileDirectory)..\third_party\npcap-sdk\</NpcapSdkDir>
     <NpcapSdkDir Condition="!HasTrailingSlash('$(NpcapSdkDir)')">$(NpcapSdkDir)\</NpcapSdkDir>
     <NpcapSdkLibDir Condition="'$(Platform)' == 'x64'">$(NpcapSdkDir)Lib\x64\</NpcapSdkLibDir>
     <NpcapSdkLibDir Condition="'$(Platform)' != 'x64'">$(NpcapSdkDir)Lib\</NpcapSdkLibDir>
