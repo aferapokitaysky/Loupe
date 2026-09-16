@@ -1,0 +1,75 @@
+name: release
+
+# Pushing a version tag (git flow release finish does this) builds, tests and publishes the
+# downloads - nobody should need Visual Studio and the Npcap SDK just to try the app.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Download Npcap SDK
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://npcap.com/dist/npcap-sdk-1.13.zip" -OutFile npcap-sdk.zip
+          Expand-Archive -Path npcap-sdk.zip -DestinationPath third_party/npcap-sdk
+
+      - name: Build native capture engine
+        shell: cmd
+        env:
+          NPCAP_SDK_DIR: ${{ github.workspace }}\third_party\npcap-sdk
+        run: |
+          msbuild native\Loupe.Native\Loupe.Native.vcxproj /p:Configuration=Release /p:Platform=x64 /p:SolutionDir=%GITHUB_WORKSPACE%\ /v:minimal
+
+      - name: Run tests
+        run: dotnet run --project tests\Loupe.Tests -c Release
+
+      # Two flavours: one that runs on a clean Windows install, and a small one for machines
+      # that already have the .NET 8 Desktop Runtime. Npcap is never bundled - its licence
+      # does not allow redistribution, and the app offers to download the official installer.
+      - name: Publish
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          $app = "src\Loupe.App\Loupe.App.csproj"
+
+          dotnet publish $app -c Release -r win-x64 --self-contained true  -p:Version=$version -o out\standalone
+          dotnet publish $app -c Release -r win-x64 --self-contained false -p:Version=$version -o out\framework
+
+          foreach ($flavour in "standalone", "framework") {
+            if (-not (Test-Path "out\$flavour\Loupe.Native.dll")) { throw "Loupe.Native.dll missing from $flavour build" }
+            Copy-Item LICENSE, README.md, README.ru.md "out\$flavour"
+          }
+
+          New-Item -ItemType Directory dist | Out-Null
+          Compress-Archive -Path out\standalone\* -DestinationPath "dist\Loupe-$version-win-x64.zip"
+          Compress-Archive -Path out\framework\*  -DestinationPath "dist\Loupe-$version-win-x64-net8.zip"
+
+          Get-FileHash dist\*.zip -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } |
+            Set-Content dist\SHA256SUMS.txt -Encoding ascii
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Loupe ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            dist/*.zip
+            dist/SHA256SUMS.txt
