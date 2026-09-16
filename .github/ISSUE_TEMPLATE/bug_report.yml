@@ -1,0 +1,44 @@
+name: Bug report
+description: Something in Loupe does not work the way it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you saw instead. Screenshots help.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Loupe version
+      description: From the release zip name, or the commit if you built it yourself.
+      placeholder: 1.0.1
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Packet capture
+        - HTTP(S) proxy
+        - Sessions / export
+        - Installation / Npcap
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows and Npcap versions
+      placeholder: Windows 11 24H2, Npcap 1.80
+  - type: textarea
+    id: details
+    attributes:
+      label: Error text or log
+      description: >
+        Please remove anything private first - captures and proxied requests can contain
+        cookies, tokens and personal data. Never attach a capture you have not looked through.
+      render: text

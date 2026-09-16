@@ -11,6 +11,13 @@
     <AssemblyName>Loupe</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x64</Platforms>
+
+    <!-- What Explorer shows under Properties > Details. CI overrides Version from the tag. -->
+    <Version>1.0.1</Version>
+    <Product>Loupe</Product>
+    <AssemblyTitle>Loupe</AssemblyTitle>
+    <Description>Network inspector for Windows: packet capture with domain and process names, plus an HTTPS debugging proxy.</Description>
+    <Copyright>Copyright (c) Loupe contributors. MIT licence.</Copyright>
   </PropertyGroup>
 
   <!--
