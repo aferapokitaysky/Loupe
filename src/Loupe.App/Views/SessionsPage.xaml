@@ -71,7 +71,7 @@
                                             <!-- Rename in place: Enter commits, Escape cancels -->
                                             <ui:TextBox Text="{Binding EditName, UpdateSourceTrigger=PropertyChanged}"
                                                         MaxWidth="360" HorizontalAlignment="Left"
-                                                        KeyDown="OnRenameKeyDown" Loaded="OnRenameBoxLoaded"
+                                                        KeyDown="OnRenameKeyDown" Loaded="OnRenameBoxLoaded" LostKeyboardFocus="OnRenameLostFocus"
                                                         Visibility="{Binding IsRenaming, Converter={StaticResource BoolToVisibility}}" />
 
                                             <TextBlock Text="{Binding Summary}" FontSize="12" Margin="0,3,0,0"

@@ -317,9 +317,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // Drop rows the parser already produced too, or they'd stream straight back in.
         while (_parsed.TryDequeue(out _)) { }
 
-        // The selected host is about to disappear from the list; drop the filter with it rather
-        // than leave an empty grid filtered on a host nobody can see any more.
+        // The hosts are about to disappear from the list; drop their filter with them rather than
+        // leave the grid filtered on hosts nobody can see or untick any more.
         SelectedHost = null;
+        ResetHostFilter();
+
+        // The grid's predicate holds its own snapshot of the ticked hosts, so emptying the set is
+        // not enough on its own - the filter has to be rebuilt from it.
+        ApplyFilter();
 
         Packets.Clear();
         Hosts.Clear();
@@ -676,9 +681,22 @@ public partial class MainViewModel : ObservableObject, IDisposable
         foreach (var row in Hosts.Where(h => h.IsChecked).ToList())
             row.IsChecked = false;
 
+        // Unticking only reaches hosts still in the list; the set is emptied outright so a host
+        // that is gone can't keep the grid filtered from out of sight.
+        ResetHostFilter();
         SearchText = "";
         _searchDebounce?.Stop();
         ApplyFilter();
+    }
+
+    private void ResetHostFilter()
+    {
+        if (_hostFilter.Count == 0) return;
+
+        _hostFilter.Clear();
+        OnPropertyChanged(nameof(IsFiltered));
+        OnPropertyChanged(nameof(FilterScope));
+        OnPropertyChanged(nameof(FilteredHostCount));
     }
 
     /// <summary>

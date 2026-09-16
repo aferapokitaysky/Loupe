@@ -112,7 +112,16 @@ public sealed partial class HostRowViewModel : ObservableObject
         if (_faviconRequested || !HasName || string.IsNullOrEmpty(Name)) return;
         _faviconRequested = true;
 
-        Favicon = await _favicons.GetAsync(Name);
+        // async void has nowhere to send an exception but the dispatcher, where it becomes an
+        // error dialog. A missing icon is not worth one.
+        try
+        {
+            Favicon = await _favicons.GetAsync(Name);
+        }
+        catch (Exception)
+        {
+            Favicon = null;
+        }
     }
 
     private static string FormatBytes(long bytes) => bytes switch
