@@ -109,6 +109,19 @@ Proxyman, Charles and Chrome DevTools all open, and the raw `.pcap` for captures
 
 ## Getting it running
 
+**Download**
+
+Every tagged version is built and published by CI on the
+[Releases](../../releases/latest) page:
+
+| File | For |
+|---|---|
+| `Loupe-<version>-win-x64.zip` | Any Windows 10/11 x64 machine - unpack and run `Loupe.exe` |
+| `Loupe-<version>-win-x64-net8.zip` | Machines that already have the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) - a much smaller download |
+
+`SHA256SUMS.txt` next to them lists the checksums. Loupe asks for
+administrator rights on start: opening a network adapter for capture requires it.
+
 **Requirements**
 
 - Windows 10/11.
