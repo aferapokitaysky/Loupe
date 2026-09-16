@@ -47,11 +47,26 @@ public static class StorageTests
         T.Check("the stale folder is left untouched, not deleted", Directory.Exists(bothOld));
         T.Eq("and its contents are not overwritten", "old", File.ReadAllText(Path.Combine(bothOld, "ignore.json")));
 
+        // ---- The proxy's root CA survives the file rename. If it didn't, a fresh CA would be
+        // generated and every certificate the user had already chosen to trust would stop matching.
+        string caDir = Temp();
+        var original = new Loupe.Proxy.Ca.RootCertificateAuthority(caDir);
+        string originalThumbprint = original.Thumbprint;
+
+        File.Move(Path.Combine(caDir, "loupe-root.pfx"), Path.Combine(caDir, "netsniffer-root.pfx"));
+        File.Move(Path.Combine(caDir, "loupe-root.pfx.key"), Path.Combine(caDir, "netsniffer-root.pfx.key"));
+
+        var reopened = new Loupe.Proxy.Ca.RootCertificateAuthority(caDir);
+        T.Eq("a CA saved under the old file names is picked up, not regenerated",
+            originalThumbprint, reopened.Thumbprint);
+        T.Check("and moved to the new names", File.Exists(Path.Combine(caDir, "loupe-root.pfx"))
+                                              && !File.Exists(Path.Combine(caDir, "netsniffer-root.pfx")));
+
         // ---- PathTo composes under the root.
         T.Check("PathTo composes under the root",
             AppStorage.PathTo("sessions", "x").StartsWith(AppStorage.Root, StringComparison.Ordinal));
 
-        foreach (string dir in new[] { fresh, upgrading, both })
+        foreach (string dir in new[] { fresh, upgrading, both, caDir })
         {
             try { Directory.Delete(dir, recursive: true); } catch { }
         }

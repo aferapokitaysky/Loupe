@@ -111,7 +111,11 @@ public sealed class FaviconService : IDisposable
             return icon is null ? null : Decode(icon);
         }
         catch (Exception e) when (e is HttpRequestException or TaskCanceledException or IOException
-                                      or UnauthorizedAccessException or NotSupportedException)
+                                      or UnauthorizedAccessException or NotSupportedException
+                                      // The window closed mid-fetch and took the HttpClient with it.
+                                      or ObjectDisposedException
+                                      // A page's <link rel=icon> pointing somewhere HttpClient won't go.
+                                      or InvalidOperationException or UriFormatException)
         {
             return null;
         }

@@ -30,8 +30,35 @@ public sealed class RootCertificateAuthority
         string dir = storageDirectory ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Loupe", "ca");
         Directory.CreateDirectory(dir);
-        _pfxPath = Path.Combine(dir, "netsniffer-root.pfx");
-        _protectedPasswordPath = Path.Combine(dir, "netsniffer-root.pfx.key");
+        _pfxPath = Path.Combine(dir, "loupe-root.pfx");
+        _protectedPasswordPath = Path.Combine(dir, "loupe-root.pfx.key");
+
+        AdoptLegacyFiles(dir);
+    }
+
+    /// <summary>
+    /// Picks up a CA created before the rename. Not optional: the user installed *that*
+    /// certificate into their trust store, and generating a new one would silently break HTTPS
+    /// interception until they noticed and reinstalled. The certificate itself is unchanged -
+    /// only the file names move - so its thumbprint, which is what trust is keyed on, stays the same.
+    /// </summary>
+    private void AdoptLegacyFiles(string dir)
+    {
+        string legacyPfx = Path.Combine(dir, "netsniffer-root.pfx");
+        string legacyKey = Path.Combine(dir, "netsniffer-root.pfx.key");
+
+        if (File.Exists(_pfxPath) || !File.Exists(legacyPfx) || !File.Exists(legacyKey)) return;
+
+        try
+        {
+            File.Move(legacyPfx, _pfxPath);
+            File.Move(legacyKey, _protectedPasswordPath);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // Leave both in place; LoadOrCreate will simply not find the new names. Better a new
+            // CA than a half-moved pair where the key no longer sits next to its certificate.
+        }
     }
 
     /// <summary>The CA certificate + private key, generating and persisting it on first use.</summary>

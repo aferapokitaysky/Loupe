@@ -80,7 +80,18 @@ public sealed partial class DomainGroupViewModel : ObservableObject
         ErrorCount = errors;
     }
 
-    private async void RequestFavicon() => Favicon = await _favicons.GetAsync(Host);
+    /// <summary>async void can only throw into the dispatcher; a missing icon is not worth an error dialog.</summary>
+    private async void RequestFavicon()
+    {
+        try
+        {
+            Favicon = await _favicons.GetAsync(Host);
+        }
+        catch (Exception)
+        {
+            Favicon = null;
+        }
+    }
 
     private static string FormatBytes(long bytes) => bytes switch
     {

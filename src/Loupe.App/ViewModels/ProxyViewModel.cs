@@ -72,12 +72,15 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TransparentPort))]
+    [NotifyCanExecuteChangedFor(nameof(StartProxyCommand))]
     private string _transparentPortText = "8443";
 
     public int TransparentPort =>
         int.TryParse(TransparentPortText, out int port) && port is > 0 and <= 65535 ? port : 0;
 
-    [ObservableProperty] private bool _transparentEnabled;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(StartProxyCommand))]
+    private bool _transparentEnabled;
     [ObservableProperty] private bool _isRunning;
     [ObservableProperty] private string _statusMessage = "";
     [ObservableProperty] private HttpExchangeRowViewModel? _selectedExchange;
@@ -170,8 +173,21 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         foreach (var domain in Domains.Where(d => d.IsChecked).ToList())
             domain.IsChecked = false;
 
+        // Unticking rows only reaches domains still in the list. A domain that was ticked and has
+        // since been cleared or evicted lives on in the set - and would keep the grid filtered to
+        // something nobody can see or untick - so the set is emptied outright.
+        ResetDomainFilter();
         SearchText = "";
         ApplyFilter();
+    }
+
+    private void ResetDomainFilter()
+    {
+        if (_domainFilter.Count == 0) return;
+
+        _domainFilter.Clear();
+        OnPropertyChanged(nameof(IsFiltered));
+        OnPropertyChanged(nameof(FilterScope));
     }
 
     // ---------------------------------------------------------------- hiding & domain search
@@ -300,7 +316,10 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         ApplyDomainSort();
     }
 
-    private bool CanStart() => !IsRunning && IsPortValid;
+    // A transparent port that is switched on but unusable would otherwise be skipped silently,
+    // leaving the user wondering why redirected programs never show up.
+    private bool CanStart() =>
+        !IsRunning && IsPortValid && (!TransparentEnabled || (TransparentPort != 0 && TransparentPort != Port));
 
     [RelayCommand(CanExecute = nameof(CanStart))]
     private void StartProxy()
@@ -434,6 +453,10 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         Domains.Clear();
         _domainsByHost.Clear();
         SelectedExchange = null;
+
+        // The ticked domains went with the list; the filter has to go with them.
+        ResetDomainFilter();
+        ApplyFilter();
     }
 
     [RelayCommand]
@@ -469,7 +492,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ExportRootCertificate()
     {
-        var dialog = new SaveFileDialog { Filter = "PEM certificate (*.pem)|*.pem", FileName = "netsniffer-root-ca.pem" };
+        var dialog = new SaveFileDialog { Filter = "PEM certificate (*.pem)|*.pem", FileName = "loupe-root-ca.pem" };
         if (dialog.ShowDialog() != true) return;
 
         File.WriteAllText(dialog.FileName, _ca.ExportPublicCertificatePem());
@@ -562,6 +585,15 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             if (domain.Exchanges.Count == 0)
             {
                 if (SelectedDomain == domain) SelectedDomain = null;
+
+                // An evicted domain can't be unticked any more, so it must stop filtering.
+                if (_domainFilter.Remove(oldest.Host))
+                {
+                    ApplyFilter();
+                    OnPropertyChanged(nameof(IsFiltered));
+                    OnPropertyChanged(nameof(FilterScope));
+                }
+
                 Domains.Remove(domain);
                 _domainsByHost.Remove(oldest.Host);
             }
