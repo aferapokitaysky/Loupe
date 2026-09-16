@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Loupe.App</RootNamespace>
+    <AssemblyName>Loupe</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <!--
+    The taskbar, Explorer and the window chrome need a real icon file; the mark drawn in
+    Styles/Brand.xaml covers everything inside the UI. Conditional so a checkout without the
+    asset still builds.
+  -->
+  <PropertyGroup Condition="Exists('Assets\loupe.ico')">
+    <ApplicationIcon>Assets\loupe.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\loupe.ico" Condition="Exists('Assets\loupe.ico')" />
+    <Resource Include="Assets\loupe-mark.png" Condition="Exists('Assets\loupe-mark.png')" />
+    <Resource Include="Assets\loupe-logo.png" Condition="Exists('Assets\loupe-logo.png')" />
+    <!-- Pre-scaled close to the size the title bar draws it at, so the wordmark stays crisp. -->
+    <Resource Include="Assets\loupe-logo-ui.png" Condition="Exists('Assets\loupe-logo-ui.png')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WPF-UI" Version="3.0.5" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Loupe.Core\Loupe.Core.csproj" />
+    <ProjectReference Include="..\Loupe.Capture\Loupe.Capture.csproj" />
+    <ProjectReference Include="..\Loupe.Proxy\Loupe.Proxy.csproj" />
+  </ItemGroup>
+
+</Project>

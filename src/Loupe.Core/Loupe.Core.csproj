@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Loupe.Core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- So the storage migration can be tested against a throwaway folder rather than the real
+         %LOCALAPPDATA%, without widening the public surface for everyone else. -->
+    <InternalsVisibleTo Include="Loupe.Tests" />
+  </ItemGroup>
+
+</Project>

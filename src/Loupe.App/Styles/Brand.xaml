@@ -1,0 +1,25 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Brand assets. One mark, used everywhere it appears in the UI, so the app never shows two
+        slightly different logos: the real artwork rather than a redrawn approximation of it.
+        Windows gets the .ico separately (see Loupe.App.csproj) - the shell needs a real icon
+        file for the taskbar and Explorer.
+    -->
+    <BitmapImage x:Key="LoupeMark" UriSource="pack://application:,,,/Assets/loupe-mark.png" />
+
+    <!-- The full lockup - mark plus wordmark - for places wide enough to carry it. -->
+    <BitmapImage x:Key="LoupeLogo" UriSource="pack://application:,,,/Assets/loupe-logo-ui.png" />
+
+    <!-- The logo's cyan-to-blue, for the few places the UI echoes it. The interface itself stays
+         graphite: an accent means something only while it is rare. -->
+    <LinearGradientBrush x:Key="BrandNeonBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#3BE4FF" Offset="0" />
+        <GradientStop Color="#1E9BFF" Offset="0.55" />
+        <GradientStop Color="#1266F1" Offset="1" />
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="BrandCyanBrush" Color="#3BE4FF" />
+
+</ResourceDictionary>

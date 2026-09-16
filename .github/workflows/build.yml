@@ -32,12 +32,12 @@ jobs:
         env:
           NPCAP_SDK_DIR: ${{ github.workspace }}\third_party\npcap-sdk
         run: |
-          msbuild native\NetSniffer.Native\NetSniffer.Native.vcxproj /p:Configuration=Release /p:Platform=x64 /p:SolutionDir=%GITHUB_WORKSPACE%\ /v:minimal
+          msbuild native\Loupe.Native\Loupe.Native.vcxproj /p:Configuration=Release /p:Platform=x64 /p:SolutionDir=%GITHUB_WORKSPACE%\ /v:minimal
 
       - name: Build C# solution
-        run: dotnet build src\NetSniffer.App\NetSniffer.App.csproj -c Release
+        run: dotnet build src\Loupe.App\Loupe.App.csproj -c Release
 
       # Hermetic: hand-built frames for the dissector, loopback HTTP for the proxy.
       # Needs neither Npcap nor internet access.
       - name: Run tests
-        run: dotnet run --project tests\NetSniffer.Tests -c Release
+        run: dotnet run --project tests\Loupe.Tests -c Release
