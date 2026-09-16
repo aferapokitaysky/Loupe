@@ -7,6 +7,8 @@
 Сетевой инспектор для Windows: захват пакетов, который показывает домены и
 программы за ними, и HTTP(S)-прокси, который показывает запросы в открытом виде.
 
+<a href="https://github.com/aferapokitaysky/Loupe/actions/workflows/build.yml"><img alt="Сборка" src="https://img.shields.io/github/actions/workflow/status/aferapokitaysky/Loupe/build.yml?branch=main&style=flat-square&label=build"></a>
+<a href="https://github.com/aferapokitaysky/Loupe/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/aferapokitaysky/Loupe?style=flat-square&color=3BE4FF"></a>
 <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-1266F1?style=flat-square">
 <img alt=".NET 8" src="https://img.shields.io/badge/.NET-8-1E9BFF?style=flat-square">
 <img alt="Движок захвата на C++" src="https://img.shields.io/badge/capture-C%2B%2B%20%2B%20Npcap-3BE4FF?style=flat-square">
