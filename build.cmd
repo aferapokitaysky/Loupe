@@ -3,8 +3,8 @@ setlocal enabledelayedexpansion
 
 rem Builds the whole project in the right order.
 rem
-rem Why a script instead of "dotnet build NetSniffer.sln": the dotnet CLI cannot evaluate
-rem Visual C++ project files, so it fails on NetSniffer.Native.vcxproj with
+rem Why a script instead of "dotnet build Loupe.sln": the dotnet CLI cannot evaluate
+rem Visual C++ project files, so it fails on Loupe.Native.vcxproj with
 rem   error MSB4278: $(VCTargetsPath)\Microsoft.Cpp.Default.props does not exist
 rem The native DLL needs real MSBuild; everything managed builds fine with dotnet.
 rem
@@ -27,7 +27,7 @@ if not defined MSBUILD (
 
 echo.
 echo === 1/3  Native capture engine ^(%CONFIG^%^|x64^) ===
-"%MSBUILD%" "%~dp0native\NetSniffer.Native\NetSniffer.Native.vcxproj" /p:Configuration=%CONFIG% /p:Platform=x64 /v:minimal /nologo
+"%MSBUILD%" "%~dp0native\Loupe.Native\Loupe.Native.vcxproj" /p:Configuration=%CONFIG% /p:Platform=x64 /v:minimal /nologo
 if errorlevel 1 (
     echo.
     echo [!] Native build failed. The Npcap SDK is needed to compile it:
@@ -37,17 +37,17 @@ if errorlevel 1 (
 
 echo.
 echo === 2/3  Managed projects ^(%CONFIG^%^) ===
-dotnet build "%~dp0src\NetSniffer.App\NetSniffer.App.csproj" -c %CONFIG% --nologo
+dotnet build "%~dp0src\Loupe.App\Loupe.App.csproj" -c %CONFIG% --nologo
 if errorlevel 1 exit /b 1
 
 echo.
 echo === 3/3  Tests ===
-dotnet run --project "%~dp0tests\NetSniffer.Tests" -c %CONFIG% --nologo
+dotnet run --project "%~dp0tests\Loupe.Tests" -c %CONFIG% --nologo
 if errorlevel 1 (
     echo [!] Tests failed.
     exit /b 1
 )
 
 echo.
-echo Done. App: src\NetSniffer.App\bin\%CONFIG%\net8.0-windows\NetSniffer.exe
+echo Done. App: src\Loupe.App\bin\%CONFIG%\net8.0-windows\Loupe.exe
 endlocal
