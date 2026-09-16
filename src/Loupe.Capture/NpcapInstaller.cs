@@ -26,7 +26,7 @@ public static class NpcapInstaller
     {
         // Test seam: exercise the UI's download/install states without hitting the
         // network or launching a real elevated installer. Off unless explicitly set.
-        if (Environment.GetEnvironmentVariable("NETSNIFFER_FAKE_NPCAP") == "1")
+        if (Environment.GetEnvironmentVariable("LOUPE_FAKE_NPCAP") == "1")
         {
             progress?.Report(NpcapInstallStage.Downloading);
             await Task.Delay(1500, ct).ConfigureAwait(false);
@@ -38,7 +38,7 @@ public static class NpcapInstaller
         progress?.Report(NpcapInstallStage.Downloading);
 
         string installerUrl = await ResolveInstallerUrlAsync(ct).ConfigureAwait(false) ?? FallbackInstallerUrl;
-        string tempPath = Path.Combine(Path.GetTempPath(), "netsniffer-npcap-installer.exe");
+        string tempPath = Path.Combine(Path.GetTempPath(), "loupe-npcap-installer.exe");
 
         using (var http = new HttpClient { Timeout = TimeSpan.FromMinutes(3) })
         using (var response = await http.GetAsync(installerUrl, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false))

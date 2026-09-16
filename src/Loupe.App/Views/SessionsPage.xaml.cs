@@ -55,6 +55,16 @@ public partial class SessionsPage : UserControl
         }
     }
 
+    /// <summary>
+    /// Clicking away keeps what was typed, the way renaming a file in Explorer does - leaving the
+    /// box open with an unsaved name was the surprising outcome.
+    /// </summary>
+    private void OnRenameLostFocus(object sender, KeyboardFocusChangedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: SessionRowViewModel { IsRenaming: true } row })
+            ViewModel.CommitRenameCommand.Execute(row);
+    }
+
     /// <summary>Focus lands in the box the moment it appears, with the old name selected.</summary>
     private void OnRenameBoxLoaded(object sender, RoutedEventArgs e)
     {

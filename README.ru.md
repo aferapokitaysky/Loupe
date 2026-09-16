@@ -1,13 +1,18 @@
 <div align="center">
 
-<img src="docs/screenshots/logo.png" alt="Loupe" width="420">
+<img src="docs/screenshots/banner.png" alt="Loupe" width="100%">
 
-**Видно, что на самом деле говорит ваша машина.**
+<h3>Видно, что на самом деле говорит ваша машина.</h3>
 
 Сетевой инспектор для Windows: захват пакетов, который показывает домены и
 программы за ними, и HTTP(S)-прокси, который показывает запросы в открытом виде.
 
-[English version](README.md)
+<img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-1266F1?style=flat-square">
+<img alt=".NET 8" src="https://img.shields.io/badge/.NET-8-1E9BFF?style=flat-square">
+<img alt="Движок захвата на C++" src="https://img.shields.io/badge/capture-C%2B%2B%20%2B%20Npcap-3BE4FF?style=flat-square">
+<img alt="Лицензия MIT" src="https://img.shields.io/badge/licence-MIT-2A3441?style=flat-square">
+
+[English](README.md) · **Русский**
 
 </div>
 
@@ -138,7 +143,7 @@ build.cmd
 dotnet run --project tests\Loupe.Tests -c Release
 ```
 
-172 проверки, и им не нужны ни Npcap, ни сеть: диссектор работает на собранных
+Проверкам не нужны ни Npcap, ни сеть: диссектор работает на собранных
 вручную кадрах, прокси — на локальном сервере с побайтово заданными ответами,
 расшифровка QUIC — на эталонном пакете из RFC 9001 Appendix A.2, а привязка
 сокетов к процессам — на настоящих таблицах Windows через loopback.

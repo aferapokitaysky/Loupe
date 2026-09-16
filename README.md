@@ -1,13 +1,18 @@
 <div align="center">
 
-<img src="docs/screenshots/logo.png" alt="Loupe" width="420">
+<img src="docs/screenshots/banner.png" alt="Loupe" width="100%">
 
-**See what your machine is actually saying.**
+<h3>See what your machine is actually saying.</h3>
 
 A network inspector for Windows: a packet capture that names domains and the
 programs behind them, and an HTTP(S) proxy that shows the requests in the clear.
 
-[Русская версия](README.ru.md)
+<img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-1266F1?style=flat-square">
+<img alt=".NET 8" src="https://img.shields.io/badge/.NET-8-1E9BFF?style=flat-square">
+<img alt="C++ capture engine" src="https://img.shields.io/badge/capture-C%2B%2B%20%2B%20Npcap-3BE4FF?style=flat-square">
+<img alt="MIT licence" src="https://img.shields.io/badge/licence-MIT-2A3441?style=flat-square">
+
+**English** · [Русский](README.ru.md)
 
 </div>
 
@@ -136,7 +141,7 @@ is `src\Loupe.App\bin\Release\net8.0-windows\Loupe.exe`.
 dotnet run --project tests\Loupe.Tests -c Release
 ```
 
-172 checks, and they need neither Npcap nor a network: the dissector runs on
+The checks need neither Npcap nor a network: the dissector runs on
 hand-built frames, the proxy against a byte-exact local origin, QUIC decryption
 against the sample packet in RFC 9001 Appendix A.2, and process attribution
 against the real Windows socket tables over loopback.
