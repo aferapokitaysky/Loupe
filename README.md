@@ -7,6 +7,8 @@
 A network inspector for Windows: a packet capture that names domains and the
 programs behind them, and an HTTP(S) proxy that shows the requests in the clear.
 
+<a href="https://github.com/aferapokitaysky/Loupe/actions/workflows/build.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/aferapokitaysky/Loupe/build.yml?branch=main&style=flat-square&label=build"></a>
+<a href="https://github.com/aferapokitaysky/Loupe/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/aferapokitaysky/Loupe?style=flat-square&color=3BE4FF"></a>
 <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-1266F1?style=flat-square">
 <img alt=".NET 8" src="https://img.shields.io/badge/.NET-8-1E9BFF?style=flat-square">
 <img alt="C++ capture engine" src="https://img.shields.io/badge/capture-C%2B%2B%20%2B%20Npcap-3BE4FF?style=flat-square">
