@@ -1,0 +1,497 @@
+<UserControl x:Class="Loupe.App.Views.PacketCapturePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:conv="clr-namespace:Loupe.App.Converters"
+             xmlns:vm="clr-namespace:Loupe.App.ViewModels"
+             d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+
+    <UserControl.Resources>
+        <conv:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverse" />
+        <conv:InverseBooleanConverter x:Key="InverseBoolean" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <conv:ResourceBrushConverter x:Key="ResourceBrush" />
+        <conv:CountToVisibilityConverter x:Key="CountToVisibility" />
+        <conv:NullToVisibilityConverter x:Key="NullToVisibility" />
+
+        <Style x:Key="PacketRow" TargetType="DataGridRow" BasedOn="{StaticResource AppDataGridRow}">
+            <Setter Property="Background" Value="{Binding ColorKey, Converter={StaticResource ResourceBrush}}" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--
+            Top bar. Left to right: what is being captured, the one button that starts it, then
+            what you do to what you captured, then what it adds up to. Only the primary action
+            carries colour; everything else is an icon in a segmented strip, so the eye lands on
+            Start rather than on ten equally loud buttons.
+        -->
+        <Border Grid.Row="0" Style="{StaticResource ToolbarCard}" Padding="12,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Source + the primary action -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:Button Content="{DynamicResource Pkt_Start}" Icon="{ui:SymbolIcon Play24}" Appearance="Primary"
+                               Style="{StaticResource AppButton}" Command="{Binding StartCaptureCommand}"
+                               Height="36" Margin="0,0,10,0" FontWeight="SemiBold"
+                               Visibility="{Binding IsCapturing, Converter={StaticResource BoolToVisibilityInverse}}" />
+                    <ui:Button Content="{DynamicResource Pkt_Stop}" Icon="{ui:SymbolIcon Stop24}" Appearance="Danger"
+                               Style="{StaticResource AppButton}" Command="{Binding StopCaptureCommand}"
+                               Height="36" Margin="0,0,10,0" FontWeight="SemiBold"
+                               Visibility="{Binding IsCapturing, Converter={StaticResource BoolToVisibility}}" />
+
+                    <ComboBox MinWidth="250" MaxWidth="330" VerticalAlignment="Center"
+                              ItemsSource="{Binding Adapters}"
+                              SelectedItem="{Binding SelectedAdapter}"
+                              DisplayMemberPath="Label"
+                              ToolTip="{DynamicResource Pkt_Adapter}"
+                              AutomationProperties.Name="{DynamicResource Pkt_Adapter}"
+                              IsEnabled="{Binding IsCapturing, Converter={StaticResource InverseBoolean}}" />
+
+                    <Button Style="{StaticResource ToolbarIconButton}" Margin="2,0,0,0"
+                            Command="{Binding RefreshAdaptersCommand}"
+                            ToolTip="{DynamicResource Pkt_Refresh}"
+                            AutomationProperties.Name="{DynamicResource Pkt_Refresh}">
+                        <ui:SymbolIcon Symbol="ArrowClockwise24" FontSize="16" />
+                    </Button>
+
+                    <Border Style="{StaticResource ToolbarDivider}" Margin="10,0,10,0" />
+                </StackPanel>
+
+                <!-- Everything you do to a capture. Wraps rather than clips on a narrow window. -->
+                <WrapPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Style="{StaticResource ToolbarStrip}">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource ToolbarIconButton}" Command="{Binding ClearPacketsCommand}"
+                                    ToolTip="{DynamicResource Pkt_Clear}"
+                                    AutomationProperties.Name="{DynamicResource Pkt_Clear}">
+                                <ui:SymbolIcon Symbol="Broom24" FontSize="16" />
+                            </Button>
+                            <Button Style="{StaticResource ToolbarIconButton}" Command="{Binding OpenCaptureCommand}"
+                                    ToolTip="{DynamicResource Pkt_OpenPcap}"
+                                    AutomationProperties.Name="{DynamicResource Pkt_OpenPcap}">
+                                <ui:SymbolIcon Symbol="FolderOpen24" FontSize="16" />
+                            </Button>
+                            <Button Style="{StaticResource ToolbarIconButton}" Command="{Binding SaveCaptureCommand}"
+                                    ToolTip="{DynamicResource Pkt_SavePcap}"
+                                    AutomationProperties.Name="{DynamicResource Pkt_SavePcap}">
+                                <ui:SymbolIcon Symbol="Save24" FontSize="16" />
+                            </Button>
+                            <Button Style="{StaticResource ToolbarIconButton}" Command="{Binding SaveSessionCommand}"
+                                    ToolTip="{DynamicResource Sessions_Save_Tip}"
+                                    AutomationProperties.Name="{DynamicResource Sessions_Save}">
+                                <ui:SymbolIcon Symbol="Bookmark24" FontSize="16" />
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Capture filter: applied by the driver before a packet is ever copied,
+                         which is why it sits up here and not with the display search. -->
+                    <ui:TextBox MinWidth="170" MaxWidth="230" VerticalAlignment="Center" Margin="0,0,8,0"
+                                Icon="{ui:SymbolIcon Filter24}"
+                                PlaceholderText="{DynamicResource Pkt_FilterPlaceholder}"
+                                ToolTip="{DynamicResource Pkt_Filter}"
+                                AutomationProperties.Name="{DynamicResource Pkt_Filter}"
+                                Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Border Style="{StaticResource ToolbarStrip}">
+                        <StackPanel Orientation="Horizontal">
+                            <ToggleButton Style="{StaticResource ToolbarToggleButton}" IsChecked="{Binding AutoScroll}"
+                                          ToolTip="{DynamicResource Pkt_AutoScroll}"
+                                          AutomationProperties.Name="{DynamicResource Pkt_AutoScroll}">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="ArrowDown24" FontSize="15" Margin="0,0,6,0" />
+                                    <TextBlock Text="{DynamicResource Pkt_AutoScroll}" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </ToggleButton>
+                            <ToggleButton Style="{StaticResource ToolbarToggleButton}" IsChecked="{Binding CollapseRepeats}"
+                                          ToolTip="{DynamicResource Pkt_CollapseRepeats_Tip}"
+                                          AutomationProperties.Name="{DynamicResource Pkt_CollapseRepeats}">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="ArrowMinimize24" FontSize="15" Margin="0,0,6,0" />
+                                    <TextBlock Text="{DynamicResource Pkt_CollapseRepeats}" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </ToggleButton>
+                        </StackPanel>
+                    </Border>
+                </WrapPanel>
+
+                <!-- What it adds up to, live -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,2,0">
+                    <StackPanel Margin="0,0,18,0"
+                                Visibility="{Binding HasDropped, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{Binding DroppedPackets}" Style="{StaticResource StatValue}"
+                                   Foreground="{StaticResource WarnBrush}" />
+                        <TextBlock Text="{DynamicResource Stat_Dropped}" Style="{StaticResource StatLabel}" />
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,18,0">
+                        <TextBlock Text="{Binding Hosts.Count}" Style="{StaticResource StatValue}" />
+                        <TextBlock Text="{DynamicResource Stat_Hosts}" Style="{StaticResource StatLabel}" />
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,18,0">
+                        <TextBlock Text="{Binding TotalPackets}" Style="{StaticResource StatValue}" />
+                        <TextBlock Text="{DynamicResource Stat_Packets}" Style="{StaticResource StatLabel}" />
+                    </StackPanel>
+
+                    <StackPanel>
+                        <TextBlock Text="{Binding TotalBytesText}" Style="{StaticResource StatValue}" />
+                        <TextBlock Text="{DynamicResource Stat_Volume}" Style="{StaticResource StatLabel}" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" MinWidth="200" MaxWidth="460" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="3*" MinWidth="360" />
+            </Grid.ColumnDefinitions>
+
+            <!--
+                Hosts panel. The packet grid on a fast link scrolls past far quicker than anyone
+                can read; this rolls the same traffic up per domain and only changes once per
+                drain tick, so there is always something legible on screen.
+            -->
+            <Border Grid.Column="0" Style="{StaticResource Card}" Padding="8,10,8,8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="6,0,4,8">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="Globe24" FontSize="14" Margin="0,0,7,0"
+                                           Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
+                            <TextBlock Text="{DynamicResource Pkt_Hosts}" Style="{StaticResource PanelHeader}" />
+                            <TextBlock Text="{Binding Hosts.Count}" Style="{StaticResource PanelHeader}"
+                                       Margin="7,0,0,0" Opacity="0.65" />
+                        </StackPanel>
+
+                        <!-- Volume, packets, most recent, or name -->
+                        <ComboBox HorizontalAlignment="Right" MinWidth="118" FontSize="11.5"
+                                  ItemsSource="{Binding HostSortOptions}" SelectedItem="{Binding HostSort}"
+                                  DisplayMemberPath="Label"
+                                  ToolTip="{DynamicResource Sort_Tip}"
+                                  AutomationProperties.Name="{DynamicResource Sort_Tip}" />
+                    </Grid>
+
+                    <!-- Finds a host in the list itself - the grid search can't scroll you to one -->
+                    <ui:TextBox Grid.Row="1" Margin="2,0,2,6"
+                                PlaceholderText="{DynamicResource Hosts_Search_Placeholder}"
+                                Icon="{ui:SymbolIcon Search24}" ClearButtonEnabled="True"
+                                Text="{Binding HostSearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <!-- What is hidden, and the way back. Hidden, never dropped: it is all still captured. -->
+                    <Border Grid.Row="2" Style="{StaticResource FilterChip}" HorizontalAlignment="Left" Margin="2,0,2,8"
+                            Visibility="{Binding HasHidden, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="EyeOff24" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"
+                                           Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="{Binding HiddenSummary}" FontSize="12" MaxWidth="200"
+                                       TextTrimming="CharacterEllipsis" ToolTip="{Binding HiddenSummary}"
+                                       Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                            <Button Style="{StaticResource ChipCloseButton}" Command="{Binding ShowHiddenCommand}"
+                                    ToolTip="{DynamicResource Ignore_ShowAll}"
+                                    AutomationProperties.Name="{DynamicResource Ignore_ShowAll}" />
+                        </StackPanel>
+                    </Border>
+
+                    <ListBox Grid.Row="3" x:Name="HostList" ItemsSource="{Binding Hosts}"
+                             ContextMenuOpening="OnHostListContextMenuOpening"
+                             SelectedItem="{Binding SelectedHost, Mode=TwoWay}"
+                             Background="Transparent" BorderThickness="0"
+                             ItemContainerStyle="{StaticResource HostListItem}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             VirtualizingPanel.IsVirtualizing="True"
+                             VirtualizingPanel.VirtualizationMode="Recycling">
+                        <!-- Items are built per click in code-behind, with the host and program names in them -->
+                        <ListBox.ContextMenu><ContextMenu /></ListBox.ContextMenu>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Tick as many hosts as you like: the grid shows all of them -->
+                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsChecked}" Margin="0,0,8,0"
+                                              VerticalAlignment="Center"
+                                              ToolTip="{DynamicResource Filter_TickToFilter}"
+                                              AutomationProperties.Name="{Binding Name}" />
+
+                                    <Border Grid.Column="1" Style="{StaticResource FaviconTile}" Margin="0,0,10,0">
+                                        <Grid>
+                                            <TextBlock Text="{Binding Initial}" Style="{StaticResource FaviconInitial}" />
+                                            <Image Source="{Binding Favicon}" Width="16" Height="16"
+                                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                                        </Grid>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" Style="{StaticResource HostName}"
+                                                   ToolTip="{Binding Name}" />
+                                        <TextBlock Style="{StaticResource HostMeta}">
+                                            <Run Text="{Binding Protocols, Mode=OneWay}" />
+                                            <Run Text="{Binding Subtitle, Mode=OneWay}"
+                                                 Foreground="{StaticResource TextTertiaryBrush}" />
+                                        </TextBlock>
+                                        <!-- Which program: the question a host list exists to answer -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,3,0,0"
+                                                    Visibility="{Binding HasProcess, Converter={StaticResource BoolToVisibility}}">
+                                            <Image Source="{Binding ProcessIcon}" Width="12" Height="12" Margin="0,0,5,0"
+                                                   VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" />
+                                            <TextBlock Text="{Binding ProcessText}" FontSize="11" TextTrimming="CharacterEllipsis"
+                                                       Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="8,0,0,0">
+                                        <TextBlock Text="{Binding BytesText}" Style="{StaticResource HostBytes}" />
+                                        <TextBlock Style="{StaticResource HostMeta}" HorizontalAlignment="Right">
+                                            <Run Text="{Binding Packets, Mode=OneWay}" />
+                                            <Run Text="{DynamicResource Pkt_Hosts_PacketsSuffix}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <StackPanel Grid.Row="3" Style="{StaticResource EmptyState}"
+                                Visibility="{Binding Hosts.Count, Converter={StaticResource CountToVisibility}}">
+                        <ui:SymbolIcon Symbol="Globe24" Style="{StaticResource EmptyStateIcon}" />
+                        <TextBlock Text="{DynamicResource Pkt_Hosts_EmptyState}" Style="{StaticResource EmptyStateText}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Width="8" HorizontalAlignment="Stretch"
+                          Background="Transparent" />
+
+            <!-- Packet list + dissection -->
+            <Border Grid.Column="2" Style="{StaticResource Card}" Padding="1">
+            <Grid ClipToBounds="True">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="2*" MinHeight="120" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="1.1*" MinHeight="120" />
+                </Grid.RowDefinitions>
+
+                <!--
+                    Display filter, sitting on the list it filters. It narrows what is shown and
+                    never what is captured - which is exactly what the BPF field in the toolbar
+                    does instead, so the two are kept visibly apart.
+                -->
+                <Grid Grid.Row="0" Margin="10,8,10,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBox x:Name="SearchBox" Grid.Column="0" Width="380" VerticalAlignment="Center"
+                                PlaceholderText="{DynamicResource Search_Placeholder}"
+                                Icon="{ui:SymbolIcon Search24}"
+                                ClearButtonEnabled="True"
+                                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Border Grid.Column="1" Style="{StaticResource FilterChip}" HorizontalAlignment="Left" Margin="10,0,0,0"
+                            Visibility="{Binding IsFiltered, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Filter24" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"
+                                           Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="{Binding FilterScope}" FontSize="12" FontWeight="SemiBold"
+                                       MaxWidth="260" TextTrimming="CharacterEllipsis"
+                                       Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <TextBlock Text="{Binding FilterSummary}" FontSize="12"
+                                       Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                            <Button Style="{StaticResource ChipCloseButton}" Command="{Binding ClearFilterCommand}"
+                                    ToolTip="{DynamicResource Filter_Clear}"
+                                    AutomationProperties.Name="{DynamicResource Filter_Clear}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <DataGrid x:Name="PacketGrid" Grid.Row="1"
+                          ContextMenuOpening="OnPacketGridContextMenuOpening"
+                          Background="Transparent" BorderThickness="0"
+                          RowStyle="{StaticResource PacketRow}"
+                          ItemsSource="{Binding Packets}"
+                          SelectedItem="{Binding SelectedPacket}"
+                          AutoGenerateColumns="False" IsReadOnly="True"
+                          GridLinesVisibility="None" HeadersVisibility="Column" ColumnHeaderStyle="{StaticResource AppColumnHeader}"
+                          SelectionMode="Single" SelectionUnit="FullRow"
+                          EnableRowVirtualization="True" EnableColumnVirtualization="True"
+                          VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                          ScrollViewer.CanContentScroll="True">
+                    <DataGrid.ContextMenu><ContextMenu /></DataGrid.ContextMenu>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_No}" Binding="{Binding Number}" Width="64" />
+                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Time}" Binding="{Binding Time}" Width="104" />
+                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Source}" Binding="{Binding Source}" Width="176" />
+                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Destination}" Binding="{Binding Destination}" Width="176" />
+                        <DataGridTemplateColumn Header="{DynamicResource Pkt_Col_Process}" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <!-- Top-aligned like the plain text columns beside it; centring
+                                         a template cell drops its text a few pixels below theirs. -->
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                                        <Image Source="{Binding ProcessIcon}" Width="14" Height="14" Margin="0,1,6,0"
+                                               VerticalAlignment="Top" RenderOptions.BitmapScalingMode="HighQuality" />
+                                        <TextBlock Text="{Binding Process}" TextTrimming="CharacterEllipsis"
+                                                   ToolTip="{Binding Process}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Protocol}" Binding="{Binding Protocol}" Width="80" />
+                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Length}" Binding="{Binding Length}" Width="68" />
+
+                        <!-- Blank for ordinary rows; "x420" where a run of identical packets folded -->
+                        <DataGridTemplateColumn Header="" Width="58">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource SurfaceSelectedBrush}" CornerRadius="4"
+                                            Padding="5,0" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                            Visibility="{Binding IsRepeated, Converter={StaticResource BoolToVisibility}}">
+                                        <TextBlock Text="{Binding RepeatText}" FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Info}" Binding="{Binding Info}" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <StackPanel Grid.Row="1" Style="{StaticResource EmptyState}"
+                            Visibility="{Binding Packets.Count, Converter={StaticResource CountToVisibility}}">
+                    <ui:SymbolIcon Symbol="Pulse24" Style="{StaticResource EmptyStateIcon}" />
+                    <TextBlock Text="{DynamicResource Pkt_EmptyState}" Style="{StaticResource EmptyStateText}" />
+                </StackPanel>
+
+                <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" Height="5"
+                              Background="{StaticResource BorderSubtleBrush}" />
+
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" MinWidth="200" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="1*" MinWidth="200" />
+                    </Grid.ColumnDefinitions>
+
+                    <TreeView Grid.Column="0" x:Name="DetailsTree"
+                              ItemsSource="{Binding SelectedPacket.Packet.Layers}"
+                              Background="{StaticResource SurfaceSunkenBrush}" BorderThickness="0" Padding="6">
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Fields}">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <HierarchicalDataTemplate.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}">
+                                            <Run Text="{Binding Name, Mode=OneWay}" />
+                                            <Run Text=": " />
+                                            <Run Text="{Binding Value, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" />
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </HierarchicalDataTemplate.ItemTemplate>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+
+                    <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"
+                                  Background="{StaticResource BorderSubtleBrush}" />
+
+                    <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                  Background="{StaticResource SurfaceSunkenBrush}">
+                        <TextBox Text="{Binding SelectedPacket.HexDump, Mode=OneWay}" Style="{StaticResource MonoText}" />
+                    </ScrollViewer>
+
+                    <!-- Covers both panes and the splitter: with nothing selected, a hint centred
+                         over a divider line reads as two broken half-sentences. -->
+                    <Border Grid.Column="0" Grid.ColumnSpan="3" Background="{StaticResource SurfaceBrush}"
+                            Visibility="{Binding SelectedPacket, Converter={StaticResource NullToVisibility}}">
+                        <StackPanel Style="{StaticResource EmptyState}">
+                            <ui:SymbolIcon Symbol="TextBulletListTree24" Style="{StaticResource EmptyStateIcon}" />
+                            <TextBlock Text="{DynamicResource Pkt_SelectPacket}" Style="{StaticResource EmptyStateText}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Npcap setup overlay: covers the list while the capture engine is missing -->
+        <Border Grid.Row="2" CornerRadius="10" Background="#FB101318"
+                BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1"
+                Visibility="{Binding IsCaptureEngineAvailable, Converter={StaticResource BoolToVisibilityInverse}}">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="420">
+                <Border Width="72" Height="72" CornerRadius="36" HorizontalAlignment="Center"
+                        Background="{StaticResource SurfaceRaisedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="34" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                </Border>
+                <TextBlock Text="{DynamicResource Npcap_Title}" FontSize="16" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center"
+                           TextAlignment="Center" Margin="0,18,0,0" />
+                <TextBlock Text="{DynamicResource Npcap_Desc}" Foreground="{StaticResource TextSecondaryBrush}"
+                           FontSize="12.5" TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,0" />
+
+                <!-- Busy: ring on its own line, wrapping status below -->
+                <StackPanel HorizontalAlignment="Center" Margin="0,20,0,0"
+                            Visibility="{Binding NpcapBusy, Converter={StaticResource BoolToVisibility}}">
+                    <ui:ProgressRing IsIndeterminate="True" Width="26" Height="26" HorizontalAlignment="Center" />
+                    <TextBlock Text="{Binding NpcapStatus}" Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="12.5" TextAlignment="Center" TextWrapping="Wrap" Margin="0,12,0,0" />
+                </StackPanel>
+
+                <!-- Failed / cancelled: message + retry -->
+                <StackPanel HorizontalAlignment="Center" Margin="0,20,0,0"
+                            Visibility="{Binding NpcapCanRetry, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{Binding NpcapStatus}" Foreground="{StaticResource WarnBrush}"
+                               FontSize="12.5" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,14" />
+                    <ui:Button Content="{DynamicResource Npcap_Retry}" Icon="{ui:SymbolIcon ArrowClockwise24}"
+                               Appearance="Primary" Style="{StaticResource AppButton}" HorizontalAlignment="Center"
+                               Command="{Binding RetryNpcapCommand}" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Status line. The totals moved to the top bar, so this says what is happening and
+             nothing else - two places showing the same numbers is one place too many. -->
+        <Border Grid.Row="4" Style="{StaticResource Card}" Padding="12,7">
+            <StackPanel Orientation="Horizontal">
+                <ui:SymbolIcon Symbol="Warning24" FontSize="13" VerticalAlignment="Center" Margin="0,0,7,0"
+                               Foreground="{StaticResource WarnBrush}"
+                               Visibility="{Binding HasDropped, Converter={StaticResource BoolToVisibility}}" />
+                <TextBlock Text="{Binding StatusMessage}" TextTrimming="CharacterEllipsis"
+                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

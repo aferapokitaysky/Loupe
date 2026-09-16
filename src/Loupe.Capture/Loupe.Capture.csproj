@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Loupe.Capture</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Loupe.Core\Loupe.Core.csproj" />
+  </ItemGroup>
+
+  <!-- Pulls in the native capture engine built by native\Loupe.Native\Loupe.Native.vcxproj
+       (build the .sln, not just this .csproj, so the native DLL exists) -->
+  <ItemGroup>
+    <None Include="..\..\native\bin\x64\$(Configuration)\Loupe.Native.dll"
+          Condition="Exists('..\..\native\bin\x64\$(Configuration)\Loupe.Native.dll')">
+      <Link>Loupe.Native.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

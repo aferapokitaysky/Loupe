@@ -1,7 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!--
     Locates the Npcap SDK (headers + import libs for wpcap/Packet) needed to
-    build NetSniffer.Native. The SDK itself has a restrictive redistribution
+    build Loupe.Native. The SDK itself has a restrictive redistribution
     license, so it is NOT vendored in this repo - download it yourself:
 
       https://npcap.com/#download  ("Npcap SDK")
@@ -11,7 +11,7 @@
          folder (the one containing Include\ and Lib\), or
       2. Extract it to third_party\npcap-sdk\ at the repo root (gitignored).
 
-    Building NetSniffer.Native also requires the Npcap RUNTIME to be
+    Building Loupe.Native also requires the Npcap RUNTIME to be
     installed (https://npcap.com/#download, plain installer) so
     wpcap.dll/Packet.dll exist at run time - the SDK only provides the
     build-time .lib files.

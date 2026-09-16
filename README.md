@@ -1,4 +1,4 @@
-# NetSniffer
+# Loupe
 
 A Windows network inspection toolkit with two modes in one app:
 
@@ -13,26 +13,26 @@ Both live in one Fluent-styled (WPF-UI / Mica) desktop UI.
 ```
 Packet Capture:
   Npcap (kernel driver)
-    -> NetSniffer.Native   (C++, DynamicLibrary)   pcap_loop, BPF filters
-    -> NetSniffer.Capture  (C#, P/Invoke)           adapter list, capture session
-    -> NetSniffer.Core     (C#)                     Ethernet/IP/TCP/UDP/DNS/HTTP/TLS
+    -> Loupe.Native   (C++, DynamicLibrary)   pcap_loop, BPF filters
+    -> Loupe.Capture  (C#, P/Invoke)           adapter list, capture session
+    -> Loupe.Core     (C#)                     Ethernet/IP/TCP/UDP/DNS/HTTP/TLS
                                                      dissection, TCP reassembly, .pcap I/O
 
 HTTP(S) Proxy:
-  NetSniffer.Proxy (C#)   local root CA + per-host leaf certs, CONNECT/TLS
+  Loupe.Proxy (C#)   local root CA + per-host leaf certs, CONNECT/TLS
                           interception, HTTP/1.1 relay with body capture
 
-  -> NetSniffer.App       (C#, WPF + WPF-UI)   packet list / protocol tree /
+  -> Loupe.App       (C#, WPF + WPF-UI)   packet list / protocol tree /
                                                 hex view, and a request list /
                                                 headers / body inspector
 ```
 
 ## Why a native capture layer
 
-Npcap/libpcap is a C API. `NetSniffer.Native` is a thin `DynamicLibrary`
+Npcap/libpcap is a C API. `Loupe.Native` is a thin `DynamicLibrary`
 wrapping `pcap_findalldevs` / `pcap_open_live` / `pcap_compile` /
 `pcap_loop` behind a flat, `extern "C"` ABI (see
-[`CaptureEngine.h`](native/NetSniffer.Native/CaptureEngine.h)), so packet
+[`CaptureEngine.h`](native/Loupe.Native/CaptureEngine.h)), so packet
 capture and BPF filtering happen with no managed overhead per packet - the
 callback only crosses into C# once a frame is ready. Everything above that
 (protocol dissection, TCP stream reassembly, the UI) is regular C#.
@@ -71,7 +71,7 @@ Separately, the **HTTP(S) Proxy** page is a local MITM debugging proxy:
   per-user proxy setting, or configure just one app/device manually.
 - Plain HTTP is relayed as-is. HTTPS is intercepted via `CONNECT`: the proxy
   terminates TLS towards the client using a certificate minted on the fly
-  from **NetSniffer's own locally-generated root CA**, and opens a second,
+  from **Loupe's own locally-generated root CA**, and opens a second,
   independently-verified TLS connection to the real server.
 - Nothing decrypts until you click **"Install Root Certificate"**, which
   adds that CA to the current Windows user's trusted root store (no
@@ -86,7 +86,7 @@ This only works on traffic that is deliberately routed through the proxy by
 a client that has also chosen to trust the generated CA - i.e. **your own**
 devices and apps, configured by **you**, for debugging. It cannot see or
 decrypt anything else, and per-app certificate pinning will still (correctly)
-reject NetSniffer's certificate unless you're specifically testing that app
+reject Loupe's certificate unless you're specifically testing that app
 and have disabled pinning in a debug build you control.
 
 ## What it deliberately does not do
@@ -103,10 +103,10 @@ at key extraction or interception of third-party sessions - the same
 
 It also doesn't vendor/bundle the Npcap installer. Npcap's license doesn't
 permit free redistribution of the installer itself outside npcap.com, so
-[`NpcapInstaller`](src/NetSniffer.Capture/NpcapInstaller.cs) downloads the
+[`NpcapInstaller`](src/Loupe.Capture/NpcapInstaller.cs) downloads the
 current official installer over HTTPS - on startup, if Npcap is missing -
 and runs it as a normal child process. You still see Npcap's own installer
-UI and accept Npcap's own license; NetSniffer never pre-accepts anything or
+UI and accept Npcap's own license; Loupe never pre-accepts anything or
 installs silently on your behalf.
 
 ## Building
@@ -118,7 +118,7 @@ installs silently on your behalf.
 - [Npcap](https://npcap.com/#download) **runtime** installed (plain
   installer - needed to actually capture at run time).
 - [Npcap SDK](https://npcap.com/#download) (needed only to *build*
-  `NetSniffer.Native` - provides `pcap.h` and `wpcap.lib`). It has its own
+  `Loupe.Native` - provides `pcap.h` and `wpcap.lib`). It has its own
   license that doesn't permit redistribution, so it isn't vendored here.
   Either:
   - extract it to `third_party/npcap-sdk/` at the repo root (gitignored), or
@@ -134,12 +134,12 @@ build.cmd
 That's the whole thing, from any plain shell: it locates MSBuild through
 `vswhere`, builds the native capture DLL, builds the managed projects, and
 runs the test suite. Pass `build.cmd Debug` for a debug build. The result is
-`src\NetSniffer.App\bin\Release\net8.0-windows\NetSniffer.exe`, with
-`NetSniffer.Native.dll` copied next to it.
+`src\Loupe.App\bin\Release\net8.0-windows\Loupe.exe`, with
+`Loupe.Native.dll` copied next to it.
 
-Opening `NetSniffer.sln` in Visual Studio and building (x64) works too.
+Opening `Loupe.sln` in Visual Studio and building (x64) works too.
 
-What doesn't work is `dotnet build NetSniffer.sln`: the `dotnet` CLI can't
+What doesn't work is `dotnet build Loupe.sln`: the `dotnet` CLI can't
 evaluate `.vcxproj` files, so it stops at the native project with
 `error MSB4278`. That's exactly why `build.cmd` exists - the native DLL
 needs real MSBuild, everything managed is happy with `dotnet`.
@@ -147,7 +147,7 @@ needs real MSBuild, everything managed is happy with `dotnet`.
 **Tests:**
 
 ```bash
-dotnet run --project tests\NetSniffer.Tests -c Release
+dotnet run --project tests\Loupe.Tests -c Release
 ```
 
 50 checks, and they need neither Npcap nor a network: the dissector runs on
@@ -155,7 +155,7 @@ hand-built frames and the proxy runs against a byte-exact local HTTP origin.
 
 ## Running
 
-Launch `NetSniffer.exe`. It requests administrator rights on startup (via
+Launch `Loupe.exe`. It requests administrator rights on startup (via
 its app manifest) because Npcap restricts raw capture to elevated processes
 by default. Pick an adapter, optionally type a BPF filter, hit Start.
 
