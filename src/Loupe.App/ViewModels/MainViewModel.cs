@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Collections.ObjectModel;
@@ -27,9 +27,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>
     /// How many rows the grid keeps. Every row pins the packet's raw bytes, so this is really a
     /// memory setting: at ~1 KB a frame, 50k rows is around 50 MB. The old 250k quietly grew to
-    /// a third of a gigabyte on a busy link.
+    /// a third of a gigabyte on a busy link. Adjustable in settings, within sane bounds.
     /// </summary>
-    private const int MaxDisplayedPackets = 50_000;
+    private static int MaxDisplayedPackets => Math.Clamp(AppSettings.Current.MaxPackets, 5_000, 500_000);
 
     /// <summary>
     /// Ceiling on packets waiting to be parsed. A gigabit link can out-run any UI; without a
@@ -80,11 +80,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private CaptureDeviceInfo? _selectedAdapter;
     [ObservableProperty] private string _filterText = "";
     [ObservableProperty] private bool _isCapturing;
-    [ObservableProperty] private bool _autoScroll = true;
+    [ObservableProperty] private bool _autoScroll = AppSettings.Current.AutoScroll;
+
+    partial void OnAutoScrollChanged(bool value) => AppSettings.Update(s => s.AutoScroll = value);
 
     /// <summary>Fold runs of identical packets into one counted row. On by default: a bulk
     /// transfer is otherwise hundreds of lines that differ only in sequence number.</summary>
-    [ObservableProperty] private bool _collapseRepeats = true;
+    [ObservableProperty] private bool _collapseRepeats = AppSettings.Current.CollapseRepeats;
+
+    partial void OnCollapseRepeatsChanged(bool value) => AppSettings.Update(s => s.CollapseRepeats = value);
 
     /// <summary>Row highlighted in the hosts panel. Highlighting alone filters nothing - the
     /// tick boxes do that, so several hosts can be watched at once.</summary>
@@ -187,6 +191,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // installer shows its own wizard and Windows shows its own elevation prompt).
         if (!IsCaptureEngineAvailable)
             _ = EnsureNpcapAsync();
+        else if (AppSettings.Current.StartCaptureOnLaunch && SelectedAdapter is not null)
+            StartCapture();
     }
 
     [RelayCommand]
@@ -197,7 +203,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             // Clearing the collection makes the bound ComboBox null out SelectedAdapter, so
             // remember the user's pick by name and restore it instead of silently jumping
             // back to the default on every refresh.
-            string? previouslySelected = SelectedAdapter?.Name;
+            string? previouslySelected = SelectedAdapter?.Name ?? AppSettings.Current.LastAdapter;
 
             Adapters.Clear();
             foreach (var device in CaptureDeviceManager.ListDevices())
@@ -267,6 +273,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 
+    partial void OnSelectedAdapterChanged(CaptureDeviceInfo? value)
+    {
+        if (value is not null) AppSettings.Update(s => s.LastAdapter = value.Name);
+        StartCaptureCommand.NotifyCanExecuteChanged();
+    }
+
     private bool CanStart() => !IsCapturing && SelectedAdapter is not null;
 
     [RelayCommand(CanExecute = nameof(CanStart))]
@@ -291,6 +303,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         try
         {
             _captureStart = DateTimeOffset.Now;
+            _captureStartKnown = false;
             _session.Start(string.IsNullOrWhiteSpace(FilterText) ? null : FilterText);
             IsCapturing = true;
             StatusMessage = Loc.Format("Pkt_Status_Capturing", SelectedAdapter.Description);
@@ -344,6 +357,57 @@ public partial class MainViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(HostsCountText));
         OnPropertyChanged(nameof(DroppedText));
         OnPropertyChanged(nameof(HasDropped));
+    }
+
+    // ---------------------------------------------------------------- capture filter presets
+
+    /// <summary>
+    /// The filters worth having at hand. These are capture filters (BPF): the driver applies
+    /// them before a packet is ever copied, which is what makes them worth using on a busy link.
+    /// </summary>
+    public IReadOnlyList<CaptureFilterPreset> FilterPresets { get; } =
+    [
+        new("Preset_All", ""),
+        new("Preset_Web", "tcp port 80 or tcp port 443 or udp port 443"),
+        new("Preset_Tls", "tcp port 443"),
+        new("Preset_Quic", "udp port 443"),
+        new("Preset_Http", "tcp port 80"),
+        new("Preset_Dns", "port 53 or port 5353"),
+        new("Preset_NoNoise", "not arp and not broadcast and not multicast"),
+    ];
+
+    /// <summary>
+    /// Picking a preset fills the filter box. A capture filter is handed to the driver when the
+    /// capture starts, so a running capture is restarted to apply it - the alternative is a
+    /// filter that silently does nothing until someone happens to press stop and start.
+    /// </summary>
+    [ObservableProperty] private CaptureFilterPreset? _selectedFilterPreset = new("Preset_All", "");
+
+    partial void OnSelectedFilterPresetChanged(CaptureFilterPreset? value)
+    {
+        if (value is null || FilterText == value.Expression) return;
+
+        FilterText = value.Expression;
+
+        if (!IsCapturing) return;
+
+        StopCapture();
+        StartCapture();
+    }
+
+    /// <summary>
+    /// The reassembled conversation this packet belongs to, or null when it isn't TCP or the
+    /// capture has since been cleared. The second value says which side of the stream the
+    /// selected packet was sent from, so the view can show "what this end sent" first.
+    /// </summary>
+    public FollowStreamViewModel? FollowStream(PacketRowViewModel row)
+    {
+        if (row.Packet.Tcp is not { } tcp) return null;
+
+        var key = new TcpStreamKey(tcp.SourceIp, tcp.SourcePort, tcp.DestinationIp, tcp.DestinationPort);
+        return _reassembler.TryGetStream(key) is { } stream
+            ? new FollowStreamViewModel(stream, key.IsAToB(tcp.SourceIp, tcp.SourcePort))
+            : null;
     }
 
     [RelayCommand]
@@ -429,6 +493,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         ClearPackets();
         _captureStart = DateTimeOffset.Now;
+        _captureStartKnown = false;
         StatusMessage = Loc.Format("Pkt_Status_Loading", Path.GetFileName(path));
 
         var token = _parseCancellation.Token;
@@ -528,6 +593,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
                     continue;
                 }
 
+                // The time column counts from the first packet, not from when the button was
+                // pressed: a file recorded yesterday would otherwise open with every row at a
+                // large negative offset from "now".
+                if (!_captureStartKnown)
+                {
+                    _captureStart = parsed.Timestamp;
+                    _captureStartKnown = true;
+                }
+
                 _reassembler.Ingest(parsed);
                 _names.Ingest(parsed);
                 _hosts.Ingest(parsed, _names);
@@ -539,6 +613,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             }
         }
     }
+
+    /// <summary>False until the first packet of this capture has set the time origin.</summary>
+    private volatile bool _captureStartKnown;
 
     private long _livePackets;
     private long _liveBytes;

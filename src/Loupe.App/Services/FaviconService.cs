@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.IO;
 using System.Net.Http;
 using System.Text.RegularExpressions;
@@ -47,8 +47,16 @@ public sealed class FaviconService : IDisposable
         _http.DefaultRequestHeaders.UserAgent.ParseAdd("Loupe/1.0 (+favicon)");
     }
 
-    /// <summary>When false, <see cref="GetAsync"/> only ever returns icons already on disk.</summary>
-    public bool Enabled { get; set; } = true;
+    /// <summary>
+    /// When false, <see cref="GetAsync"/> only ever returns icons already on disk. Backed by the
+    /// saved setting rather than a field: this is the app's one outbound-connection switch, and a
+    /// copy per service instance would mean turning it off left another instance still fetching.
+    /// </summary>
+    public bool Enabled
+    {
+        get => AppSettings.Current.FetchFavicons;
+        set => AppSettings.Update(settings => settings.FetchFavicons = value);
+    }
 
     /// <summary>
     /// Returns the site's icon, from memory, then disk, then the network. Never throws: a host

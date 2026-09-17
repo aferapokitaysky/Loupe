@@ -191,18 +191,27 @@ public sealed class RawHttpServer
                     read += n;
                 }
 
-                await stream.WriteAsync(Respond(method, path, body), ct);
+                await stream.WriteAsync(Respond(method, path, body, head.ToString()), ct);
             }
         }
     }
 
-    private static byte[] Respond(string method, string path, byte[] body)
+    private static byte[] Respond(string method, string path, byte[] body, string requestHead)
     {
         if (method == "HEAD")
             return Encoding.ASCII.GetBytes("HTTP/1.1 200 OK\r\nContent-Length: 9\r\n\r\n");
 
         switch (path)
         {
+            // Hands the request's own headers back, so a test can assert what actually went out.
+            case "/head":
+            {
+                byte[] echo = Encoding.UTF8.GetBytes(requestHead);
+                var header = Encoding.ASCII.GetBytes(
+                    "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + echo.Length + "\r\n\r\n");
+                return [.. header, .. echo];
+            }
+
             case "/len":
                 return Encoding.ASCII.GetBytes("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 9\r\n\r\nhello-len");
 

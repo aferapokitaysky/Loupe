@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Loupe.App.Localization;
+using Loupe.App.Services;
 using Loupe.App.ViewModels;
 
 namespace Loupe.App.Views;
@@ -97,14 +98,42 @@ public partial class PacketCapturePage : UserControl
         var menu = PacketGrid.ContextMenu!;
         menu.Items.Clear();
 
-        if (row.RemoteHost is { } remote)
-            menu.Items.Add(ContextMenus.Item(Loc.Format("Ignore_HideHost", remote), "EyeOff24", () => ViewModel.HideHost(remote)));
+        if (row.Packet.Tcp is not null)
+        {
+            menu.Items.Add(ContextMenus.Item(Loc.Get("Pkt_Follow"), "TextBulletListTree24", () => FollowStream(row)));
+            menu.Items.Add(new Separator());
+        }
+
+        menu.Items.Add(ContextMenus.Item(Loc.Get("Pkt_CopyRow"), "Copy24",
+            () => ClipboardService.TrySetText(
+                $"{row.Number}\t{row.Time}\t{row.Source}\t{row.Destination}\t{row.Protocol}\t{row.Length}\t{row.Info}")));
+        menu.Items.Add(ContextMenus.Item(Loc.Format("Pkt_CopyAddress", row.SourceAddressText), "ArrowUpload24",
+            () => ClipboardService.TrySetText(row.SourceAddressText)));
+        menu.Items.Add(ContextMenus.Item(Loc.Format("Pkt_CopyAddress", row.DestinationAddressText), "ArrowDownload24",
+            () => ClipboardService.TrySetText(row.DestinationAddressText)));
+        menu.Items.Add(ContextMenus.Item(Loc.Get("Pkt_CopyHex"), "Code24",
+            () => ClipboardService.TrySetText(row.HexDump)));
+
+        if (row.RemoteHost is { } remote || !string.IsNullOrEmpty(row.Process))
+            menu.Items.Add(new Separator());
+
+        if (row.RemoteHost is { } host)
+            menu.Items.Add(ContextMenus.Item(Loc.Format("Ignore_HideHost", host), "EyeOff24", () => ViewModel.HideHost(host)));
 
         if (!string.IsNullOrEmpty(row.Process))
             menu.Items.Add(ContextMenus.Item(Loc.Format("Ignore_HideProcess", row.Process), "AppsListDetail24",
                 () => ViewModel.HideProcess(row.Process)));
+    }
 
-        if (menu.Items.Count == 0) e.Handled = true; // e.g. an ARP frame: no host, no program
+    /// <summary>
+    /// Opens this packet's whole TCP conversation, reassembled. Non-modal and owned by the main
+    /// window, so several streams can be compared side by side while the capture keeps running.
+    /// </summary>
+    private void FollowStream(PacketRowViewModel row)
+    {
+        if (ViewModel.FollowStream(row) is not { } stream) return;
+
+        new FollowStreamWindow(stream) { Owner = Window.GetWindow(this) }.Show();
     }
 
     private static ScrollViewer? FindScrollViewer(DependencyObject root)

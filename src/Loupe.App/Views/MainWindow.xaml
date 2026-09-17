@@ -1,4 +1,4 @@
-<ui:FluentWindow x:Class="Loupe.App.Views.MainWindow"
+﻿<ui:FluentWindow x:Class="Loupe.App.Views.MainWindow"
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
@@ -89,6 +89,15 @@
                                 <TextBlock Text="{DynamicResource Nav_Sessions}" Style="{StaticResource NavLabel}" />
                             </StackPanel>
                         </RadioButton>
+
+                        <RadioButton x:Name="SettingsNavButton" GroupName="Nav" Style="{StaticResource NavButtonStyle}"
+                                     AutomationProperties.Name="{DynamicResource Nav_Settings}"
+                                     Checked="OnSettingsNavChecked">
+                            <StackPanel>
+                                <ui:SymbolIcon Symbol="Settings24" FontSize="22" HorizontalAlignment="Center" />
+                                <TextBlock Text="{DynamicResource Nav_Settings}" Style="{StaticResource NavLabel}" />
+                            </StackPanel>
+                        </RadioButton>
                     </StackPanel>
 
                     <!-- Language: flag chip in the rail, full list in a popup so long names aren't clipped -->
@@ -128,6 +137,7 @@
                 <views:PacketCapturePage x:Name="PacketsPage" />
                 <views:ProxyPage x:Name="ProxyPageControl" Visibility="Collapsed" Opacity="0" />
                 <views:SessionsPage x:Name="SessionsPageControl" Visibility="Collapsed" Opacity="0" />
+                <views:SettingsPage x:Name="SettingsPageControl" Visibility="Collapsed" Opacity="0" />
             </Grid>
         </Grid>
     </Grid>

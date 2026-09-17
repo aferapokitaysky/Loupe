@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
@@ -31,7 +31,6 @@ public static class LocalizationService
     ];
 
     private const string DefaultLanguageCode = "en";
-    private static readonly string SettingsPath = AppStorage.PathTo("settings.json");
 
     public static LanguageInfo CurrentLanguage { get; private set; } = AvailableLanguages[0];
 
@@ -82,33 +81,9 @@ public static class LocalizationService
         _ => code,
     };
 
-    private static string? LoadSavedLanguageCode()
-    {
-        try
-        {
-            if (!File.Exists(SettingsPath)) return null;
-            using var stream = File.OpenRead(SettingsPath);
-            var settings = JsonSerializer.Deserialize<AppSettings>(stream);
-            return settings?.Language;
-        }
-        catch
-        {
-            return null;
-        }
-    }
+    private static string? LoadSavedLanguageCode() => Services.AppSettings.Current.Language;
 
-    private static void SaveLanguageCode(string code)
-    {
-        try
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
-            File.WriteAllText(SettingsPath, JsonSerializer.Serialize(new AppSettings(code)));
-        }
-        catch
-        {
-            // Non-critical: worst case the language choice doesn't persist to the next run.
-        }
-    }
+    private static void SaveLanguageCode(string code) =>
+        Services.AppSettings.Update(settings => settings.Language = code);
 
-    private sealed record AppSettings(string Language);
 }

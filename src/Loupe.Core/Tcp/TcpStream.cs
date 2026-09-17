@@ -15,17 +15,38 @@ public sealed class TcpDirectionBuffer
     private uint? _nextExpectedSeq;
     private readonly MemoryStream _reassembled = new();
 
-    public long TotalBytes => _reassembled.Length;
+    /// <summary>
+    /// Segments arrive on the capture's parsing thread while "follow this stream" reads from the
+    /// UI thread. MemoryStream is not safe for that on its own: a read taken mid-write returns a
+    /// torn buffer, or throws.
+    /// </summary>
+    private readonly object _gate = new();
+
+    public long TotalBytes
+    {
+        get { lock (_gate) return _reassembled.Length; }
+    }
 
     /// <summary>Contiguous, in-order bytes reassembled so far (may lag behind live capture if segments are missing).</summary>
-    public byte[] GetReassembledBytes() => _reassembled.ToArray();
+    public byte[] GetReassembledBytes()
+    {
+        lock (_gate) return _reassembled.ToArray();
+    }
 
-    public void MarkStreamStart(uint isn) => _nextExpectedSeq ??= isn;
+    public void MarkStreamStart(uint isn)
+    {
+        lock (_gate) _nextExpectedSeq ??= isn;
+    }
 
     public void AddSegment(uint seq, ReadOnlySpan<byte> payload)
     {
         if (payload.Length == 0) return;
 
+        lock (_gate) AddSegmentCore(seq, payload);
+    }
+
+    private void AddSegmentCore(uint seq, ReadOnlySpan<byte> payload)
+    {
         _nextExpectedSeq ??= seq; // first segment observed for this direction: assume in-order start
 
         if (SequenceLessThan(seq, _nextExpectedSeq.Value))

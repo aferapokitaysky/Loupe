@@ -301,11 +301,36 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <ui:TextBox x:Name="SearchBox" Grid.Column="0" Width="380" VerticalAlignment="Center"
-                                PlaceholderText="{DynamicResource Proxy_Search_Placeholder}"
-                                Icon="{ui:SymbolIcon Search24}"
-                                ClearButtonEnabled="True"
-                                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:TextBox x:Name="SearchBox" Width="300" VerticalAlignment="Center"
+                                    PlaceholderText="{DynamicResource Proxy_Search_Placeholder}"
+                                    Icon="{ui:SymbolIcon Search24}"
+                                    ClearButtonEnabled="True"
+                                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <!-- Searching bodies means decoding them, so it is asked for rather than
+                             assumed - but it is the only way to find "which request carried this id". -->
+                        <Border Style="{StaticResource ToolbarStrip}" Margin="8,0,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <ToggleButton Style="{StaticResource ToolbarToggleButton}" IsChecked="{Binding SearchBodies}"
+                                              ToolTip="{DynamicResource Proxy_SearchBodies_Tip}"
+                                              AutomationProperties.Name="{DynamicResource Proxy_SearchBodies}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon Symbol="DocumentSearch24" FontSize="15" Margin="0,0,6,0" />
+                                        <TextBlock Text="{DynamicResource Proxy_SearchBodies}" FontSize="12" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </ToggleButton>
+                                <ToggleButton Style="{StaticResource ToolbarToggleButton}" IsChecked="{Binding ErrorsOnly}"
+                                              ToolTip="{DynamicResource Proxy_ErrorsOnly_Tip}"
+                                              AutomationProperties.Name="{DynamicResource Proxy_ErrorsOnly}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon Symbol="Warning24" FontSize="15" Margin="0,0,6,0" />
+                                        <TextBlock Text="{DynamicResource Proxy_ErrorsOnly}" FontSize="12" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </ToggleButton>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
 
                     <Border Grid.Column="1" Style="{StaticResource FilterChip}" HorizontalAlignment="Left" Margin="10,0,0,0"
                             Visibility="{Binding IsFiltered, Converter={StaticResource BoolToVisibility}}">
@@ -350,7 +375,22 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="{DynamicResource Proxy_Col_Method}" Binding="{Binding Method}" Width="72" />
+                        <DataGridTemplateColumn Header="{DynamicResource Proxy_Col_Method}" Width="86">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding Method}" />
+                                        <!-- A replay is our own doing, not something the machine did;
+                                             the list says so rather than letting it pass for traffic. -->
+                                        <ui:SymbolIcon Symbol="ArrowRepeatAll24" FontSize="13" Margin="6,0,0,0"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{StaticResource BrandCyanBrush}"
+                                                       ToolTip="{DynamicResource Proxy_ReplayBadge}"
+                                                       Visibility="{Binding IsReplay, Converter={StaticResource BoolToVisibility}}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Header="{DynamicResource Proxy_Col_Scheme}" Binding="{Binding Scheme}" Width="62" />
                         <DataGridTextColumn Header="{DynamicResource Proxy_Col_Host}" Binding="{Binding Host}" Width="190" />
                         <DataGridTextColumn Header="{DynamicResource Proxy_Col_Path}" Binding="{Binding Path}" Width="*" />
