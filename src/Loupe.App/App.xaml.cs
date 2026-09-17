@@ -15,6 +15,9 @@ public partial class App : Application
     /// </summary>
     private static readonly Color MonochromeAccent = Color.FromRgb(0xDD, 0xE3, 0xE9);
 
+    /// <summary>A capture file named on the command line, for the window to open once it is up.</summary>
+    public static string? StartupCapturePath { get; private set; }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -25,6 +28,12 @@ public partial class App : Application
         // Must run before StartupUri creates MainWindow, so every DynamicResource
         // in the visual tree resolves against the right language on first render.
         LocalizationService.Initialize();
+
+        // "loupe capture.pcap", or dropping a .pcap on the exe / opening one with it from
+        // Explorer. The path is handed to the window once it exists; opening a file is the
+        // other half of a capture tool, and making people hunt for the toolbar button for it
+        // is the kind of small friction that adds up.
+        StartupCapturePath = e.Args.FirstOrDefault(a => !a.StartsWith('-') && System.IO.File.Exists(a));
 
         DispatcherUnhandledException += (_, args) =>
         {

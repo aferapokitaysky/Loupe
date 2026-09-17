@@ -15,9 +15,16 @@
         <conv:ResourceBrushConverter x:Key="ResourceBrush" />
         <conv:CountToVisibilityConverter x:Key="CountToVisibility" />
         <conv:NullToVisibilityConverter x:Key="NullToVisibility" />
+        <conv:ShareToWidthConverter x:Key="ShareToWidth" />
 
+        <!--
+            The protocol badge now carries the colour, so the row only keeps enough of it to
+            group neighbours by eye. A grid where every row is tinted is a grid where the tint
+            stops meaning anything.
+        -->
         <Style x:Key="PacketRow" TargetType="DataGridRow" BasedOn="{StaticResource AppDataGridRow}">
             <Setter Property="Background" Value="{Binding ColorKey, Converter={StaticResource ResourceBrush}}" />
+            <Setter Property="Opacity" Value="1" />
         </Style>
     </UserControl.Resources>
 
@@ -99,6 +106,15 @@
                             </Button>
                         </StackPanel>
                     </Border>
+
+                    <!-- The same filters everyone ends up typing, spelled out once. Picking one
+                         fills the box beside it, so the syntax stays visible instead of hidden
+                         behind a menu. -->
+                    <ComboBox MinWidth="126" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="11.5"
+                              ItemsSource="{Binding FilterPresets}" SelectedItem="{Binding SelectedFilterPreset}"
+                              DisplayMemberPath="Label"
+                              ToolTip="{DynamicResource Pkt_Presets_Tip}"
+                              AutomationProperties.Name="{DynamicResource Pkt_Presets}" />
 
                     <!-- Capture filter: applied by the driver before a packet is ever copied,
                          which is why it sits up here and not with the display search. -->
@@ -269,12 +285,19 @@
                                         </StackPanel>
                                     </StackPanel>
 
-                                    <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="8,0,0,0">
+                                    <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="8,0,0,0" MinWidth="76">
                                         <TextBlock Text="{Binding BytesText}" Style="{StaticResource HostBytes}" />
                                         <TextBlock Style="{StaticResource HostMeta}" HorizontalAlignment="Right">
                                             <Run Text="{Binding Packets, Mode=OneWay}" />
                                             <Run Text="{DynamicResource Pkt_Hosts_PacketsSuffix}" />
                                         </TextBlock>
+
+                                        <!-- Share of the loudest host: the sort order, drawn. -->
+                                        <Border Style="{StaticResource VolumeTrack}" x:Name="Track">
+                                            <Border Style="{StaticResource VolumeFill}"
+                                                    Width="{Binding Share, Converter={StaticResource ShareToWidth},
+                                                            ConverterParameter=76}" />
+                                        </Border>
                                     </StackPanel>
                                 </Grid>
                             </DataTemplate>
@@ -368,8 +391,22 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Protocol}" Binding="{Binding Protocol}" Width="80" />
-                        <DataGridTextColumn Header="{DynamicResource Pkt_Col_Length}" Binding="{Binding Length}" Width="68" />
+                        <DataGridTemplateColumn Header="{DynamicResource Pkt_Col_Protocol}" Width="84">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource ProtocolPill}" Tag="{Binding Protocol}" Margin="0,2,0,0">
+                                        <TextBlock Text="{Binding Protocol}" Style="{StaticResource PillTextStrong}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="{DynamicResource Pkt_Col_Length}" Width="72">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Length}" Style="{StaticResource NumericCell}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
                         <!-- Blank for ordinary rows; "x420" where a run of identical packets folded -->
                         <DataGridTemplateColumn Header="" Width="58">
@@ -408,6 +445,13 @@
                     <TreeView Grid.Column="0" x:Name="DetailsTree"
                               ItemsSource="{Binding SelectedPacket.Packet.Layers}"
                               Background="{StaticResource SurfaceSunkenBrush}" BorderThickness="0" Padding="6">
+                        <!-- Open by default: the fields are the reason the pane exists, and
+                             four collapsed rows make you click four times to see anything. -->
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+                                <Setter Property="IsExpanded" Value="True" />
+                            </Style>
+                        </TreeView.ItemContainerStyle>
                         <TreeView.ItemTemplate>
                             <HierarchicalDataTemplate ItemsSource="{Binding Fields}">
                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />

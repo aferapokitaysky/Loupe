@@ -22,6 +22,24 @@ public static class BodyFormatter
         return truncated ? text + Loc.Get("Body_Truncated") : text;
     }
 
+    /// <summary>
+    /// The body as the server meant it: the captured bytes with any `Content-Encoding` undone.
+    /// This is what gets written to disk when a response is saved - nobody wants a file that is
+    /// named `.json` and holds gzip.
+    /// </summary>
+    public static byte[] Decode(IReadOnlyList<HttpHeader> headers, byte[] body) =>
+        Decompress(body, headers.Get("Content-Encoding"));
+
+    /// <summary>True for bodies worth searching or showing as text, by their declared type.</summary>
+    public static bool LooksTextual(string? contentType) =>
+        contentType is null
+        || contentType.Length == 0
+        || contentType.Contains("json", StringComparison.OrdinalIgnoreCase)
+        || contentType.Contains("text", StringComparison.OrdinalIgnoreCase)
+        || contentType.Contains("xml", StringComparison.OrdinalIgnoreCase)
+        || contentType.Contains("javascript", StringComparison.OrdinalIgnoreCase)
+        || contentType.Contains("x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase);
+
     private static byte[] Decompress(byte[] body, string? contentEncoding)
     {
         if (string.IsNullOrEmpty(contentEncoding)) return body;
@@ -51,14 +69,7 @@ public static class BodyFormatter
 
     private static string? TryFormatAsText(byte[] data, string contentType)
     {
-        bool looksTextual = contentType.Contains("json", StringComparison.OrdinalIgnoreCase)
-            || contentType.Contains("text", StringComparison.OrdinalIgnoreCase)
-            || contentType.Contains("xml", StringComparison.OrdinalIgnoreCase)
-            || contentType.Contains("javascript", StringComparison.OrdinalIgnoreCase)
-            || contentType.Contains("x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
-            || contentType.Length == 0;
-
-        if (!looksTextual) return null;
+        if (!LooksTextual(contentType)) return null;
 
         string text;
         try { text = Encoding.UTF8.GetString(data); }

@@ -40,28 +40,34 @@ jobs:
       - name: Run tests
         run: dotnet run --project tests\Loupe.Tests -c Release
 
-      # Two flavours: one that runs on a clean Windows install, and a small one for machines
-      # that already have the .NET 8 Desktop Runtime. Npcap is never bundled - its licence
-      # does not allow redistribution, and the app offers to download the official installer.
+      # Two flavours. The headline download is one file: the runtime and the native capture
+      # library travel inside the exe, so there is nothing to unpack and no console window
+      # behind the app. The second is for machines that already have .NET 8 and want the small
+      # download. Npcap is never bundled - its licence does not allow redistribution, and the
+      # app offers to fetch the official installer.
       - name: Publish
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}".TrimStart('v')
           $app = "src\Loupe.App\Loupe.App.csproj"
 
-          dotnet publish $app -c Release -r win-x64 --self-contained true  -p:Version=$version -o out\standalone
+          dotnet publish $app -c Release -r win-x64 --self-contained true -p:Version=$version `
+            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true -p:DebugType=none -o out\single
           dotnet publish $app -c Release -r win-x64 --self-contained false -p:Version=$version -o out\framework
 
-          foreach ($flavour in "standalone", "framework") {
-            if (-not (Test-Path "out\$flavour\Loupe.Native.dll")) { throw "Loupe.Native.dll missing from $flavour build" }
-            Copy-Item LICENSE, README.md, README.ru.md "out\$flavour"
-          }
+          if (-not (Test-Path "out\single\Loupe.exe")) { throw "the single-file build produced no exe" }
+          if (-not (Test-Path "out\framework\Loupe.Native.dll")) { throw "Loupe.Native.dll missing from the framework build" }
+
+          Copy-Item LICENSE, README.md, README.ru.md out\single
+          Copy-Item LICENSE, README.md, README.ru.md out\framework
 
           New-Item -ItemType Directory dist | Out-Null
-          Compress-Archive -Path out\standalone\* -DestinationPath "dist\Loupe-$version-win-x64.zip"
-          Compress-Archive -Path out\framework\*  -DestinationPath "dist\Loupe-$version-win-x64-net8.zip"
+          Copy-Item out\single\Loupe.exe "dist\Loupe-$version.exe"
+          Compress-Archive -Path out\single\* -DestinationPath "dist\Loupe-$version-win-x64.zip"
+          Compress-Archive -Path out\framework\* -DestinationPath "dist\Loupe-$version-win-x64-net8.zip"
 
-          Get-FileHash dist\*.zip -Algorithm SHA256 |
+          Get-FileHash dist\*.exe, dist\*.zip -Algorithm SHA256 |
             ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } |
             Set-Content dist\SHA256SUMS.txt -Encoding ascii
 
@@ -71,5 +77,6 @@ jobs:
           name: Loupe ${{ github.ref_name }}
           generate_release_notes: true
           files: |
+            dist/*.exe
             dist/*.zip
             dist/SHA256SUMS.txt

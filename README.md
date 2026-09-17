@@ -59,8 +59,15 @@ sent it, with its icon. The loudest host on a machine stops being
   address, protocol, program or summary; hide the noisy ones for good.
 - Runs of identical packets fold into one row with a `×420` badge. The folded
   frames are kept, so a saved `.pcap` still contains every packet.
+- **Follow a TCP stream**: both directions of a conversation reassembled, as
+  text or hex, with byte counts, copy and save. The two directions are shown
+  separately - reassembly knows the byte order within each one, not how they
+  interleaved in time, and inventing that would be a guess presented as evidence.
+- Capture-filter presets (web, TLS, QUIC, HTTP, DNS, no ARP or broadcast) that
+  fill the filter box, so the BPF syntax stays visible instead of hidden in a menu.
+- Copy the row, either address, or the hex dump from the context menu.
 - Reads and writes the classic `.pcap` format, so captures open in Wireshark
-  and tcpdump.
+  and tcpdump. `loupe capture.pcap` (or "Open with") opens one straight away.
 
 ## HTTP(S) proxy
 
@@ -91,6 +98,16 @@ line at all - the destination is read from the TLS SNI, or the `Host` header for
 plaintext - so anything you can redirect (its own config, a hosts entry, a
 firewall rule) is intercepted the same way.
 
+**What you can do with one request.** Repeat it - sent again straight to the
+origin, never back through the proxy, which would record it twice - and the
+answer lands in the list marked as a replay, next to the original. Copy it as
+cURL, PowerShell or `fetch()`, with connection-scoped headers dropped and binary
+bodies described rather than pasted. Copy or save the response body, decoded, so
+what lands on disk is what the server meant rather than the gzip it travelled as.
+
+An errors-only toggle narrows the list to 4xx, 5xx and requests that never got
+an answer, and the search reaches into request and response bodies when asked to.
+
 Upstream TLS is verified normally. The client can no longer check the server
 itself, so the proxy doing it is the only thing left.
 
@@ -118,7 +135,8 @@ Every tagged version is built and published by CI on the
 
 | File | For |
 |---|---|
-| `Loupe-<version>-win-x64.zip` | Any Windows 10/11 x64 machine - unpack and run `Loupe.exe` |
+| `Loupe-<version>.exe` | One file. Download, run. No install, nothing to unpack, no console window behind it |
+| `Loupe-<version>-win-x64.zip` | The same build zipped, with the licence and this README |
 | `Loupe-<version>-win-x64-net8.zip` | Machines that already have the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) - a much smaller download |
 
 `SHA256SUMS.txt` next to them lists the checksums. Loupe asks for
@@ -168,10 +186,24 @@ against the real Windows socket tables over loopback.
 | `Ctrl` + `S` | save the current page as a session |
 | `Ctrl` + `F` | jump to the search box |
 | `Ctrl` + `L` | clear the list |
+| `Ctrl` + `R` | repeat the selected request |
 | `F5` | refresh the session library |
+| `F1` | settings |
 
 The interface speaks 12 languages, switchable live from the flag at the bottom
 of the nav rail.
+
+## Settings
+
+<div align="center">
+<img src="docs/screenshots/settings.png" alt="Settings" width="900">
+</div>
+
+One page, reachable with `F1`, for the few things worth a choice: whether site
+icons are fetched at all, how many rows the packet list keeps (which is really a
+memory setting), whether capturing starts with the app, what Loupe has stored on
+this machine and how to clear it, and the hide rules with a reset. The window
+also reopens where it was left.
 
 ## Where things are kept
 

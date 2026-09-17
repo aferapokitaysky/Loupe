@@ -1,4 +1,4 @@
-namespace Loupe.Core.Tcp;
+﻿namespace Loupe.Core.Tcp;
 
 /// <summary>Reassembled byte stream for one direction of a TCP connection.</summary>
 public sealed class TcpDirectionBuffer
@@ -15,17 +15,38 @@ public sealed class TcpDirectionBuffer
     private uint? _nextExpectedSeq;
     private readonly MemoryStream _reassembled = new();
 
-    public long TotalBytes => _reassembled.Length;
+    /// <summary>
+    /// Segments arrive on the capture's parsing thread while "follow this stream" reads from the
+    /// UI thread. MemoryStream is not safe for that on its own: a read taken mid-write returns a
+    /// torn buffer, or throws.
+    /// </summary>
+    private readonly object _gate = new();
+
+    public long TotalBytes
+    {
+        get { lock (_gate) return _reassembled.Length; }
+    }
 
     /// <summary>Contiguous, in-order bytes reassembled so far (may lag behind live capture if segments are missing).</summary>
-    public byte[] GetReassembledBytes() => _reassembled.ToArray();
+    public byte[] GetReassembledBytes()
+    {
+        lock (_gate) return _reassembled.ToArray();
+    }
 
-    public void MarkStreamStart(uint isn) => _nextExpectedSeq ??= isn;
+    public void MarkStreamStart(uint isn)
+    {
+        lock (_gate) _nextExpectedSeq ??= isn;
+    }
 
     public void AddSegment(uint seq, ReadOnlySpan<byte> payload)
     {
         if (payload.Length == 0) return;
 
+        lock (_gate) AddSegmentCore(seq, payload);
+    }
+
+    private void AddSegmentCore(uint seq, ReadOnlySpan<byte> payload)
+    {
         _nextExpectedSeq ??= seq; // first segment observed for this direction: assume in-order start
 
         if (SequenceLessThan(seq, _nextExpectedSeq.Value))
@@ -84,10 +105,56 @@ public sealed class TcpDirectionBuffer
     private static bool SequenceLessThan(uint a, uint b) => unchecked(a - b) > 0x8000_0000;
 }
 
+/// <summary>
+/// One piece of a conversation as it appeared on the wire: which way it went, when, and what
+/// it said. The direction buffers answer "what did this side send in total"; these answer
+/// "what was said, in what order" - which is the only way to read a request and its response
+/// as a dialogue rather than as two separate walls of text.
+/// </summary>
+public sealed record StreamChunk(bool FromA, DateTimeOffset Timestamp, uint Sequence, byte[] Data);
+
 public sealed class TcpStream
 {
+    /// <summary>
+    /// Ceiling on the replay log. It duplicates payload that is already in the direction
+    /// buffers, so it is capped well below them: a conversation nobody can read to the end is
+    /// not worth the memory, and the reassembled totals stay complete either way.
+    /// </summary>
+    private const long MaxConversationBytes = 4 * 1024 * 1024;
+
+    private readonly List<StreamChunk> _conversation = [];
+    private readonly object _gate = new();
+    private long _conversationBytes;
+
     public required TcpStreamKey Key { get; init; }
     public TcpDirectionBuffer AToB { get; } = new();
     public TcpDirectionBuffer BToA { get; } = new();
     public DateTimeOffset LastActivity { get; set; }
+
+    /// <summary>True once the log stopped growing, so a view can say so rather than imply the
+    /// conversation simply ended.</summary>
+    public bool ConversationTruncated { get; private set; }
+
+    /// <summary>The conversation in capture order. A snapshot: the capture keeps going.</summary>
+    public IReadOnlyList<StreamChunk> Conversation
+    {
+        get { lock (_gate) return [.. _conversation]; }
+    }
+
+    internal void Record(bool fromA, DateTimeOffset timestamp, uint sequence, ReadOnlySpan<byte> payload)
+    {
+        if (payload.Length == 0) return;
+
+        lock (_gate)
+        {
+            if (_conversationBytes + payload.Length > MaxConversationBytes)
+            {
+                ConversationTruncated = true;
+                return;
+            }
+
+            _conversation.Add(new StreamChunk(fromA, timestamp, sequence, payload.ToArray()));
+            _conversationBytes += payload.Length;
+        }
+    }
 }

@@ -1,4 +1,4 @@
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -143,6 +143,8 @@ T.Section("TCP REASSEMBLY");
         1, new TcpStreamKey("1.1.1.1", 80, "2.2.2.2", 9) == new TcpStreamKey("2.2.2.2", 9, "1.1.1.1", 80) ? 1 : 0);
 }
 
+FollowTests.Run();
+
 NamingTests.Run();
 
 StorageTests.Run();
@@ -152,6 +154,8 @@ SessionTests.Run();
 HarTests.Run();
 
 await ProxyTests.RunAsync();
+
+await ReplayTests.RunAsync();
 
 await TransparentTests.RunAsync();
 

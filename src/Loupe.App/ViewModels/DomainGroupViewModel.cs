@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Loupe.App.Services;
@@ -57,6 +57,8 @@ public sealed partial class DomainGroupViewModel : ObservableObject
 
     public void Add(HttpExchangeRowViewModel row)
     {
+        // The request list shows the site's icon too, and it is the domain that knows it.
+        row.Favicon = Favicon;
         Exchanges.Insert(0, row);
         LastActivity = row.Exchange.StartTime;
         Recount();
@@ -78,6 +80,12 @@ public sealed partial class DomainGroupViewModel : ObservableObject
 
         TotalBytes = bytes;
         ErrorCount = errors;
+    }
+
+    /// <summary>The icon usually lands after the first requests have; hand it down when it does.</summary>
+    partial void OnFaviconChanged(ImageSource? value)
+    {
+        foreach (var row in Exchanges) row.Favicon = value;
     }
 
     /// <summary>async void can only throw into the dispatcher; a missing icon is not worth an error dialog.</summary>

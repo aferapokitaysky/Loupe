@@ -393,6 +393,41 @@
         </Style.Triggers>
     </Style>
 
+    <!--
+        The same chip, but it does the step it names. A legend that only describes what to do
+        elsewhere makes you find the elsewhere; this one is the button.
+    -->
+    <Style x:Key="StepButton" TargetType="Button">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Margin" Value="0,0,8,0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Shell" CornerRadius="16" Padding="12,6"
+                            Background="{StaticResource SurfaceSunkenBrush}"
+                            BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1">
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Shell" Property="Background" Value="{StaticResource SurfaceSelectedBrush}" />
+                            <Setter TargetName="Shell" Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+                        </Trigger>
+                        <!-- Done: green, and no longer inviting a click. -->
+                        <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                            <Setter TargetName="Shell" Property="Background" Value="#143FB950" />
+                            <Setter TargetName="Shell" Property="BorderBrush" Value="#553FB950" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </DataTrigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.55" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="StepNumber" TargetType="TextBlock">
         <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="Bold" />
@@ -545,6 +580,152 @@
         <Setter Property="MaxWidth" Value="300" />
         <Setter Property="Margin" Value="0,12,0,0" />
         <Setter Property="FontSize" Value="12.5" />
+    </Style>
+
+    <!-- ============================ Badges ============================
+
+        A grid is read by scanning, not by reading. These carry the one word in each row that
+        decides whether you look further - the protocol, the method, the status - as a shape and
+        a colour, so the eye finds the interesting row without parsing the text of every line.
+
+        Colour is keyed on the value through Tag rather than a converter per column: the value is
+        already there, and a trigger list is the thing you read to learn what the colours mean.
+    -->
+    <Style x:Key="Pill" TargetType="Border">
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="Padding" Value="7,1" />
+        <Setter Property="Height" Value="18" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="Background" Value="#14FFFFFF" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <Style x:Key="PillText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="10.5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+    </Style>
+
+    <!-- Protocol, in the same hues the old row tints used - just concentrated into one chip. -->
+    <Style x:Key="ProtocolPill" TargetType="Border" BasedOn="{StaticResource Pill}">
+        <Setter Property="MinWidth" Value="48" />
+        <Style.Triggers>
+            <Trigger Property="Tag" Value="TLS"><Setter Property="Background" Value="#243FB950" /></Trigger>
+            <Trigger Property="Tag" Value="QUIC"><Setter Property="Background" Value="#2456D364" /></Trigger>
+            <Trigger Property="Tag" Value="HTTP"><Setter Property="Background" Value="#26D29922" /></Trigger>
+            <Trigger Property="Tag" Value="DNS"><Setter Property="Background" Value="#2658A6FF" /></Trigger>
+            <Trigger Property="Tag" Value="UDP"><Setter Property="Background" Value="#242DD4BF" /></Trigger>
+            <Trigger Property="Tag" Value="ARP"><Setter Property="Background" Value="#22C9A0FF" /></Trigger>
+            <Trigger Property="Tag" Value="ICMP"><Setter Property="Background" Value="#24F85149" /></Trigger>
+            <Trigger Property="Tag" Value="ICMPv6"><Setter Property="Background" Value="#24F85149" /></Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- HTTP method: the safe ones stay quiet, the ones that change something do not. -->
+    <Style x:Key="MethodPill" TargetType="Border" BasedOn="{StaticResource Pill}">
+        <Setter Property="MinWidth" Value="46" />
+        <Style.Triggers>
+            <Trigger Property="Tag" Value="GET"><Setter Property="Background" Value="#2458A6FF" /></Trigger>
+            <Trigger Property="Tag" Value="POST"><Setter Property="Background" Value="#243FB950" /></Trigger>
+            <Trigger Property="Tag" Value="PUT"><Setter Property="Background" Value="#26D29922" /></Trigger>
+            <Trigger Property="Tag" Value="PATCH"><Setter Property="Background" Value="#26D29922" /></Trigger>
+            <Trigger Property="Tag" Value="DELETE"><Setter Property="Background" Value="#24F85149" /></Trigger>
+            <Trigger Property="Tag" Value="CONNECT"><Setter Property="Background" Value="#22C9A0FF" /></Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Response status, by class: 2xx quiet green, 3xx blue, 4xx amber, 5xx red, pending grey. -->
+    <Style x:Key="StatusPill" TargetType="Border" BasedOn="{StaticResource Pill}">
+        <Setter Property="MinWidth" Value="40" />
+        <Style.Triggers>
+            <Trigger Property="Tag" Value="ok"><Setter Property="Background" Value="#243FB950" /></Trigger>
+            <Trigger Property="Tag" Value="redirect"><Setter Property="Background" Value="#2458A6FF" /></Trigger>
+            <Trigger Property="Tag" Value="clientError"><Setter Property="Background" Value="#26D29922" /></Trigger>
+            <Trigger Property="Tag" Value="serverError"><Setter Property="Background" Value="#26F85149" /></Trigger>
+            <Trigger Property="Tag" Value="failed"><Setter Property="Background" Value="#26F85149" /></Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="PillTextStrong" TargetType="TextBlock" BasedOn="{StaticResource PillText}">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+    </Style>
+
+    <!-- Numbers: right-aligned and monospaced, so columns of them line up and stop jittering. -->
+    <Style x:Key="NumericCell" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, monospace" />
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="Margin" Value="0,0,8,0" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+    </Style>
+
+    <!-- How much of the capture one host accounts for: the list is sorted by it, this shows it. -->
+    <Style x:Key="VolumeTrack" TargetType="Border">
+        <Setter Property="Height" Value="3" />
+        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="Background" Value="#14FFFFFF" />
+        <Setter Property="Margin" Value="0,6,0,0" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <Style x:Key="VolumeFill" TargetType="Border">
+        <Setter Property="Height" Value="3" />
+        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="Background" Value="{StaticResource BrandNeonBrush}" />
+    </Style>
+
+    <!-- ============================ Section headings ============================ -->
+
+    <Style x:Key="SectionTitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="SectionAccent" TargetType="Border">
+        <Setter Property="Width" Value="3" />
+        <Setter Property="Height" Value="14" />
+        <Setter Property="CornerRadius" Value="2" />
+        <Setter Property="Margin" Value="0,0,10,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Background" Value="{StaticResource BrandNeonBrush}" />
+    </Style>
+
+    <!-- ============================ Toasts ============================
+
+        Short-lived confirmations - copied, repeated, saved - in the corner of the window. They
+        exist because the status line is on the wrong side of the screen from where the action
+        happened, and because "did that work?" should not need looking for.
+    -->
+    <Style x:Key="Toast" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceRaisedBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="9" />
+        <Setter Property="Padding" Value="13,9" />
+        <Setter Property="Margin" Value="0,6,0,0" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="Black" Opacity="0.55" BlurRadius="22" ShadowDepth="5" Direction="270" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================ Stream turns ============================ -->
+
+    <Style x:Key="TurnCard" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceSunkenBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderSubtleBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="9" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0,0,0,8" />
     </Style>
 
 </ResourceDictionary>

@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Loupe.App.Localization;
 using Loupe.App.Services;
 using Loupe.Proxy.Http;
@@ -36,10 +36,85 @@ public sealed class HttpExchangeRowViewModel(HttpExchange exchange) : Observable
         _ => "",
     };
 
+    /// <summary>
+    /// Which family the answer belongs to, for the badge: a wall of numbers tells you nothing
+    /// at a glance, five colours tell you where to look.
+    /// </summary>
+    public string StatusKind => Exchange.State switch
+    {
+        ExchangeState.Failed => "failed",
+        ExchangeState.ResponseReceived => Exchange.StatusCode switch
+        {
+            >= 500 => "serverError",
+            >= 400 => "clientError",
+            >= 300 => "redirect",
+            >= 200 => "ok",
+            _ => "pending",
+        },
+        _ => "pending",
+    };
+
     public string StatusDetail => Exchange.Error ?? Exchange.ReasonPhrase ?? "";
     public int ResponseSize => Exchange.ResponseBody.Length;
+
+    private System.Windows.Media.ImageSource? _favicon;
+
+    /// <summary>The site's icon, handed down by its domain group once it has one.</summary>
+    public System.Windows.Media.ImageSource? Favicon
+    {
+        get => _favicon;
+        set => SetProperty(ref _favicon, value);
+    }
+
+    /// <summary>Response size in units a person reads, rather than a bare byte count.</summary>
+    public string SizeText => ResponseSize switch
+    {
+        0 => "",
+        < 1024 => $"{ResponseSize} B",
+        < 1024 * 1024 => $"{ResponseSize / 1024.0:F1} KB",
+        _ => $"{ResponseSize / (1024.0 * 1024):F1} MB",
+    };
     public string Duration => Exchange.Duration is { } d ? $"{d.TotalMilliseconds:F0} ms" : "";
     public bool IsError => Exchange.State == ExchangeState.Failed;
+
+    /// <summary>True for a request Loupe sent again itself; the list marks these so a replay is
+    /// never mistaken for something the machine did.</summary>
+    public bool IsReplay => Exchange.IsReplay;
+
+    /// <summary>
+    /// Request and response bodies as plain text, for searching inside them. Built once and
+    /// kept: decompressing and decoding megabytes per keystroke across a whole capture is the
+    /// difference between a search box that types smoothly and one that doesn't. Capped for the
+    /// same reason - a match 300 KB into a minified bundle is not a result anyone is looking for.
+    /// </summary>
+    public string SearchableBody => _searchableBody ??= BuildSearchableBody();
+
+    private string? _searchableBody;
+
+    private const int MaxSearchableBodyChars = 256 * 1024;
+
+    private string BuildSearchableBody()
+    {
+        string request = TextOf(Exchange.RequestHeaders, Exchange.RequestBody);
+        string response = TextOf(Exchange.ResponseHeaders, Exchange.ResponseBody);
+        return request.Length == 0 ? response : request + "\n" + response;
+
+        static string TextOf(List<HttpHeader> headers, byte[] body)
+        {
+            if (body.Length == 0 || !BodyFormatter.LooksTextual(headers.Get("Content-Type"))) return "";
+
+            byte[] decoded = BodyFormatter.Decode(headers, body);
+            try
+            {
+                return System.Text.Encoding.UTF8.GetString(
+                    decoded, 0, Math.Min(decoded.Length, MaxSearchableBodyChars));
+            }
+            catch (ArgumentException)
+            {
+                return "";
+            }
+        }
+    }
 
     public string RequestHeadersText => FormatHeaders(Exchange.RequestHeaders);
     public string ResponseHeadersText => Exchange.State == ExchangeState.ResponseReceived
@@ -52,7 +127,13 @@ public sealed class HttpExchangeRowViewModel(HttpExchange exchange) : Observable
         : "";
 
     /// <summary>Re-reads every computed property. Call after the underlying <see cref="Exchange"/> mutates.</summary>
-    public void Refresh() => OnPropertyChanged((string?)null);
+    public void Refresh()
+    {
+        // The response usually lands after the row does, so a body cached from the pending state
+        // would leave the response unsearchable for the rest of the session.
+        _searchableBody = null;
+        OnPropertyChanged((string?)null);
+    }
 
     private static string FormatHeaders(IEnumerable<HttpHeader> headers) =>
         string.Join('\n', headers.Select(h => $"{h.Name}: {h.Value}"));
