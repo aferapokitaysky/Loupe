@@ -21,7 +21,7 @@
 ---
 
 <div align="center">
-<img src="docs/screenshots/packets.png" alt="Захват пакетов" width="900">
+<img src="docs/screenshots/ru/packets.png" alt="Захват пакетов" width="900">
 </div>
 
 ## Чем отличается
@@ -72,7 +72,7 @@ connection ID по соли, опубликованной в RFC 9001, — эт�
 ## HTTP(S)-прокси
 
 <div align="center">
-<img src="docs/screenshots/proxy.png" alt="HTTP(S)-прокси" width="900">
+<img src="docs/screenshots/ru/proxy.png" alt="HTTP(S)-прокси" width="900">
 </div>
 
 Отладочный прокси в духе Charles/Fiddler/Proxyman, организованный по доменам:
@@ -116,7 +116,7 @@ connection ID по соли, опубликованной в RFC 9001, — эт�
 ## Сессии
 
 <div align="center">
-<img src="docs/screenshots/sessions.png" alt="Сохранённые сессии" width="900">
+<img src="docs/screenshots/ru/sessions.png" alt="Сохранённые сессии" width="900">
 </div>
 
 Сохраните то, что на экране, как именованную сессию и вернитесь к ней позже: по
@@ -196,6 +196,10 @@ dotnet run --project tests\Loupe.Tests -c Release
 Интерфейс на 12 языках, переключается на лету флагом внизу панели навигации.
 
 ## Настройки
+
+<div align="center">
+<img src="docs/screenshots/ru/settings.png" alt="Настройки" width="900">
+</div>
 
 Одна страница, открывается по `F1`: загружать ли значки сайтов вообще, сколько
 строк держит список пакетов (это на самом деле настройка памяти), начинать ли

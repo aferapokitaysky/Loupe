@@ -63,7 +63,14 @@ public static class LocalizationService
         app.Resources.MergedDictionaries.Add(dictionary);
 
         CurrentLanguage = language;
-        Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(MapToCultureName(language.Code));
+
+        // Both cultures, not just the UI one: numbers and dates are read in the same language as
+        // the labels around them, so an English UI should not be reporting "2,0 KB".
+        var culture = CultureInfo.GetCultureInfo(MapToCultureName(language.Code));
+        Thread.CurrentThread.CurrentUICulture = culture;
+        Thread.CurrentThread.CurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        CultureInfo.DefaultThreadCurrentCulture = culture;
 
         if (persist) SaveLanguageCode(language.Code);
         LanguageChanged?.Invoke(null, EventArgs.Empty);

@@ -195,6 +195,10 @@ of the nav rail.
 
 ## Settings
 
+<div align="center">
+<img src="docs/screenshots/settings.png" alt="Settings" width="900">
+</div>
+
 One page, reachable with `F1`, for the few things worth a choice: whether site
 icons are fetched at all, how many rows the packet list keeps (which is really a
 memory setting), whether capturing starts with the app, what Loupe has stored on

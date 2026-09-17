@@ -445,6 +445,13 @@
                     <TreeView Grid.Column="0" x:Name="DetailsTree"
                               ItemsSource="{Binding SelectedPacket.Packet.Layers}"
                               Background="{StaticResource SurfaceSunkenBrush}" BorderThickness="0" Padding="6">
+                        <!-- Open by default: the fields are the reason the pane exists, and
+                             four collapsed rows make you click four times to see anything. -->
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+                                <Setter Property="IsExpanded" Value="True" />
+                            </Style>
+                        </TreeView.ItemContainerStyle>
                         <TreeView.ItemTemplate>
                             <HierarchicalDataTemplate ItemsSource="{Binding Fields}">
                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
