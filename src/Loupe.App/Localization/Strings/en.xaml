@@ -255,4 +255,8 @@
     <sys:String x:Key="Proxy_Clients">Apps</sys:String>
     <sys:String x:Key="Proxy_Client_Browser">browser</sys:String>
     <sys:String x:Key="Proxy_Client_Unknown">Another device</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerate">Create a new certificate</sys:String>
+    <sys:String x:Key="Set_Ca_RegenerateConfirm">This replaces the root certificate with a new one and removes the old ones from your trust store. Anything currently decrypting through the old certificate stops until browsers are restarted. Windows will ask before trusting the new one. Continue?</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerated">New certificate created; {0} old root(s) removed</sys:String>
+    <sys:String x:Key="Set_Ca_LegacyName">This certificate was created before the app was renamed, so it still introduces itself as NetSniffer in every certificate dialog. Creating a new one fixes the name.</sys:String>
 </ResourceDictionary>

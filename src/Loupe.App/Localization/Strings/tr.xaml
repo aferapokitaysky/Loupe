@@ -253,4 +253,8 @@
     <sys:String x:Key="Proxy_Clients">Uygulamalar</sys:String>
     <sys:String x:Key="Proxy_Client_Browser">tarayıcı</sys:String>
     <sys:String x:Key="Proxy_Client_Unknown">Başka bir cihaz</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerate">Yeni sertifika oluştur</sys:String>
+    <sys:String x:Key="Set_Ca_RegenerateConfirm">Bu, kök sertifikayı yenisiyle değiştirir ve eskileri güven deponuzdan kaldırır. Şu anda eski sertifikayla çözülen her şey, tarayıcılar yeniden başlatılana kadar durur. Windows yenisine güvenmeden önce ayrıca soracak. Devam edilsin mi?</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerated">Yeni sertifika oluşturuldu; kaldırılan eski kök sayısı: {0}</sys:String>
+    <sys:String x:Key="Set_Ca_LegacyName">Bu sertifika uygulama yeniden adlandırılmadan önce oluşturuldu, bu yüzden sertifika pencerelerinde hâlâ kendini NetSniffer olarak tanıtıyor. Yenisini oluşturmak adı düzeltir.</sys:String>
 </ResourceDictionary>

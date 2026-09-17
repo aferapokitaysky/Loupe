@@ -253,4 +253,8 @@
     <sys:String x:Key="Proxy_Clients">Программы</sys:String>
     <sys:String x:Key="Proxy_Client_Browser">браузер</sys:String>
     <sys:String x:Key="Proxy_Client_Unknown">Другое устройство</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerate">Создать новый сертификат</sys:String>
+    <sys:String x:Key="Set_Ca_RegenerateConfirm">Корневой сертификат будет заменён новым, а старые удалены из вашего хранилища доверия. Всё, что сейчас расшифровывается старым, перестанет работать до перезапуска браузеров. Windows отдельно спросит про доверие новому. Продолжить?</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerated">Новый сертификат создан, старых корней удалено: {0}</sys:String>
+    <sys:String x:Key="Set_Ca_LegacyName">Этот сертификат создан ещё до переименования приложения, поэтому во всех окнах про сертификаты он представляется как NetSniffer. Новый сертификат исправит имя.</sys:String>
 </ResourceDictionary>

@@ -126,22 +126,66 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// The proxy's own root certificate, by thumbprint - the identity everything it decrypts is
-    /// trusted through. Shown here rather than on the proxy page: it is a thing you check, not a
-    /// thing you use.
+    /// The proxy's own root certificate - the identity everything it decrypts is trusted
+    /// through. Shown here rather than on the proxy page: it is a thing you check, not a thing
+    /// you use.
     /// </summary>
-    public string CaThumbprint
+    public string CaThumbprint => SafeCa(ca => ca.Thumbprint);
+
+    public string CaName => SafeCa(ca => ca.CommonName);
+
+    /// <summary>True while the certificate still carries the name from before the rename.</summary>
+    public bool CaHasLegacyName => SafeCa(ca => ca.HasLegacyName ? "yes" : "") == "yes";
+
+    /// <summary>
+    /// Replaces the root certificate with a fresh one under the current name, and clears out
+    /// the roots left behind by earlier ones.
+    ///
+    /// Asked for rather than done quietly: everything signed by the old key stops working the
+    /// moment its root leaves the store, browsers hold the old one until they are restarted,
+    /// and Windows asks its own question before trusting the new one.
+    /// </summary>
+    [RelayCommand]
+    private void RegenerateCertificate()
     {
-        get
+        var answer = System.Windows.MessageBox.Show(
+            Loc.Get("Set_Ca_RegenerateConfirm"),
+            Loc.Get("Set_Ca_Regenerate"),
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Warning,
+            System.Windows.MessageBoxResult.No);
+
+        if (answer != System.Windows.MessageBoxResult.Yes) return;
+
+        try
         {
-            try
-            {
-                return new Loupe.Proxy.Ca.RootCertificateAuthority(AppStorage.PathTo("ca")).Thumbprint;
-            }
-            catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.Cryptography.CryptographicException)
-            {
-                return "";
-            }
+            var ca = CertificateAuthorityService.Instance;
+            ca.Regenerate();
+            int removed = ca.RemoveStaleRoots();
+            ca.InstallForCurrentUser();
+
+            OnPropertyChanged(nameof(CaThumbprint));
+            OnPropertyChanged(nameof(CaName));
+            OnPropertyChanged(nameof(CaHasLegacyName));
+            ToastService.Show(Loc.Format("Set_Ca_Regenerated", removed), "ShieldCheckmark24");
+        }
+        catch (Exception ex) when (ex is System.Security.Cryptography.CryptographicException
+                                       or UnauthorizedAccessException or IOException)
+        {
+            ToastService.Show(Loc.Format("Proxy_Status_CertInstallFailed", ex.Message), "Warning24");
+        }
+    }
+
+    private static string SafeCa(Func<Loupe.Proxy.Ca.RootCertificateAuthority, string> read)
+    {
+        try
+        {
+            return read(CertificateAuthorityService.Instance);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException
+                                      or System.Security.Cryptography.CryptographicException)
+        {
+            return "";
         }
     }
 

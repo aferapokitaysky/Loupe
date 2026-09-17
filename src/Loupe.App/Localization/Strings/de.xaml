@@ -253,4 +253,8 @@
     <sys:String x:Key="Proxy_Clients">Programme</sys:String>
     <sys:String x:Key="Proxy_Client_Browser">Browser</sys:String>
     <sys:String x:Key="Proxy_Client_Unknown">Anderes Gerät</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerate">Neues Zertifikat erstellen</sys:String>
+    <sys:String x:Key="Set_Ca_RegenerateConfirm">Das Stammzertifikat wird durch ein neues ersetzt und die alten aus Ihrem Vertrauensspeicher entfernt. Was gerade über das alte entschlüsselt wird, hört auf, bis Browser neu gestartet sind. Windows fragt vor dem Vertrauen in das neue. Fortfahren?</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerated">Neues Zertifikat erstellt; entfernte alte Stammzertifikate: {0}</sys:String>
+    <sys:String x:Key="Set_Ca_LegacyName">Dieses Zertifikat stammt aus der Zeit vor der Umbenennung und stellt sich in jedem Zertifikatsdialog weiterhin als NetSniffer vor. Ein neues Zertifikat behebt den Namen.</sys:String>
 </ResourceDictionary>

@@ -253,4 +253,8 @@
     <sys:String x:Key="Proxy_Clients">Програми</sys:String>
     <sys:String x:Key="Proxy_Client_Browser">браузер</sys:String>
     <sys:String x:Key="Proxy_Client_Unknown">Інший пристрій</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerate">Створити новий сертифікат</sys:String>
+    <sys:String x:Key="Set_Ca_RegenerateConfirm">Кореневий сертифікат буде замінено новим, а старі видалено зі сховища довіри. Усе, що зараз розшифровується старим, перестане працювати до перезапуску браузерів. Windows окремо запитає про довіру новому. Продовжити?</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerated">Новий сертифікат створено, старих коренів видалено: {0}</sys:String>
+    <sys:String x:Key="Set_Ca_LegacyName">Цей сертифікат створено ще до перейменування застосунку, тому в усіх вікнах про сертифікати він називає себе NetSniffer. Новий сертифікат виправить ім'я.</sys:String>
 </ResourceDictionary>
