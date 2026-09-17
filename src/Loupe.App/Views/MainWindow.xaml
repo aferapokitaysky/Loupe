@@ -138,6 +138,39 @@
                 <views:ProxyPage x:Name="ProxyPageControl" Visibility="Collapsed" Opacity="0" />
                 <views:SessionsPage x:Name="SessionsPageControl" Visibility="Collapsed" Opacity="0" />
                 <views:SettingsPage x:Name="SettingsPageControl" Visibility="Collapsed" Opacity="0" />
+
+                <!--
+                    Confirmations land here, next to where the action happened, rather than in
+                    the status line at the far corner of the window. Not hit-testable: a toast
+                    that swallows a click on the thing underneath it is worse than no toast.
+                -->
+                <ItemsControl x:Name="Toasts" VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                              Margin="0,0,16,16" IsHitTestVisible="False" Panel.ZIndex="50">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Toast}">
+                                <Border.Triggers>
+                                    <EventTrigger RoutedEvent="Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                 From="0" To="1" Duration="0:0:0.18" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Border.Triggers>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="{Binding Symbol}" FontSize="15" Margin="0,0,9,0"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{StaticResource BrandCyanBrush}" />
+                                    <TextBlock Text="{Binding Message}" FontSize="12.5" MaxWidth="360"
+                                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                               Foreground="{StaticResource TextPrimaryBrush}" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </Grid>
         </Grid>
     </Grid>

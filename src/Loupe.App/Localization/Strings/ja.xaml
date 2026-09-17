@@ -232,4 +232,15 @@
     <sys:String x:Key="Set_About">このアプリについて</sys:String>
     <sys:String x:Key="Set_Version">Loupe {0} · .NET {1}</sys:String>
     <sys:String x:Key="Set_About_Note">MIT ライセンスのオープンソースです。Npcap は独自ライセンスの別プログラムで、同梱はしていません。</sys:String>
+    <sys:String x:Key="Follow_Mode_Dialogue">やり取り</sys:String>
+    <sys:String x:Key="Follow_Mode_Both">両方向</sys:String>
+    <sys:String x:Key="Follow_Mode_Sent">送信</sys:String>
+    <sys:String x:Key="Follow_Mode_Received">受信</sys:String>
+    <sys:String x:Key="Follow_Turns">{0} 往復 · {1}</sys:String>
+    <sys:String x:Key="Follow_Truncated">やり取りの記録はここまでです。方向ごとの合計はそのまま完全です</sys:String>
+    <sys:String x:Key="Pkt_Follow_None">この接続はまだ再構成できていません</sys:String>
+    <sys:String x:Key="Set_IconsCleared">アイコンキャッシュを削除しました</sys:String>
+    <sys:String x:Key="Proxy_SystemProxy">システムプロキシ</sys:String>
+    <sys:String x:Key="Proxy_SystemProxy_Tip">Windows をこのプロキシ経由にします。停止時に Loupe が設定を元に戻します。</sys:String>
+    <sys:String x:Key="Set_Ca_Note">このマシンで生成し、ここに保管しています。自分でインストールするまで何も復号されず、対象はこのプロキシを通る通信だけです。</sys:String>
 </ResourceDictionary>

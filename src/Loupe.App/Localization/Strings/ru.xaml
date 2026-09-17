@@ -232,4 +232,15 @@
     <sys:String x:Key="Set_About">О программе</sys:String>
     <sys:String x:Key="Set_Version">Loupe {0} · .NET {1}</sys:String>
     <sys:String x:Key="Set_About_Note">Открытый исходный код под лицензией MIT. Npcap — отдельная программа со своей лицензией, в комплект она не входит.</sys:String>
+    <sys:String x:Key="Follow_Mode_Dialogue">Диалог</sys:String>
+    <sys:String x:Key="Follow_Mode_Both">Обе стороны</sys:String>
+    <sys:String x:Key="Follow_Mode_Sent">Отправлено</sys:String>
+    <sys:String x:Key="Follow_Mode_Received">Получено</sys:String>
+    <sys:String x:Key="Follow_Turns">{0} реплик · {1}</sys:String>
+    <sys:String x:Key="Follow_Truncated">Лента диалога здесь обрывается; итоги по каждой стороне при этом полные</sys:String>
+    <sys:String x:Key="Pkt_Follow_None">По этому соединению поток ещё не собран</sys:String>
+    <sys:String x:Key="Set_IconsCleared">Кэш значков очищен</sys:String>
+    <sys:String x:Key="Proxy_SystemProxy">Системный прокси</sys:String>
+    <sys:String x:Key="Proxy_SystemProxy_Tip">Направить Windows в этот прокси. При остановке Loupe вернёт настройку как было.</sys:String>
+    <sys:String x:Key="Set_Ca_Note">Сгенерирован на этой машине и хранится здесь. Пока вы не установите его сами, ничего не расшифровывается — и только для трафика, направленного в этот прокси.</sys:String>
 </ResourceDictionary>

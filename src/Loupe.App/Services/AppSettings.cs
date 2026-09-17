@@ -44,11 +44,13 @@ public sealed class AppSettings
     public int TransparentPort { get; set; } = 8443;
     public bool TransparentProxy { get; set; }
 
-    // Window placement. NaN means "never saved", so the first run still centres itself.
-    public double WindowWidth { get; set; } = double.NaN;
-    public double WindowHeight { get; set; } = double.NaN;
-    public double WindowLeft { get; set; } = double.NaN;
-    public double WindowTop { get; set; } = double.NaN;
+    // Window placement. Null means "never saved", so the first run still centres itself.
+    // Deliberately not NaN: JSON has no way to write one, and the serializer throws rather
+    // than guessing - which, from a settings write, means taking the window down with it.
+    public double? WindowWidth { get; set; }
+    public double? WindowHeight { get; set; }
+    public double? WindowLeft { get; set; }
+    public double? WindowTop { get; set; }
     public bool WindowMaximized { get; set; }
 
     // ---- storage
@@ -75,7 +77,11 @@ public sealed class AppSettings
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
             File.WriteAllText(FilePath, JsonSerializer.Serialize(Current, Json));
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException
+                                      // A value JSON cannot express must not be able to take the
+                                      // app down from inside a settings write - which is exactly
+                                      // what an unrepresentable window size did once.
+                                      or ArgumentException or NotSupportedException or JsonException)
         {
             // Worst case the choice doesn't survive to the next run; nothing to interrupt for.
         }

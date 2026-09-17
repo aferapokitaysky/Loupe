@@ -405,9 +405,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (row.Packet.Tcp is not { } tcp) return null;
 
         var key = new TcpStreamKey(tcp.SourceIp, tcp.SourcePort, tcp.DestinationIp, tcp.DestinationPort);
-        return _reassembler.TryGetStream(key) is { } stream
-            ? new FollowStreamViewModel(stream, key.IsAToB(tcp.SourceIp, tcp.SourcePort))
-            : null;
+        if (_reassembler.TryGetStream(key) is { } stream)
+            return new FollowStreamViewModel(stream, key.IsAToB(tcp.SourceIp, tcp.SourcePort));
+
+        // Reachable when the capture was cleared after the row was drawn, or when the packet
+        // belongs to a connection whose frames were dropped.
+        StatusMessage = Loc.Get("Pkt_Follow_None");
+        return null;
     }
 
     [RelayCommand]
@@ -701,6 +705,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
             row.PropertyChanged += OnHostCheckedChanged;
             _hostRows[key] = row;
             Hosts.Add(row);
+        }
+
+        // Each row's share of the loudest host, for the bar under its name. Computed here rather
+        // than per row: a row cannot see its neighbours, and this is the one place that can.
+        long loudest = 0;
+        foreach (var row in Hosts)
+            if (row.Bytes > loudest) loudest = row.Bytes;
+
+        if (loudest > 0)
+        {
+            foreach (var row in Hosts)
+                row.Share = (double)row.Bytes / loudest;
         }
 
         // Ordering is the view's job (see ApplyHostSort), not a hand-rolled Move loop: the user

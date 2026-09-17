@@ -135,7 +135,8 @@ Every tagged version is built and published by CI on the
 
 | File | For |
 |---|---|
-| `Loupe-<version>-win-x64.zip` | Any Windows 10/11 x64 machine - unpack and run `Loupe.exe` |
+| `Loupe-<version>.exe` | One file. Download, run. No install, nothing to unpack, no console window behind it |
+| `Loupe-<version>-win-x64.zip` | The same build zipped, with the licence and this README |
 | `Loupe-<version>-win-x64-net8.zip` | Machines that already have the [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) - a much smaller download |
 
 `SHA256SUMS.txt` next to them lists the checksums. Loupe asks for

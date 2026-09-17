@@ -232,4 +232,15 @@
     <sys:String x:Key="Set_About">Informazioni</sys:String>
     <sys:String x:Key="Set_Version">Loupe {0} · .NET {1}</sys:String>
     <sys:String x:Key="Set_About_Note">Codice aperto con licenza MIT. Npcap è un programma a sé, con la sua licenza, e non è mai incluso.</sys:String>
+    <sys:String x:Key="Follow_Mode_Dialogue">Dialogo</sys:String>
+    <sys:String x:Key="Follow_Mode_Both">Entrambi i lati</sys:String>
+    <sys:String x:Key="Follow_Mode_Sent">Inviato</sys:String>
+    <sys:String x:Key="Follow_Mode_Received">Ricevuto</sys:String>
+    <sys:String x:Key="Follow_Turns">{0} battute · {1}</sys:String>
+    <sys:String x:Key="Follow_Truncated">Il registro del dialogo si ferma qui; i totali per direzione restano completi</sys:String>
+    <sys:String x:Key="Pkt_Follow_None">Per questa connessione non c'è ancora niente di ricomposto</sys:String>
+    <sys:String x:Key="Set_IconsCleared">Cache delle icone svuotata</sys:String>
+    <sys:String x:Key="Proxy_SystemProxy">Proxy di sistema</sys:String>
+    <sys:String x:Key="Proxy_SystemProxy_Tip">Instrada Windows attraverso questo proxy. Loupe ripristina l'impostazione quando si ferma.</sys:String>
+    <sys:String x:Key="Set_Ca_Note">Generato su questa macchina e tenuto qui. Niente viene decifrato finché non lo installi tu, e solo per il traffico che passa da questo proxy.</sys:String>
 </ResourceDictionary>

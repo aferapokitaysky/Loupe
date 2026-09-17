@@ -1,4 +1,4 @@
-using System.Windows.Media;
+﻿using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Loupe.App.Services;
 using Loupe.Core.Naming;
@@ -43,6 +43,13 @@ public sealed partial class HostRowViewModel : ObservableObject
 
     /// <summary>Timestamp of the last packet, for "most recent first" sorting.</summary>
     [ObservableProperty] private DateTimeOffset _lastSeen;
+
+    /// <summary>
+    /// This host's volume as a fraction of the loudest one, 0..1. The list is ordered by
+    /// traffic; this is that ordering made visible, so "who is talking the most" is a glance
+    /// rather than a comparison of two numbers in different units.
+    /// </summary>
+    [ObservableProperty] private double _share;
 
     /// <summary>Programs that talked to this host - "chrome", or "chrome, Telegram" for a CDN.</summary>
     [ObservableProperty]

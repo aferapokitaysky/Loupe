@@ -35,6 +35,7 @@ public partial class MainWindow : FluentWindow
 
         LanguageList.SelectedItem = LocalizationService.CurrentLanguage;
         ShowCurrentFlag();
+        Toasts.ItemsSource = Services.ToastService.Items;
 
         // Loaded, not here: reading starts a background task that reports through the view
         // model, and there is nothing to report into until the window is actually up.
@@ -51,26 +52,24 @@ public partial class MainWindow : FluentWindow
     private void RestorePlacement()
     {
         var saved = Services.AppSettings.Current;
-        if (double.IsNaN(saved.WindowWidth) || double.IsNaN(saved.WindowHeight)) return;
+        if (saved.WindowWidth is not { } savedWidth || saved.WindowHeight is not { } savedHeight) return;
 
         double virtualLeft = SystemParameters.VirtualScreenLeft;
         double virtualTop = SystemParameters.VirtualScreenTop;
         double virtualRight = virtualLeft + SystemParameters.VirtualScreenWidth;
         double virtualBottom = virtualTop + SystemParameters.VirtualScreenHeight;
 
-        Width = Math.Clamp(saved.WindowWidth, MinWidth, SystemParameters.VirtualScreenWidth);
-        Height = Math.Clamp(saved.WindowHeight, MinHeight, SystemParameters.VirtualScreenHeight);
+        Width = Math.Clamp(savedWidth, MinWidth, SystemParameters.VirtualScreenWidth);
+        Height = Math.Clamp(savedHeight, MinHeight, SystemParameters.VirtualScreenHeight);
 
         // At least a title bar's worth has to stay on a screen for the window to be usable.
-        bool onScreen = !double.IsNaN(saved.WindowLeft) && !double.IsNaN(saved.WindowTop)
-                        && saved.WindowLeft + 120 < virtualRight && saved.WindowLeft + Width - 120 > virtualLeft
-                        && saved.WindowTop + 60 < virtualBottom && saved.WindowTop >= virtualTop - 8;
-
-        if (onScreen)
+        if (saved.WindowLeft is { } left && saved.WindowTop is { } top
+            && left + 120 < virtualRight && left + Width - 120 > virtualLeft
+            && top + 60 < virtualBottom && top >= virtualTop - 8)
         {
             WindowStartupLocation = WindowStartupLocation.Manual;
-            Left = saved.WindowLeft;
-            Top = saved.WindowTop;
+            Left = left;
+            Top = top;
         }
 
         if (saved.WindowMaximized) WindowState = WindowState.Maximized;

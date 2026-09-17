@@ -105,6 +105,18 @@
 
                 <Border Style="{StaticResource Card}" Padding="16,14" Margin="0,0,8,8">
                     <StackPanel>
+                        <TextBlock Text="{DynamicResource Nav_Proxy}" Style="{StaticResource SettingsGroupTitle}" />
+                        <TextBlock Text="{DynamicResource Proxy_CaLabel}" FontSize="12.5"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Text="{Binding CaThumbprint}" FontFamily="Cascadia Mono, Consolas" FontSize="11.5"
+                                   TextWrapping="Wrap" Margin="0,3,0,0"
+                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="{DynamicResource Set_Ca_Note}" Style="{StaticResource SettingsNote}" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Padding="16,14" Margin="0,0,8,8">
+                    <StackPanel>
                         <TextBlock Text="{DynamicResource Set_Data}" Style="{StaticResource SettingsGroupTitle}" />
 
                         <TextBlock Text="{Binding DataFolder}" FontFamily="Cascadia Mono, Consolas" FontSize="11.5"

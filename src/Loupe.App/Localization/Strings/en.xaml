@@ -234,4 +234,15 @@
     <sys:String x:Key="Set_About">About</sys:String>
     <sys:String x:Key="Set_Version">Loupe {0} · .NET {1}</sys:String>
     <sys:String x:Key="Set_About_Note">Open source under the MIT licence. Npcap is a separate program with its own licence and is never bundled.</sys:String>
+    <sys:String x:Key="Follow_Mode_Dialogue">Dialogue</sys:String>
+    <sys:String x:Key="Follow_Mode_Both">Both sides</sys:String>
+    <sys:String x:Key="Follow_Mode_Sent">Sent</sys:String>
+    <sys:String x:Key="Follow_Mode_Received">Received</sys:String>
+    <sys:String x:Key="Follow_Turns">{0} turns · {1}</sys:String>
+    <sys:String x:Key="Follow_Truncated">The dialogue log stops here; the totals for each direction are still complete</sys:String>
+    <sys:String x:Key="Pkt_Follow_None">Nothing reassembled for this connection yet</sys:String>
+    <sys:String x:Key="Set_IconsCleared">Icon cache cleared</sys:String>
+    <sys:String x:Key="Proxy_SystemProxy">System proxy</sys:String>
+    <sys:String x:Key="Proxy_SystemProxy_Tip">Send Windows through this proxy. Loupe puts the setting back when it stops.</sys:String>
+    <sys:String x:Key="Set_Ca_Note">Generated on this machine and kept here. Nothing is decrypted until you install it yourself, and only for traffic routed through this proxy.</sys:String>
 </ResourceDictionary>

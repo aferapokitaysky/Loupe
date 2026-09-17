@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -109,6 +109,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         }
 
         RefreshUsage();
+        ToastService.Show(Loc.Get("Set_IconsCleared"), "Broom24");
     }
 
     [RelayCommand]
@@ -121,6 +122,26 @@ public sealed partial class SettingsViewModel : ObservableObject
         catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException)
         {
             // No browser association; the URL is printed on the page anyway.
+        }
+    }
+
+    /// <summary>
+    /// The proxy's own root certificate, by thumbprint - the identity everything it decrypts is
+    /// trusted through. Shown here rather than on the proxy page: it is a thing you check, not a
+    /// thing you use.
+    /// </summary>
+    public string CaThumbprint
+    {
+        get
+        {
+            try
+            {
+                return new Loupe.Proxy.Ca.RootCertificateAuthority(AppStorage.PathTo("ca")).Thumbprint;
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.Cryptography.CryptographicException)
+            {
+                return "";
+            }
         }
     }
 

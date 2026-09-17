@@ -232,4 +232,15 @@
     <sys:String x:Key="Set_About">关于</sys:String>
     <sys:String x:Key="Set_Version">Loupe {0} · .NET {1}</sys:String>
     <sys:String x:Key="Set_About_Note">以 MIT 许可证开源。Npcap 是独立程序，有自己的许可证，不随本程序打包。</sys:String>
+    <sys:String x:Key="Follow_Mode_Dialogue">对话</sys:String>
+    <sys:String x:Key="Follow_Mode_Both">两个方向</sys:String>
+    <sys:String x:Key="Follow_Mode_Sent">发送</sys:String>
+    <sys:String x:Key="Follow_Mode_Received">接收</sys:String>
+    <sys:String x:Key="Follow_Turns">{0} 轮 · {1}</sys:String>
+    <sys:String x:Key="Follow_Truncated">对话记录到此为止；每个方向的总量仍然完整</sys:String>
+    <sys:String x:Key="Pkt_Follow_None">该连接还没有可重组的数据</sys:String>
+    <sys:String x:Key="Set_IconsCleared">图标缓存已清除</sys:String>
+    <sys:String x:Key="Proxy_SystemProxy">系统代理</sys:String>
+    <sys:String x:Key="Proxy_SystemProxy_Tip">让 Windows 走这个代理。Loupe 停止时会把设置改回去。</sys:String>
+    <sys:String x:Key="Set_Ca_Note">在本机生成并保存在这里。在你自己安装它之前不会解密任何内容，而且只针对经过此代理的流量。</sys:String>
 </ResourceDictionary>

@@ -232,4 +232,15 @@
     <sys:String x:Key="Set_About">Hakkında</sys:String>
     <sys:String x:Key="Set_Version">Loupe {0} · .NET {1}</sys:String>
     <sys:String x:Key="Set_About_Note">MIT lisanslı açık kaynak. Npcap kendi lisansı olan ayrı bir programdır ve hiçbir zaman birlikte dağıtılmaz.</sys:String>
+    <sys:String x:Key="Follow_Mode_Dialogue">Diyalog</sys:String>
+    <sys:String x:Key="Follow_Mode_Both">İki taraf</sys:String>
+    <sys:String x:Key="Follow_Mode_Sent">Gönderilen</sys:String>
+    <sys:String x:Key="Follow_Mode_Received">Alınan</sys:String>
+    <sys:String x:Key="Follow_Turns">{0} sıra · {1}</sys:String>
+    <sys:String x:Key="Follow_Truncated">Diyalog kaydı burada bitiyor; her yönün toplamları yine de eksiksiz</sys:String>
+    <sys:String x:Key="Pkt_Follow_None">Bu bağlantı için henüz birleştirilen veri yok</sys:String>
+    <sys:String x:Key="Set_IconsCleared">Simge önbelleği temizlendi</sys:String>
+    <sys:String x:Key="Proxy_SystemProxy">Sistem proxy'si</sys:String>
+    <sys:String x:Key="Proxy_SystemProxy_Tip">Windows'u bu proxy üzerinden geçir. Loupe dururken ayarı eski haline getirir.</sys:String>
+    <sys:String x:Key="Set_Ca_Note">Bu makinede üretildi ve burada tutuluyor. Siz kurmadan hiçbir şey çözülmez ve yalnızca bu proxy'den geçen trafik için geçerlidir.</sys:String>
 </ResourceDictionary>

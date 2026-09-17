@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Loupe.App.Localization;
 using Loupe.App.Services;
 using Loupe.Proxy.Http;
@@ -36,8 +36,44 @@ public sealed class HttpExchangeRowViewModel(HttpExchange exchange) : Observable
         _ => "",
     };
 
+    /// <summary>
+    /// Which family the answer belongs to, for the badge: a wall of numbers tells you nothing
+    /// at a glance, five colours tell you where to look.
+    /// </summary>
+    public string StatusKind => Exchange.State switch
+    {
+        ExchangeState.Failed => "failed",
+        ExchangeState.ResponseReceived => Exchange.StatusCode switch
+        {
+            >= 500 => "serverError",
+            >= 400 => "clientError",
+            >= 300 => "redirect",
+            >= 200 => "ok",
+            _ => "pending",
+        },
+        _ => "pending",
+    };
+
     public string StatusDetail => Exchange.Error ?? Exchange.ReasonPhrase ?? "";
     public int ResponseSize => Exchange.ResponseBody.Length;
+
+    private System.Windows.Media.ImageSource? _favicon;
+
+    /// <summary>The site's icon, handed down by its domain group once it has one.</summary>
+    public System.Windows.Media.ImageSource? Favicon
+    {
+        get => _favicon;
+        set => SetProperty(ref _favicon, value);
+    }
+
+    /// <summary>Response size in units a person reads, rather than a bare byte count.</summary>
+    public string SizeText => ResponseSize switch
+    {
+        0 => "",
+        < 1024 => $"{ResponseSize} B",
+        < 1024 * 1024 => $"{ResponseSize / 1024.0:F1} KB",
+        _ => $"{ResponseSize / (1024.0 * 1024):F1} MB",
+    };
     public string Duration => Exchange.Duration is { } d ? $"{d.TotalMilliseconds:F0} ms" : "";
     public bool IsError => Exchange.State == ExchangeState.Failed;
 

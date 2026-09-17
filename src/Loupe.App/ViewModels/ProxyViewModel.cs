@@ -471,9 +471,11 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             SelectedDomain = _domainsByHost.GetValueOrDefault(replayRow.Host);
         }
 
-        StatusMessage = replay.State == ExchangeState.ResponseReceived
+        bool answered = replay.State == ExchangeState.ResponseReceived;
+        StatusMessage = answered
             ? Loc.Format("Proxy_Replayed", replay.StatusCode ?? 0, replay.Duration?.TotalMilliseconds ?? 0)
             : Loc.Format("Proxy_ReplayFailed", replay.Error ?? "");
+        ToastService.Show(StatusMessage, answered ? "ArrowRepeatAll24" : "Warning24");
     }
 
     /// <summary>Copies the request as a shell command, a PowerShell call or a fetch() snippet.</summary>
@@ -491,9 +493,9 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             _ => "",
         };
 
-        StatusMessage = ClipboardService.TrySetText(text)
-            ? Loc.Get("Proxy_Copied")
-            : Loc.Get("Proxy_CopyFailed");
+        bool copied = ClipboardService.TrySetText(text);
+        StatusMessage = copied ? Loc.Get("Proxy_Copied") : Loc.Get("Proxy_CopyFailed");
+        ToastService.Show(StatusMessage, copied ? "Copy24" : "Warning24");
     }
 
     /// <summary>
@@ -517,6 +519,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             byte[] body = BodyFormatter.Decode(row.Exchange.ResponseHeaders, row.Exchange.ResponseBody);
             File.WriteAllBytes(dialog.FileName, body);
             StatusMessage = Loc.Format("Proxy_BodySaved", dialog.FileName, body.Length);
+            ToastService.Show(StatusMessage, "Save24");
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -656,6 +659,17 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
 
         File.WriteAllText(dialog.FileName, _ca.ExportPublicCertificatePem());
         StatusMessage = Loc.Format("Proxy_Status_CertExported", dialog.FileName);
+    }
+
+    /// <summary>
+    /// One switch for the system proxy rather than two buttons: it is a single piece of state
+    /// with two directions, and a toolbar that shows both at once has to explain which applies.
+    /// </summary>
+    [RelayCommand]
+    private void ToggleSystemProxy()
+    {
+        if (IsSystemProxyEnabled) DisableSystemProxy();
+        else EnableSystemProxy();
     }
 
     [RelayCommand]

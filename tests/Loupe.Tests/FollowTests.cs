@@ -54,6 +54,27 @@ public static class FollowTests
             reassembler.TryGetStream(new TcpStreamKey(Client, ClientPort, Server, 80)) ==
             reassembler.TryGetStream(new TcpStreamKey(Server, 80, Client, ClientPort)));
 
+        // The dialogue log: who said what, in the order they said it.
+        var conversation = stream.Conversation;
+        T.Eq("every payload-bearing packet is logged as a turn piece", 3, conversation.Count);
+        T.Check("the request is logged as sent by the client",
+            conversation[0].FromA == clientIsA && StreamText.Readable(conversation[0].Data) == request);
+        T.Check("both response pieces are logged as the server's",
+            conversation[1].FromA != clientIsA && conversation[2].FromA != clientIsA);
+        T.Check("pieces carry their sequence number, so a turn can be put back in order",
+            conversation[1].Sequence > conversation[2].Sequence,
+            $"{conversation[1].Sequence} then {conversation[2].Sequence}");
+        T.Check("pieces carry when they arrived", conversation.All(c => c.Timestamp != default));
+
+        // The response halves arrived reversed; ordering the turn by sequence is what turns
+        // them back into one readable answer.
+        var ordered = conversation
+            .Where(c => c.FromA != clientIsA)
+            .OrderBy(c => c.Sequence)
+            .SelectMany(c => c.Data)
+            .ToArray();
+        T.Eq("a turn reads in send order once sorted by sequence", head + tail, StreamText.Readable(ordered));
+
         // A TLS record in a text pane: no escape sequences, no bell, nothing swallowed.
         byte[] binary = [0x16, 0x03, 0x01, 0x00, 0x07, 0x1B, 0x07, (byte)'o', (byte)'k', 0x00, (byte)'\n'];
         string rendered = StreamText.Readable(binary);

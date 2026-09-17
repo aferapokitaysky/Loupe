@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using Loupe.Core.Model;
 
 namespace Loupe.Core.Tcp;
@@ -32,6 +32,11 @@ public sealed class TcpStreamReassembler
         {
             var payload = packet.RawData.AsSpan(tcp.PayloadOffset, tcp.PayloadLength);
             buffer.AddSegment(tcp.SequenceNumber, payload);
+
+            // Kept alongside the per-direction reassembly, because the two answer different
+            // questions: that one is "what did this side send", this one is "who said what,
+            // when" - the difference between two walls of text and a readable dialogue.
+            stream.Record(key.IsAToB(tcp.SourceIp, tcp.SourcePort), packet.Timestamp, tcp.SequenceNumber, payload);
         }
 
         return stream;
