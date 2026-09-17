@@ -243,4 +243,6 @@
     <sys:String x:Key="Proxy_SystemProxy">系统代理</sys:String>
     <sys:String x:Key="Proxy_SystemProxy_Tip">让 Windows 走这个代理。Loupe 停止时会把设置改回去。</sys:String>
     <sys:String x:Key="Set_Ca_Note">在本机生成并保存在这里。在你自己安装它之前不会解密任何内容，而且只针对经过此代理的流量。</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyRecovered">Windows 仍指向 {0}，而那里没有任何程序在监听——该设置已恢复原状</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyStale">Windows 指向 {0}，而那里没有程序在监听，并且无法从这里更改该设置</sys:String>
 </ResourceDictionary>

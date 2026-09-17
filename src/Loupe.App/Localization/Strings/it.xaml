@@ -243,4 +243,6 @@
     <sys:String x:Key="Proxy_SystemProxy">Proxy di sistema</sys:String>
     <sys:String x:Key="Proxy_SystemProxy_Tip">Instrada Windows attraverso questo proxy. Loupe ripristina l'impostazione quando si ferma.</sys:String>
     <sys:String x:Key="Set_Ca_Note">Generato su questa macchina e tenuto qui. Niente viene decifrato finché non lo installi tu, e solo per il traffico che passa da questo proxy.</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyRecovered">Windows puntava ancora a {0}, dove non ascolta nessuno: l'impostazione è stata ripristinata</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyStale">Windows punta a {0}, dove non ascolta nessuno, e l'impostazione non si è potuta cambiare da qui</sys:String>
 </ResourceDictionary>

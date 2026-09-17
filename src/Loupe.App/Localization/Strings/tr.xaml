@@ -243,4 +243,6 @@
     <sys:String x:Key="Proxy_SystemProxy">Sistem proxy'si</sys:String>
     <sys:String x:Key="Proxy_SystemProxy_Tip">Windows'u bu proxy üzerinden geçir. Loupe dururken ayarı eski haline getirir.</sys:String>
     <sys:String x:Key="Set_Ca_Note">Bu makinede üretildi ve burada tutuluyor. Siz kurmadan hiçbir şey çözülmez ve yalnızca bu proxy'den geçen trafik için geçerlidir.</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyRecovered">Windows hâlâ {0} adresine yönlendirilmişti ama orada dinleyen yok - ayar eski haline getirildi</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyStale">Windows {0} adresine yönlendirilmiş ama orada dinleyen yok ve ayar buradan değiştirilemedi</sys:String>
 </ResourceDictionary>
