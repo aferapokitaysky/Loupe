@@ -245,4 +245,12 @@
     <sys:String x:Key="Set_Ca_Note">このマシンで生成し、ここに保管しています。自分でインストールするまで何も復号されず、対象はこのプロキシを通る通信だけです。</sys:String>
     <sys:String x:Key="Proxy_Status_SystemProxyRecovered">Windows は {0} を指したままで、そこでは何も待ち受けていませんでした。設定を元に戻しました</sys:String>
     <sys:String x:Key="Proxy_Status_SystemProxyStale">Windows は {0} を指していますが、そこでは何も待ち受けておらず、ここから設定を変更できませんでした</sys:String>
+    <sys:String x:Key="Proxy_Wrap">折り返し</sys:String>
+    <sys:String x:Key="Proxy_Wrap_Tip">長い行を右に流さず折り返して表示します</sys:String>
+    <sys:String x:Key="Proxy_Detail_Resize">ドラッグしてリクエスト欄の高さを変えます</sys:String>
+    <sys:String x:Key="Proxy_BrowserOnly">ブラウザー</sys:String>
+    <sys:String x:Key="Proxy_BrowserOnly_Tip">ブラウザーが要求したものだけを表示します。Windows をプロキシ経由にすると、チャットアプリも更新プログラムも Windows 自身の確認通信も、すべてここに届きます。</sys:String>
+    <sys:String x:Key="Proxy_Clients">アプリ</sys:String>
+    <sys:String x:Key="Proxy_Client_Browser">ブラウザー</sys:String>
+    <sys:String x:Key="Proxy_Client_Unknown">別のデバイス</sys:String>
 </ResourceDictionary>

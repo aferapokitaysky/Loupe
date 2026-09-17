@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using Loupe.App.Localization;
 using Loupe.App.ViewModels;
@@ -13,6 +13,11 @@ public partial class ProxyPage : UserControl
     {
         InitializeComponent();
         DataContext = ViewModel;
+
+        ViewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(ProxyViewModel.SelectedExchange)) OnSelectedExchangeChanged();
+        };
     }
 
     /// <summary>
@@ -34,6 +39,29 @@ public partial class ProxyPage : UserControl
                 ViewModel.SelectedExchange = exchange;
                 break;
         }
+    }
+
+    /// <summary>
+    /// The detail pane takes no room until there is a request to show, and keeps whatever
+    /// height it was last dragged to - the splitter above it is what makes that possible, and a
+    /// splitter against a zero-height row would be a handle that does nothing.
+    /// </summary>
+    private GridLength _detailHeight = new(300, GridUnitType.Pixel);
+
+    private void OnSelectedExchangeChanged()
+    {
+        bool hasSelection = ViewModel.SelectedExchange is not null;
+
+        if (!hasSelection && DetailRow.Height.Value > 0)
+            _detailHeight = DetailRow.Height; // remember where the user left it
+
+        DetailRow.Height = hasSelection ? _detailHeight : new GridLength(0);
+        DetailSplitter.Visibility = hasSelection ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void OnCopyCurlClick(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel.SelectedExchange is { } exchange) CopyAs(exchange, "curl");
     }
 
     /// <summary>Ctrl+F: put the caret in this page's search box, text selected.</summary>
@@ -58,6 +86,24 @@ public partial class ProxyPage : UserControl
                 () => ViewModel.HideDomain(domain.Host)));
 
         if (menu.Items.Count == 0) e.Handled = true;
+    }
+
+    /// <summary>Right-click a program: show only its requests, or hide it for good.</summary>
+    private void OnClientListContextMenuOpening(object sender, ContextMenuEventArgs e)
+    {
+        if (ContextMenus.FindDataContext<ClientRowViewModel>(e.OriginalSource) is not { } client)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        var menu = ClientList.ContextMenu!;
+        menu.Items.Clear();
+        menu.Items.Add(ContextMenus.Item(Loc.Format("Ignore_OnlyThisHost", client.Name), "Filter24",
+            () => ViewModel.ShowOnlyClient(client)));
+        menu.Items.Add(new Separator());
+        menu.Items.Add(ContextMenus.Item(Loc.Format("Ignore_HideProcess", client.Name), "AppsListDetail24",
+            () => ViewModel.HideClient(client.Name)));
     }
 
     private void OnExchangeGridContextMenuOpening(object sender, ContextMenuEventArgs e)

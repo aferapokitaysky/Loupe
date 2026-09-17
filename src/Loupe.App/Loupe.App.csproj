@@ -13,7 +13,7 @@
     <Platforms>x64</Platforms>
 
     <!-- What Explorer shows under Properties > Details. CI overrides Version from the tag. -->
-    <Version>1.2.1</Version>
+    <Version>1.3.0</Version>
     <Product>Loupe</Product>
     <AssemblyTitle>Loupe</AssemblyTitle>
     <Description>Network inspector for Windows: packet capture with domain and process names, plus an HTTPS debugging proxy.</Description>

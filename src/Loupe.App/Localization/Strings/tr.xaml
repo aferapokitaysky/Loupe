@@ -245,4 +245,12 @@
     <sys:String x:Key="Set_Ca_Note">Bu makinede üretildi ve burada tutuluyor. Siz kurmadan hiçbir şey çözülmez ve yalnızca bu proxy'den geçen trafik için geçerlidir.</sys:String>
     <sys:String x:Key="Proxy_Status_SystemProxyRecovered">Windows hâlâ {0} adresine yönlendirilmişti ama orada dinleyen yok - ayar eski haline getirildi</sys:String>
     <sys:String x:Key="Proxy_Status_SystemProxyStale">Windows {0} adresine yönlendirilmiş ama orada dinleyen yok ve ayar buradan değiştirilemedi</sys:String>
+    <sys:String x:Key="Proxy_Wrap">Satır kaydır</sys:String>
+    <sys:String x:Key="Proxy_Wrap_Tip">Uzun satırları sağa taşırmak yerine alt satıra kaydır</sys:String>
+    <sys:String x:Key="Proxy_Detail_Resize">İstek panelinin yüksekliğini değiştirmek için sürükleyin</sys:String>
+    <sys:String x:Key="Proxy_BrowserOnly">Tarayıcı</sys:String>
+    <sys:String x:Key="Proxy_BrowserOnly_Tip">Yalnızca bir tarayıcının istediklerini göster. Windows proxy üzerinden geçerken makinedeki her şey buraya gelir: sohbet uygulamaları, güncelleyiciler, Windows'un kendi denetimleri.</sys:String>
+    <sys:String x:Key="Proxy_Clients">Uygulamalar</sys:String>
+    <sys:String x:Key="Proxy_Client_Browser">tarayıcı</sys:String>
+    <sys:String x:Key="Proxy_Client_Unknown">Başka bir cihaz</sys:String>
 </ResourceDictionary>

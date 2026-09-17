@@ -245,4 +245,12 @@
     <sys:String x:Key="Set_Ca_Note">Сгенерирован на этой машине и хранится здесь. Пока вы не установите его сами, ничего не расшифровывается — и только для трафика, направленного в этот прокси.</sys:String>
     <sys:String x:Key="Proxy_Status_SystemProxyRecovered">Windows всё ещё был направлен в {0}, где никто не слушает — настройка возвращена как было</sys:String>
     <sys:String x:Key="Proxy_Status_SystemProxyStale">Windows направлен в {0}, где никто не слушает, и изменить настройку отсюда не удалось</sys:String>
+    <sys:String x:Key="Proxy_Wrap">Переносить</sys:String>
+    <sys:String x:Key="Proxy_Wrap_Tip">Переносить длинные строки, а не уводить их вправо</sys:String>
+    <sys:String x:Key="Proxy_Detail_Resize">Потяните, чтобы изменить высоту панели запроса</sys:String>
+    <sys:String x:Key="Proxy_BrowserOnly">Браузер</sys:String>
+    <sys:String x:Key="Proxy_BrowserOnly_Tip">Показывать только то, что запросил браузер. Когда Windows направлена в прокси, сюда приходит всё с машины: мессенджеры, обновления, собственные проверки Windows.</sys:String>
+    <sys:String x:Key="Proxy_Clients">Программы</sys:String>
+    <sys:String x:Key="Proxy_Client_Browser">браузер</sys:String>
+    <sys:String x:Key="Proxy_Client_Unknown">Другое устройство</sys:String>
 </ResourceDictionary>

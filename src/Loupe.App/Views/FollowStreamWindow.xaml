@@ -19,6 +19,7 @@
         <conv:BoolToVisibilityInverseConverter x:Key="BoolToVisibilityInverse" />
         <conv:CountToVisibilityConverter x:Key="CountToVisibility" />
         <conv:ResourceBrushConverter x:Key="ResourceBrush" />
+        <conv:BoolToTextWrappingConverter x:Key="BoolToWrapping" />
     </ui:FluentWindow.Resources>
 
     <Grid Background="{StaticResource WindowScrimBrush}">
@@ -88,6 +89,14 @@
                                     <TextBlock Text="{DynamicResource Follow_Hex}" FontSize="12" VerticalAlignment="Center" />
                                 </StackPanel>
                             </ToggleButton>
+                            <ToggleButton Style="{StaticResource ToolbarToggleButton}" IsChecked="{Binding WrapText}"
+                                          ToolTip="{DynamicResource Proxy_Wrap_Tip}"
+                                          AutomationProperties.Name="{DynamicResource Proxy_Wrap}">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="TextWrap24" FontSize="15" Margin="0,0,6,0" />
+                                    <TextBlock Text="{DynamicResource Proxy_Wrap}" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </ToggleButton>
                             <Button Style="{StaticResource ToolbarIconButton}" Command="{Binding RefreshCommand}"
                                     ToolTip="{DynamicResource Follow_Refresh}"
                                     AutomationProperties.Name="{DynamicResource Follow_Refresh}">
@@ -152,7 +161,10 @@
                                                 <TextBox Grid.Row="1" Text="{Binding Text, Mode=OneWay}"
                                                          Style="{StaticResource MonoText}" Margin="0,2,0,4"
                                                          Foreground="{StaticResource TextPrimaryBrush}"
-                                                         HorizontalScrollBarVisibility="Auto" />
+                                                         HorizontalScrollBarVisibility="Auto"
+                                                         TextWrapping="{Binding DataContext.WrapText,
+                                                             RelativeSource={RelativeSource AncestorType=ItemsControl},
+                                                             Converter={StaticResource BoolToWrapping}}" />
                                             </Grid>
                                         </Grid>
                                     </Border>
@@ -208,7 +220,8 @@
 
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
                                       Background="{StaticResource SurfaceSunkenBrush}">
-                            <TextBox Text="{Binding OutgoingText, Mode=OneWay}" Style="{StaticResource MonoText}" />
+                            <TextBox Text="{Binding OutgoingText, Mode=OneWay}" Style="{StaticResource MonoText}"
+                                     TextWrapping="{Binding WrapText, Converter={StaticResource BoolToWrapping}}" />
                         </ScrollViewer>
                     </Grid>
                 </Border>
@@ -247,7 +260,8 @@
 
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
                                       Background="{StaticResource SurfaceSunkenBrush}">
-                            <TextBox Text="{Binding IncomingText, Mode=OneWay}" Style="{StaticResource MonoText}" />
+                            <TextBox Text="{Binding IncomingText, Mode=OneWay}" Style="{StaticResource MonoText}"
+                                     TextWrapping="{Binding WrapText, Converter={StaticResource BoolToWrapping}}" />
                         </ScrollViewer>
                     </Grid>
                 </Border>

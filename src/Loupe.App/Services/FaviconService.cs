@@ -39,7 +39,15 @@ public sealed class FaviconService : IDisposable
     {
         _cacheDirectory = cacheDirectory ?? AppStorage.PathTo("favicons");
 
-        _http = new HttpClient(new HttpClientHandler { AllowAutoRedirect = true, MaxAutomaticRedirections = 3 })
+        // Never through a proxy - least of all our own. With Loupe set as the system proxy, icon
+        // fetches would be routed back into the capture, appear as requests the user did not
+        // make, and each new domain they revealed would trigger another fetch.
+        _http = new HttpClient(new HttpClientHandler
+        {
+            AllowAutoRedirect = true,
+            MaxAutomaticRedirections = 3,
+            UseProxy = false,
+        })
         {
             Timeout = TimeSpan.FromSeconds(6),
         };
