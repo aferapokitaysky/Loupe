@@ -245,4 +245,6 @@
     <sys:String x:Key="Proxy_SystemProxy">System proxy</sys:String>
     <sys:String x:Key="Proxy_SystemProxy_Tip">Send Windows through this proxy. Loupe puts the setting back when it stops.</sys:String>
     <sys:String x:Key="Set_Ca_Note">Generated on this machine and kept here. Nothing is decrypted until you install it yourself, and only for traffic routed through this proxy.</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyRecovered">Windows was still pointed at {0} with nothing listening there - that setting has been put back</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyStale">Windows is pointed at {0} with nothing listening there, and the setting could not be changed from here</sys:String>
 </ResourceDictionary>

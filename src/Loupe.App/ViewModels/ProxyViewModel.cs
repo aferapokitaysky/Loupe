@@ -333,6 +333,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         StatusMessage = Loc.Get("Proxy_Status_Stopped");
         IsCaInstalled = SafeCall(() => _ca.IsInstalledForCurrentUser(), fallback: false);
         IsSystemProxyEnabled = SafeCall(WindowsProxySettings.IsEnabled, fallback: false);
+        RecoverOrphanedSystemProxy();
 
         _drainTimer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(150) };
         _drainTimer.Tick += (_, _) => Drain();
@@ -343,6 +344,60 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         ApplyFilter();
         ApplyDomainFilter();
         ApplyDomainSort();
+    }
+
+
+    /// <summary>
+    /// Undoes a system-proxy setting left pointing at this app after it died without cleaning
+    /// up - killed, crashed, or the machine lost power while it was running.
+    ///
+    /// Windows then routes everything into a port nobody is listening on, and the machine looks
+    /// like it has no internet at all: browsers, chat apps, updaters, all of it. Nobody would
+    /// connect that to a packet tool that is no longer even open, so this checks at startup and
+    /// puts the setting back.
+    ///
+    /// Deliberately narrow: only a loopback proxy, and only when nothing is actually listening
+    /// there. Someone else's proxy on this machine is none of our business.
+    /// </summary>
+    private void RecoverOrphanedSystemProxy()
+    {
+        if (!IsSystemProxyEnabled) return;
+
+        string? server = SafeCall(WindowsProxySettings.CurrentProxyServer, fallback: null);
+        if (server is null) return;
+
+        string[] parts = server.Split(':');
+        if (parts.Length != 2 || parts[0] is not ("127.0.0.1" or "localhost")) return;
+        if (!int.TryParse(parts[1], out int port)) return;
+        if (IsSomethingListeningOn(port)) return;
+
+        try
+        {
+            WindowsProxySettings.Disable();
+            IsSystemProxyEnabled = false;
+            StatusMessage = Loc.Format("Proxy_Status_SystemProxyRecovered", server);
+            ToastService.Show(StatusMessage, "PlugDisconnected24");
+        }
+        catch (Exception e) when (e is InvalidOperationException or UnauthorizedAccessException)
+        {
+            // Cannot fix it from here; say so rather than pretend the setting is fine.
+            StatusMessage = Loc.Format("Proxy_Status_SystemProxyStale", server);
+        }
+    }
+
+    private static bool IsSomethingListeningOn(int port)
+    {
+        try
+        {
+            return System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties()
+                .GetActiveTcpListeners()
+                .Any(endPoint => endPoint.Port == port);
+        }
+        catch (System.Net.NetworkInformation.NetworkInformationException)
+        {
+            // Unable to tell - leave the setting alone rather than guess.
+            return true;
+        }
     }
 
     // A transparent port that is switched on but unusable would otherwise be skipped silently,

@@ -489,7 +489,7 @@
         <Border Grid.Row="6" Style="{StaticResource Card}" Padding="6" Height="300"
                 Visibility="{Binding SelectedExchange, Converter={StaticResource NullToVisibility}, ConverterParameter=Invert}">
             <Grid>
-                <TabControl Background="Transparent" BorderThickness="0">
+                <TabControl Style="{StaticResource AppTabControl}">
                 <TabItem Header="{DynamicResource Proxy_Tab_Request}">
                     <Grid>
                         <Grid.RowDefinitions>

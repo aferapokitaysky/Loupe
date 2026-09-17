@@ -243,4 +243,6 @@
     <sys:String x:Key="Proxy_SystemProxy">Системний проксі</sys:String>
     <sys:String x:Key="Proxy_SystemProxy_Tip">Спрямувати Windows у цей проксі. Під час зупинки Loupe поверне налаштування як було.</sys:String>
     <sys:String x:Key="Set_Ca_Note">Згенерований на цій машині та зберігається тут. Доки ви не встановите його самі, нічого не розшифровується — і лише для трафіку, спрямованого в цей проксі.</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyRecovered">Windows усе ще був спрямований у {0}, де ніхто не слухає — налаштування повернуто як було</sys:String>
+    <sys:String x:Key="Proxy_Status_SystemProxyStale">Windows спрямований у {0}, де ніхто не слухає, і змінити налаштування звідси не вдалося</sys:String>
 </ResourceDictionary>
