@@ -163,4 +163,24 @@
     <sys:String x:Key="Proxy_Step_Cert">Встановити сертифікат</sys:String>
     <sys:String x:Key="Proxy_Step_System">Спрямувати систему в нього</sys:String>
     <sys:String x:Key="Proxy_PortInvalid">Порт — число від 1 до 65535</sys:String>
+    <sys:String x:Key="Proxy_Replay">Повторити запит</sys:String>
+    <sys:String x:Key="Proxy_Replaying">Повтор {0}…</sys:String>
+    <sys:String x:Key="Proxy_Replayed">Повторено: {0}, {1:F0} мс</sys:String>
+    <sys:String x:Key="Proxy_ReplayFailed">Не вдалося повторити: {0}</sys:String>
+    <sys:String x:Key="Proxy_ReplayBadge">Повторено з Loupe</sys:String>
+    <sys:String x:Key="Proxy_OpenInBrowser">Відкрити у браузері</sys:String>
+    <sys:String x:Key="Proxy_OpenFailed">Не вдалося відкрити браузер: {0}</sys:String>
+    <sys:String x:Key="Proxy_CopyCurl">Копіювати як cURL</sys:String>
+    <sys:String x:Key="Proxy_CopyPowerShell">Копіювати як PowerShell</sys:String>
+    <sys:String x:Key="Proxy_CopyFetch">Копіювати як fetch()</sys:String>
+    <sys:String x:Key="Proxy_CopyResponse">Копіювати тіло відповіді</sys:String>
+    <sys:String x:Key="Proxy_Copied">Скопійовано</sys:String>
+    <sys:String x:Key="Proxy_CopyFailed">Не вдалося скопіювати: буфер обміну зайнятий</sys:String>
+    <sys:String x:Key="Proxy_SaveBody">Зберегти тіло відповіді…</sys:String>
+    <sys:String x:Key="Proxy_BodySaved">Збережено в {0} · {1} байт</sys:String>
+    <sys:String x:Key="Proxy_NoBodyToSave">У цього запиту немає тіла відповіді</sys:String>
+    <sys:String x:Key="Proxy_SearchBodies">У тілах</sys:String>
+    <sys:String x:Key="Proxy_SearchBodies_Tip">Шукати також усередині тіл запитів і відповідей</sys:String>
+    <sys:String x:Key="Proxy_ErrorsOnly">Помилки</sys:String>
+    <sys:String x:Key="Proxy_ErrorsOnly_Tip">Показувати лише 4xx, 5xx і запити, що не вдалися</sys:String>
 </ResourceDictionary>

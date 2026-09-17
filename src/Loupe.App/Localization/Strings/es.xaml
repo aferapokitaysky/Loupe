@@ -163,4 +163,24 @@
     <sys:String x:Key="Proxy_Step_Cert">Instalar el certificado</sys:String>
     <sys:String x:Key="Proxy_Step_System">Enviar el sistema por él</sys:String>
     <sys:String x:Key="Proxy_PortInvalid">El puerto debe ser un número de 1 a 65535</sys:String>
+    <sys:String x:Key="Proxy_Replay">Repetir la solicitud</sys:String>
+    <sys:String x:Key="Proxy_Replaying">Repitiendo {0}…</sys:String>
+    <sys:String x:Key="Proxy_Replayed">Repetida: {0}, {1:F0} ms</sys:String>
+    <sys:String x:Key="Proxy_ReplayFailed">No se pudo repetir: {0}</sys:String>
+    <sys:String x:Key="Proxy_ReplayBadge">Reenviada por Loupe</sys:String>
+    <sys:String x:Key="Proxy_OpenInBrowser">Abrir en el navegador</sys:String>
+    <sys:String x:Key="Proxy_OpenFailed">No se pudo abrir el navegador: {0}</sys:String>
+    <sys:String x:Key="Proxy_CopyCurl">Copiar como cURL</sys:String>
+    <sys:String x:Key="Proxy_CopyPowerShell">Copiar como PowerShell</sys:String>
+    <sys:String x:Key="Proxy_CopyFetch">Copiar como fetch()</sys:String>
+    <sys:String x:Key="Proxy_CopyResponse">Copiar el cuerpo de la respuesta</sys:String>
+    <sys:String x:Key="Proxy_Copied">Copiado</sys:String>
+    <sys:String x:Key="Proxy_CopyFailed">No se pudo copiar: el portapapeles está ocupado</sys:String>
+    <sys:String x:Key="Proxy_SaveBody">Guardar el cuerpo de la respuesta…</sys:String>
+    <sys:String x:Key="Proxy_BodySaved">Guardado en {0} · {1} bytes</sys:String>
+    <sys:String x:Key="Proxy_NoBodyToSave">Esta solicitud no tiene cuerpo de respuesta</sys:String>
+    <sys:String x:Key="Proxy_SearchBodies">En los cuerpos</sys:String>
+    <sys:String x:Key="Proxy_SearchBodies_Tip">Buscar también dentro de los cuerpos de solicitudes y respuestas</sys:String>
+    <sys:String x:Key="Proxy_ErrorsOnly">Errores</sys:String>
+    <sys:String x:Key="Proxy_ErrorsOnly_Tip">Mostrar solo 4xx, 5xx y las solicitudes fallidas</sys:String>
 </ResourceDictionary>

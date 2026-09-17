@@ -39,6 +39,13 @@ public sealed class HttpExchange
     /// clients on other machines, or when no resolver was configured.</summary>
     public ClientApplication? Client { get; init; }
 
+    /// <summary>
+    /// True when this is a request Loupe sent again itself (see <see cref="RequestReplayer"/>)
+    /// rather than one it observed. Marked in the list: a replay is evidence about the server,
+    /// not about what the machine did on its own.
+    /// </summary>
+    public bool IsReplay { get; init; }
+
     public string Scheme => IsHttps ? "https" : "http";
     public bool IsDefaultPort => (IsHttps && Port == 443) || (!IsHttps && Port == 80);
     public string Url => $"{Scheme}://{Host}{(IsDefaultPort ? "" : $":{Port}")}{PathAndQuery}";

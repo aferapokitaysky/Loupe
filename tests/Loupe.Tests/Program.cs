@@ -153,6 +153,8 @@ HarTests.Run();
 
 await ProxyTests.RunAsync();
 
+await ReplayTests.RunAsync();
+
 await TransparentTests.RunAsync();
 
 await ProcessTests.RunAsync();

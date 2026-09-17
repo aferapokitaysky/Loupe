@@ -163,4 +163,24 @@
     <sys:String x:Key="Proxy_Step_Cert">安装证书</sys:String>
     <sys:String x:Key="Proxy_Step_System">让系统走代理</sys:String>
     <sys:String x:Key="Proxy_PortInvalid">端口必须是 1 到 65535 的数字</sys:String>
+    <sys:String x:Key="Proxy_Replay">重新发送请求</sys:String>
+    <sys:String x:Key="Proxy_Replaying">正在重发 {0}…</sys:String>
+    <sys:String x:Key="Proxy_Replayed">已重发：{0}，{1:F0} 毫秒</sys:String>
+    <sys:String x:Key="Proxy_ReplayFailed">重发失败：{0}</sys:String>
+    <sys:String x:Key="Proxy_ReplayBadge">由 Loupe 重新发送</sys:String>
+    <sys:String x:Key="Proxy_OpenInBrowser">在浏览器中打开</sys:String>
+    <sys:String x:Key="Proxy_OpenFailed">无法打开浏览器：{0}</sys:String>
+    <sys:String x:Key="Proxy_CopyCurl">复制为 cURL</sys:String>
+    <sys:String x:Key="Proxy_CopyPowerShell">复制为 PowerShell</sys:String>
+    <sys:String x:Key="Proxy_CopyFetch">复制为 fetch()</sys:String>
+    <sys:String x:Key="Proxy_CopyResponse">复制响应正文</sys:String>
+    <sys:String x:Key="Proxy_Copied">已复制</sys:String>
+    <sys:String x:Key="Proxy_CopyFailed">无法复制：剪贴板被占用</sys:String>
+    <sys:String x:Key="Proxy_SaveBody">保存响应正文…</sys:String>
+    <sys:String x:Key="Proxy_BodySaved">已保存到 {0} · {1} 字节</sys:String>
+    <sys:String x:Key="Proxy_NoBodyToSave">该请求没有响应正文</sys:String>
+    <sys:String x:Key="Proxy_SearchBodies">搜索正文</sys:String>
+    <sys:String x:Key="Proxy_SearchBodies_Tip">同时搜索请求和响应的正文</sys:String>
+    <sys:String x:Key="Proxy_ErrorsOnly">错误</sys:String>
+    <sys:String x:Key="Proxy_ErrorsOnly_Tip">只显示 4xx、5xx 和失败的请求</sys:String>
 </ResourceDictionary>

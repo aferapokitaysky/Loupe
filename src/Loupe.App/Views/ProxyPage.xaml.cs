@@ -71,21 +71,35 @@ public partial class ProxyPage : UserControl
         if (menu.Items.Count == 0) e.Handled = true;
     }
 
+    /// <summary>
+    /// Everything you can do with one captured request. Ordered by what people reach for:
+    /// send it again, take it somewhere else, keep the answer, then the hiding rules.
+    /// </summary>
     private void AddExchangeItems(ContextMenu menu, HttpExchangeRowViewModel exchange)
     {
+        menu.Items.Add(ContextMenus.Item(Loc.Get("Proxy_Replay"), "ArrowRepeatAll24",
+            () => ViewModel.ReplayCommand.Execute(exchange)));
+        menu.Items.Add(ContextMenus.Item(Loc.Get("Proxy_OpenInBrowser"), "Open24",
+            () => ViewModel.OpenInBrowserCommand.Execute(exchange)));
+
+        menu.Items.Add(new Separator());
+        menu.Items.Add(ContextMenus.Item(Loc.Get("Proxy_CopyUrl"), "Link24", () => CopyAs(exchange, "url")));
+        menu.Items.Add(ContextMenus.Item(Loc.Get("Proxy_CopyCurl"), "Code24", () => CopyAs(exchange, "curl")));
+        menu.Items.Add(ContextMenus.Item(Loc.Get("Proxy_CopyPowerShell"), "WindowConsole20", () => CopyAs(exchange, "powershell")));
+        menu.Items.Add(ContextMenus.Item(Loc.Get("Proxy_CopyFetch"), "BracesVariable24", () => CopyAs(exchange, "fetch")));
+        menu.Items.Add(ContextMenus.Item(Loc.Get("Proxy_CopyResponse"), "Copy24", () => CopyAs(exchange, "response")));
+        menu.Items.Add(ContextMenus.Item(Loc.Get("Proxy_SaveBody"), "ArrowDownload24",
+            () => ViewModel.SaveResponseBodyCommand.Execute(exchange)));
+
+        menu.Items.Add(new Separator());
         menu.Items.Add(ContextMenus.Item(Loc.Format("Ignore_HideHost", exchange.Host), "EyeOff24",
             () => ViewModel.HideDomain(exchange.Host)));
 
         if (!string.IsNullOrEmpty(exchange.Client))
             menu.Items.Add(ContextMenus.Item(Loc.Format("Ignore_HideProcess", exchange.Client), "AppsListDetail24",
                 () => ViewModel.HideClient(exchange.Client)));
-
-        menu.Items.Add(new Separator());
-        menu.Items.Add(ContextMenus.Item(Loc.Get("Proxy_CopyUrl"), "Copy24", () =>
-        {
-            // Another program holding the clipboard open makes this throw; that's not worth a crash.
-            try { Clipboard.SetText(exchange.Url); }
-            catch (System.Runtime.InteropServices.COMException) { }
-        }));
     }
+
+    private void CopyAs(HttpExchangeRowViewModel exchange, string format) =>
+        ViewModel.CopyAsCommand.Execute((exchange, format));
 }

@@ -161,11 +161,26 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(IsFiltered))]
     private string _searchText = "";
 
+    /// <summary>
+    /// Extends the search into request and response bodies. Off by default because it is the
+    /// expensive one - "which request carried this id" is worth the wait, typing a host name is not.
+    /// </summary>
+    [ObservableProperty] private bool _searchBodies;
+
+    /// <summary>Narrows the list to failures: 4xx, 5xx and connections that never answered.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsFiltered))]
+    private bool _errorsOnly;
+
     [ObservableProperty] private string _filterSummary = "";
 
-    public bool IsFiltered => _domainFilter.Count > 0 || !string.IsNullOrWhiteSpace(SearchText);
+    public bool IsFiltered => _domainFilter.Count > 0 || !string.IsNullOrWhiteSpace(SearchText) || ErrorsOnly;
 
     partial void OnSearchTextChanged(string value) => ApplyFilter(); // request lists stay small enough
+
+    partial void OnSearchBodiesChanged(bool value) => ApplyFilter();
+
+    partial void OnErrorsOnlyChanged(bool value) => ApplyFilter();
 
     [RelayCommand]
     private void ClearFilter()
@@ -178,6 +193,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         // something nobody can see or untick - so the set is emptied outright.
         ResetDomainFilter();
         SearchText = "";
+        ErrorsOnly = false;
         ApplyFilter();
     }
 
@@ -265,20 +281,28 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         var hosts = _domainFilter.Count == 0 ? null : _domainFilter.ToHashSet(StringComparer.OrdinalIgnoreCase);
         string search = SearchText.Trim();
         bool hiding = !IgnoreListStore.Rules.IsEmpty;
+        bool bodies = SearchBodies;
+        bool errorsOnly = ErrorsOnly;
 
-        view.Filter = hosts is null && search.Length == 0 && !hiding
+        view.Filter = hosts is null && search.Length == 0 && !hiding && !errorsOnly
             ? null
             : item => item is HttpExchangeRowViewModel row
                       && !IsExchangeHidden(row)
                       && (hosts is null || hosts.Contains(row.Host))
+                      && (!errorsOnly || IsFailure(row))
                       && (search.Length == 0
                           || row.Url.Contains(search, StringComparison.OrdinalIgnoreCase)
                           || row.Method.Contains(search, StringComparison.OrdinalIgnoreCase)
                           || row.Status.Contains(search, StringComparison.OrdinalIgnoreCase)
-                          || row.Client.Contains(search, StringComparison.OrdinalIgnoreCase));
+                          || row.Client.Contains(search, StringComparison.OrdinalIgnoreCase)
+                          || (bodies && row.SearchableBody.Contains(search, StringComparison.OrdinalIgnoreCase)));
 
         UpdateFilterSummary();
     }
+
+    /// <summary>What "errors only" means: the server said no, or there was no answer at all.</summary>
+    private static bool IsFailure(HttpExchangeRowViewModel row) =>
+        row.Exchange.State == ExchangeState.Failed || row.Exchange.StatusCode >= 400;
 
     private void UpdateFilterSummary()
     {
@@ -391,6 +415,132 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         finally
         {
             _weEnabledSystemProxy = false;
+        }
+    }
+
+    // ---------------------------------------------------------------- one request at a time
+
+    private readonly RequestReplayer _replayer = new();
+
+    /// <summary>
+    /// Ids for replayed requests. The proxy counts its own exchanges up from zero, so replays
+    /// count down from below zero and the two can never collide in the row index.
+    /// </summary>
+    private long _nextReplayId;
+
+    /// <summary>
+    /// Sends the selected request again, straight to the origin, and drops the answer into the
+    /// list next to the original. "Is it still broken?" without leaving the app or rebuilding
+    /// the request by hand in a terminal.
+    /// </summary>
+    [RelayCommand]
+    private async Task ReplayAsync(HttpExchangeRowViewModel? row)
+    {
+        if (row is null) return;
+
+        StatusMessage = Loc.Format("Proxy_Replaying", row.Url);
+
+        HttpExchange replay;
+        try
+        {
+            replay = await _replayer.ReplayAsync(row.Exchange, Interlocked.Decrement(ref _nextReplayId));
+        }
+        catch (Exception ex)
+        {
+            // ReplayAsync turns network failures into failed exchanges; anything reaching here is
+            // a request we could not even build (a URL the capture recorded malformed, say).
+            StatusMessage = Loc.Format("Proxy_ReplayFailed", ex.Message);
+            return;
+        }
+
+        _incoming.Enqueue(replay);
+        Drain();
+
+        if (_rowsById.TryGetValue(replay.Id, out var replayRow))
+        {
+            SelectedExchange = replayRow;
+            SelectedDomain = _domainsByHost.GetValueOrDefault(replayRow.Host);
+        }
+
+        StatusMessage = replay.State == ExchangeState.ResponseReceived
+            ? Loc.Format("Proxy_Replayed", replay.StatusCode ?? 0, replay.Duration?.TotalMilliseconds ?? 0)
+            : Loc.Format("Proxy_ReplayFailed", replay.Error ?? "");
+    }
+
+    /// <summary>Copies the request as a shell command, a PowerShell call or a fetch() snippet.</summary>
+    [RelayCommand]
+    private void CopyAs((HttpExchangeRowViewModel Row, string Format) request)
+    {
+        var exchange = request.Row.Exchange;
+        string text = request.Format switch
+        {
+            "curl" => RequestExport.ToCurl(exchange),
+            "powershell" => RequestExport.ToPowerShell(exchange),
+            "fetch" => RequestExport.ToFetch(exchange),
+            "url" => exchange.Url,
+            "response" => request.Row.ResponseBodyText,
+            _ => "",
+        };
+
+        StatusMessage = ClipboardService.TrySetText(text)
+            ? Loc.Get("Proxy_Copied")
+            : Loc.Get("Proxy_CopyFailed");
+    }
+
+    /// <summary>
+    /// Writes the response body to a file, decoded: what lands on disk is what the server meant,
+    /// not the gzip it travelled as.
+    /// </summary>
+    [RelayCommand]
+    private void SaveResponseBody(HttpExchangeRowViewModel? row)
+    {
+        if (row is null || row.Exchange.ResponseBody.Length == 0)
+        {
+            StatusMessage = Loc.Get("Proxy_NoBodyToSave");
+            return;
+        }
+
+        var dialog = new SaveFileDialog { FileName = SuggestFileName(row), Filter = "All files (*.*)|*.*" };
+        if (dialog.ShowDialog() != true) return;
+
+        try
+        {
+            byte[] body = BodyFormatter.Decode(row.Exchange.ResponseHeaders, row.Exchange.ResponseBody);
+            File.WriteAllBytes(dialog.FileName, body);
+            StatusMessage = Loc.Format("Proxy_BodySaved", dialog.FileName, body.Length);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            StatusMessage = Loc.Format("Sessions_SaveFailed", ex.Message);
+        }
+    }
+
+    /// <summary>The last path segment, or the host - whatever a person would have typed themselves.</summary>
+    private static string SuggestFileName(HttpExchangeRowViewModel row)
+    {
+        string path = row.Exchange.PathAndQuery.Split('?')[0].TrimEnd('/');
+        string name = path.Length == 0 ? row.Host : path[(path.LastIndexOf('/') + 1)..];
+        if (name.Length == 0) name = row.Host;
+
+        foreach (char invalid in Path.GetInvalidFileNameChars())
+            name = name.Replace(invalid, '_');
+
+        return name.Length == 0 ? "response" : name;
+    }
+
+    /// <summary>Opens the request's URL in the default browser - the GET you want to look at by eye.</summary>
+    [RelayCommand]
+    private void OpenInBrowser(HttpExchangeRowViewModel? row)
+    {
+        if (row is null || row.Exchange.Scheme is not ("http" or "https")) return;
+
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(row.Url) { UseShellExecute = true });
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            StatusMessage = Loc.Format("Proxy_OpenFailed", ex.Message);
         }
     }
 
@@ -639,5 +789,6 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         _server?.Stop();
         RestoreSystemProxy();
         _favicons.Dispose();
+        _replayer.Dispose();
     }
 }

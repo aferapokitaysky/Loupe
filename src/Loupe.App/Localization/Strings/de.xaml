@@ -163,4 +163,24 @@
     <sys:String x:Key="Proxy_Step_Cert">Zertifikat installieren</sys:String>
     <sys:String x:Key="Proxy_Step_System">System darüber leiten</sys:String>
     <sys:String x:Key="Proxy_PortInvalid">Port muss 1 bis 65535 sein</sys:String>
+    <sys:String x:Key="Proxy_Replay">Anfrage wiederholen</sys:String>
+    <sys:String x:Key="Proxy_Replaying">Wiederhole {0}…</sys:String>
+    <sys:String x:Key="Proxy_Replayed">Wiederholt: {0}, {1:F0} ms</sys:String>
+    <sys:String x:Key="Proxy_ReplayFailed">Wiederholung fehlgeschlagen: {0}</sys:String>
+    <sys:String x:Key="Proxy_ReplayBadge">Von Loupe erneut gesendet</sys:String>
+    <sys:String x:Key="Proxy_OpenInBrowser">Im Browser öffnen</sys:String>
+    <sys:String x:Key="Proxy_OpenFailed">Browser konnte nicht geöffnet werden: {0}</sys:String>
+    <sys:String x:Key="Proxy_CopyCurl">Als cURL kopieren</sys:String>
+    <sys:String x:Key="Proxy_CopyPowerShell">Als PowerShell kopieren</sys:String>
+    <sys:String x:Key="Proxy_CopyFetch">Als fetch() kopieren</sys:String>
+    <sys:String x:Key="Proxy_CopyResponse">Antwortinhalt kopieren</sys:String>
+    <sys:String x:Key="Proxy_Copied">Kopiert</sys:String>
+    <sys:String x:Key="Proxy_CopyFailed">Kopieren fehlgeschlagen: Die Zwischenablage ist belegt</sys:String>
+    <sys:String x:Key="Proxy_SaveBody">Antwortinhalt speichern…</sys:String>
+    <sys:String x:Key="Proxy_BodySaved">In {0} gespeichert · {1} Bytes</sys:String>
+    <sys:String x:Key="Proxy_NoBodyToSave">Diese Anfrage hat keinen Antwortinhalt</sys:String>
+    <sys:String x:Key="Proxy_SearchBodies">In Inhalten</sys:String>
+    <sys:String x:Key="Proxy_SearchBodies_Tip">Auch in Anfrage- und Antwortinhalten suchen</sys:String>
+    <sys:String x:Key="Proxy_ErrorsOnly">Fehler</sys:String>
+    <sys:String x:Key="Proxy_ErrorsOnly_Tip">Nur 4xx, 5xx und fehlgeschlagene Anfragen zeigen</sys:String>
 </ResourceDictionary>

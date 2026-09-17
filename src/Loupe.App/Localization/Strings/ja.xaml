@@ -163,4 +163,24 @@
     <sys:String x:Key="Proxy_Step_Cert">証明書をインストール</sys:String>
     <sys:String x:Key="Proxy_Step_System">システムを経由させる</sys:String>
     <sys:String x:Key="Proxy_PortInvalid">ポートは 1〜65535 の数値です</sys:String>
+    <sys:String x:Key="Proxy_Replay">リクエストを再送</sys:String>
+    <sys:String x:Key="Proxy_Replaying">{0} を再送しています…</sys:String>
+    <sys:String x:Key="Proxy_Replayed">再送しました: {0}、{1:F0} ms</sys:String>
+    <sys:String x:Key="Proxy_ReplayFailed">再送できませんでした: {0}</sys:String>
+    <sys:String x:Key="Proxy_ReplayBadge">Loupe が再送しました</sys:String>
+    <sys:String x:Key="Proxy_OpenInBrowser">ブラウザーで開く</sys:String>
+    <sys:String x:Key="Proxy_OpenFailed">ブラウザーを開けませんでした: {0}</sys:String>
+    <sys:String x:Key="Proxy_CopyCurl">cURL としてコピー</sys:String>
+    <sys:String x:Key="Proxy_CopyPowerShell">PowerShell としてコピー</sys:String>
+    <sys:String x:Key="Proxy_CopyFetch">fetch() としてコピー</sys:String>
+    <sys:String x:Key="Proxy_CopyResponse">レスポンス本文をコピー</sys:String>
+    <sys:String x:Key="Proxy_Copied">コピーしました</sys:String>
+    <sys:String x:Key="Proxy_CopyFailed">コピーできませんでした: クリップボードが使用中です</sys:String>
+    <sys:String x:Key="Proxy_SaveBody">レスポンス本文を保存…</sys:String>
+    <sys:String x:Key="Proxy_BodySaved">{0} に保存しました · {1} バイト</sys:String>
+    <sys:String x:Key="Proxy_NoBodyToSave">このリクエストにはレスポンス本文がありません</sys:String>
+    <sys:String x:Key="Proxy_SearchBodies">本文も検索</sys:String>
+    <sys:String x:Key="Proxy_SearchBodies_Tip">リクエストとレスポンスの本文も検索します</sys:String>
+    <sys:String x:Key="Proxy_ErrorsOnly">エラー</sys:String>
+    <sys:String x:Key="Proxy_ErrorsOnly_Tip">4xx、5xx と失敗したリクエストだけを表示</sys:String>
 </ResourceDictionary>

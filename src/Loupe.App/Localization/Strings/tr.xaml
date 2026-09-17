@@ -163,4 +163,24 @@
     <sys:String x:Key="Proxy_Step_Cert">Sertifikayı yükle</sys:String>
     <sys:String x:Key="Proxy_Step_System">Sistemi buradan geçir</sys:String>
     <sys:String x:Key="Proxy_PortInvalid">Bağlantı noktası 1-65535 arası bir sayı olmalı</sys:String>
+    <sys:String x:Key="Proxy_Replay">İsteği yinele</sys:String>
+    <sys:String x:Key="Proxy_Replaying">{0} yineleniyor…</sys:String>
+    <sys:String x:Key="Proxy_Replayed">Yinelendi: {0}, {1:F0} ms</sys:String>
+    <sys:String x:Key="Proxy_ReplayFailed">Yineleme başarısız: {0}</sys:String>
+    <sys:String x:Key="Proxy_ReplayBadge">Loupe tarafından yeniden gönderildi</sys:String>
+    <sys:String x:Key="Proxy_OpenInBrowser">Tarayıcıda aç</sys:String>
+    <sys:String x:Key="Proxy_OpenFailed">Tarayıcı açılamadı: {0}</sys:String>
+    <sys:String x:Key="Proxy_CopyCurl">cURL olarak kopyala</sys:String>
+    <sys:String x:Key="Proxy_CopyPowerShell">PowerShell olarak kopyala</sys:String>
+    <sys:String x:Key="Proxy_CopyFetch">fetch() olarak kopyala</sys:String>
+    <sys:String x:Key="Proxy_CopyResponse">Yanıt gövdesini kopyala</sys:String>
+    <sys:String x:Key="Proxy_Copied">Kopyalandı</sys:String>
+    <sys:String x:Key="Proxy_CopyFailed">Kopyalanamadı: pano meşgul</sys:String>
+    <sys:String x:Key="Proxy_SaveBody">Yanıt gövdesini kaydet…</sys:String>
+    <sys:String x:Key="Proxy_BodySaved">{0} dosyasına kaydedildi · {1} bayt</sys:String>
+    <sys:String x:Key="Proxy_NoBodyToSave">Bu isteğin yanıt gövdesi yok</sys:String>
+    <sys:String x:Key="Proxy_SearchBodies">Gövdelerde</sys:String>
+    <sys:String x:Key="Proxy_SearchBodies_Tip">İstek ve yanıt gövdelerinin içinde de ara</sys:String>
+    <sys:String x:Key="Proxy_ErrorsOnly">Hatalar</sys:String>
+    <sys:String x:Key="Proxy_ErrorsOnly_Tip">Yalnızca 4xx, 5xx ve başarısız istekleri göster</sys:String>
 </ResourceDictionary>
