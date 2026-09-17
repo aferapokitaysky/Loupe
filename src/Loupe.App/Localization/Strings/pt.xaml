@@ -245,4 +245,12 @@
     <sys:String x:Key="Set_Ca_Note">Gerado nesta máquina e guardado aqui. Nada é descriptografado até você instalá-lo, e só para o tráfego que passa por este proxy.</sys:String>
     <sys:String x:Key="Proxy_Status_SystemProxyRecovered">O Windows ainda apontava para {0}, onde ninguém escuta - esse ajuste foi devolvido</sys:String>
     <sys:String x:Key="Proxy_Status_SystemProxyStale">O Windows aponta para {0}, onde ninguém escuta, e o ajuste não pôde ser alterado daqui</sys:String>
+    <sys:String x:Key="Proxy_Wrap">Quebrar linha</sys:String>
+    <sys:String x:Key="Proxy_Wrap_Tip">Quebrar as linhas longas em vez de deixá-las correr para o lado</sys:String>
+    <sys:String x:Key="Proxy_Detail_Resize">Arraste para mudar a altura do painel da requisição</sys:String>
+    <sys:String x:Key="Proxy_BrowserOnly">Navegador</sys:String>
+    <sys:String x:Key="Proxy_BrowserOnly_Tip">Mostrar só o que um navegador pediu. Com o Windows passando pelo proxy, tudo da máquina chega aqui: mensageiros, atualizadores, verificações do próprio Windows.</sys:String>
+    <sys:String x:Key="Proxy_Clients">Apps</sys:String>
+    <sys:String x:Key="Proxy_Client_Browser">navegador</sys:String>
+    <sys:String x:Key="Proxy_Client_Unknown">Outro dispositivo</sys:String>
 </ResourceDictionary>

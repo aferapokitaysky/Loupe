@@ -245,4 +245,12 @@
     <sys:String x:Key="Set_Ca_Note">Généré sur cette machine et conservé ici. Rien n'est déchiffré tant que vous ne l'installez pas vous-même, et seulement pour le trafic passant par ce proxy.</sys:String>
     <sys:String x:Key="Proxy_Status_SystemProxyRecovered">Windows pointait encore vers {0}, où rien n'écoute : le réglage a été remis en place</sys:String>
     <sys:String x:Key="Proxy_Status_SystemProxyStale">Windows pointe vers {0}, où rien n'écoute, et le réglage n'a pas pu être changé d'ici</sys:String>
+    <sys:String x:Key="Proxy_Wrap">Retour ligne</sys:String>
+    <sys:String x:Key="Proxy_Wrap_Tip">Couper les longues lignes au lieu de les laisser filer à droite</sys:String>
+    <sys:String x:Key="Proxy_Detail_Resize">Faites glisser pour changer la hauteur du panneau de la requête</sys:String>
+    <sys:String x:Key="Proxy_BrowserOnly">Navigateur</sys:String>
+    <sys:String x:Key="Proxy_BrowserOnly_Tip">N'afficher que ce qu'un navigateur a demandé. Avec Windows routé par le proxy, tout ce que fait la machine arrive ici : messageries, mises à jour, vérifications de Windows.</sys:String>
+    <sys:String x:Key="Proxy_Clients">Applis</sys:String>
+    <sys:String x:Key="Proxy_Client_Browser">navigateur</sys:String>
+    <sys:String x:Key="Proxy_Client_Unknown">Autre appareil</sys:String>
 </ResourceDictionary>

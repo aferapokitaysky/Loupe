@@ -247,4 +247,12 @@
     <sys:String x:Key="Set_Ca_Note">Generated on this machine and kept here. Nothing is decrypted until you install it yourself, and only for traffic routed through this proxy.</sys:String>
     <sys:String x:Key="Proxy_Status_SystemProxyRecovered">Windows was still pointed at {0} with nothing listening there - that setting has been put back</sys:String>
     <sys:String x:Key="Proxy_Status_SystemProxyStale">Windows is pointed at {0} with nothing listening there, and the setting could not be changed from here</sys:String>
+    <sys:String x:Key="Proxy_Wrap">Wrap</sys:String>
+    <sys:String x:Key="Proxy_Wrap_Tip">Wrap long lines instead of running them off to the side</sys:String>
+    <sys:String x:Key="Proxy_Detail_Resize">Drag to resize the request pane</sys:String>
+    <sys:String x:Key="Proxy_BrowserOnly">Browser</sys:String>
+    <sys:String x:Key="Proxy_BrowserOnly_Tip">Show only what a browser asked for. With Windows routed through the proxy, everything on the machine arrives here - chat apps, updaters, Windows' own checks.</sys:String>
+    <sys:String x:Key="Proxy_Clients">Apps</sys:String>
+    <sys:String x:Key="Proxy_Client_Browser">browser</sys:String>
+    <sys:String x:Key="Proxy_Client_Unknown">Another device</sys:String>
 </ResourceDictionary>

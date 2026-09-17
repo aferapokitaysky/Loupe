@@ -47,6 +47,17 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     public ObservableCollection<DomainGroupViewModel> Domains { get; } = [];
 
     private readonly Dictionary<string, DomainGroupViewModel> _domainsByHost = [];
+
+    /// <summary>
+    /// The programs whose requests came through, newest activity first. The sidebar can group
+    /// by domain or by program, because "what is this app talking to" and "who is talking to
+    /// this domain" are both questions people arrive with.
+    /// </summary>
+    public ObservableCollection<ClientRowViewModel> Clients { get; } = [];
+
+    private readonly Dictionary<string, ClientRowViewModel> _clientsByName = new(StringComparer.OrdinalIgnoreCase);
+
+    private readonly HashSet<string> _clientFilter = new(StringComparer.OrdinalIgnoreCase);
     private readonly FaviconService _favicons = new();
 
     /// <summary>
@@ -93,12 +104,22 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     private readonly HashSet<string> _domainFilter = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>The chip's text: one domain by name, or how many are ticked.</summary>
-    public string FilterScope => _domainFilter.Count switch
+    public string FilterScope
     {
-        0 => "",
-        1 => _domainFilter.First(),
-        var many => Loc.Format("Filter_HostCount", many),
-    };
+        get
+        {
+            if (_clientFilter.Count == 1) return _clientFilter.First();
+            if (_clientFilter.Count > 1) return Loc.Format("Filter_HostCount", _clientFilter.Count);
+            if (BrowserOnly && _domainFilter.Count == 0) return Loc.Get("Proxy_BrowserOnly");
+
+            return _domainFilter.Count switch
+            {
+                0 => "",
+                1 => _domainFilter.First(),
+                var many => Loc.Format("Filter_HostCount", many),
+            };
+        }
+    }
 
     /// <summary>Called when a domain is ticked or unticked.</summary>
     private void OnDomainCheckedChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -169,6 +190,12 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     /// </summary>
     [ObservableProperty] private bool _searchBodies;
 
+    /// <summary>
+    /// Wrap long lines in the request and response panes. On by default: a body is text to be
+    /// read, and a line that runs off to the right is a line nobody reads.
+    /// </summary>
+    [ObservableProperty] private bool _wrapText = true;
+
     /// <summary>Narrows the list to failures: 4xx, 5xx and connections that never answered.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsFiltered))]
@@ -176,7 +203,8 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
 
     [ObservableProperty] private string _filterSummary = "";
 
-    public bool IsFiltered => _domainFilter.Count > 0 || !string.IsNullOrWhiteSpace(SearchText) || ErrorsOnly;
+    public bool IsFiltered => _domainFilter.Count > 0 || _clientFilter.Count > 0
+                              || !string.IsNullOrWhiteSpace(SearchText) || ErrorsOnly || BrowserOnly;
 
     partial void OnSearchTextChanged(string value) => ApplyFilter(); // request lists stay small enough
 
@@ -193,9 +221,14 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         // Unticking rows only reaches domains still in the list. A domain that was ticked and has
         // since been cleared or evicted lives on in the set - and would keep the grid filtered to
         // something nobody can see or untick - so the set is emptied outright.
+        foreach (var client in Clients.Where(c => c.IsChecked).ToList())
+            client.IsChecked = false;
+
         ResetDomainFilter();
+        ResetClientFilter();
         SearchText = "";
         ErrorsOnly = false;
+        BrowserOnly = false;
         ApplyFilter();
     }
 
@@ -210,10 +243,83 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
 
     // ---------------------------------------------------------------- hiding & domain search
 
+    /// <summary>
+    /// Which way the sidebar groups what came through: by domain, or by the program that asked.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsGroupedByClient))]
+    private bool _groupByClient;
+
+    public bool IsGroupedByClient => GroupByClient;
+
+    /// <summary>
+    /// Show only what a browser asked for.
+    ///
+    /// With Windows pointed at the proxy, everything on the machine arrives: chat apps polling,
+    /// updaters, Windows' own connectivity checks. That is the honest picture and sometimes the
+    /// interesting one, but "what is this page doing" is the common question, and this is the
+    /// answer to it.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsFiltered))]
+    private bool _browserOnly;
+
+    partial void OnBrowserOnlyChanged(bool value)
+    {
+        ApplyFilter();
+        ApplyClientFilter();
+        UpdateFilterSummary();
+    }
+
+    /// <summary>Called when a program is ticked or unticked in the sidebar.</summary>
+    private void OnClientCheckedChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(ClientRowViewModel.IsChecked) || sender is not ClientRowViewModel client) return;
+
+        if (client.IsChecked) _clientFilter.Add(client.Name);
+        else _clientFilter.Remove(client.Name);
+
+        ApplyFilter();
+        OnPropertyChanged(nameof(IsFiltered));
+        OnPropertyChanged(nameof(FilterScope));
+    }
+
+    /// <summary>Ticks one program and unticks the rest.</summary>
+    public void ShowOnlyClient(ClientRowViewModel client)
+    {
+        foreach (var row in Clients)
+            row.IsChecked = ReferenceEquals(row, client);
+    }
+
+    private void ResetClientFilter()
+    {
+        if (_clientFilter.Count == 0) return;
+
+        _clientFilter.Clear();
+        OnPropertyChanged(nameof(IsFiltered));
+        OnPropertyChanged(nameof(FilterScope));
+    }
+
+    private void ApplyClientFilter()
+    {
+        var view = System.Windows.Data.CollectionViewSource.GetDefaultView(Clients);
+        string search = DomainSearchText.Trim();
+
+        view.Filter = search.Length == 0 && !BrowserOnly
+            ? null
+            : item => item is ClientRowViewModel client
+                      && (!BrowserOnly || client.IsBrowser)
+                      && (search.Length == 0 || client.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
+    }
+
     /// <summary>Search over the domain sidebar: host name, or an app that talked to it.</summary>
     [ObservableProperty] private string _domainSearchText = "";
 
-    partial void OnDomainSearchTextChanged(string value) => ApplyDomainFilter();
+    partial void OnDomainSearchTextChanged(string value)
+    {
+        ApplyDomainFilter();
+        ApplyClientFilter();
+    }
 
     public bool HasHidden => !IgnoreListStore.Rules.IsEmpty;
     public string HiddenSummary => Loc.Format("Ignore_Summary", IgnoreListStore.Rules.Describe());
@@ -286,11 +392,16 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         bool bodies = SearchBodies;
         bool errorsOnly = ErrorsOnly;
 
-        view.Filter = hosts is null && search.Length == 0 && !hiding && !errorsOnly
+        var clients = _clientFilter.Count == 0 ? null : _clientFilter.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        bool browserOnly = BrowserOnly;
+
+        view.Filter = hosts is null && clients is null && search.Length == 0 && !hiding && !errorsOnly && !browserOnly
             ? null
             : item => item is HttpExchangeRowViewModel row
                       && !IsExchangeHidden(row)
                       && (hosts is null || hosts.Contains(row.Host))
+                      && (clients is null || clients.Contains(row.Client))
+                      && (!browserOnly || ClientRowViewModel.LooksLikeBrowser(row.Client))
                       && (!errorsOnly || IsFailure(row))
                       && (search.Length == 0
                           || row.Url.Contains(search, StringComparison.OrdinalIgnoreCase)
@@ -674,10 +785,13 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         _rowsById.Clear();
         Domains.Clear();
         _domainsByHost.Clear();
+        Clients.Clear();
+        _clientsByName.Clear();
         SelectedExchange = null;
 
-        // The ticked domains went with the list; the filter has to go with them.
+        // The ticked domains and programs went with the list; their filters go with them.
         ResetDomainFilter();
+        ResetClientFilter();
         ApplyFilter();
     }
 
@@ -791,6 +905,8 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
                 Exchanges.Add(row);
                 GroupFor(row.Host).Add(row);
             }
+
+            TrackClient(row);
             processed++;
         }
 
@@ -841,6 +957,33 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
                 domain.Recount();
             }
         }
+    }
+
+    /// <summary>
+    /// Keeps the program list in step with the requests. Counted rather than incremented for the
+    /// same reason the domains are: an exchange is updated in place as its response arrives, so
+    /// its size is not final when the row first appears.
+    /// </summary>
+    private void TrackClient(HttpExchangeRowViewModel row)
+    {
+        string name = row.Client;
+        if (name.Length == 0) name = Loc.Get("Proxy_Client_Unknown");
+
+        if (!_clientsByName.TryGetValue(name, out var client))
+        {
+            client = new ClientRowViewModel(name, row.Exchange.Client?.ImagePath);
+            client.PropertyChanged += OnClientCheckedChanged;
+            _clientsByName[name] = client;
+            Clients.Add(client);
+            ApplyClientFilter();
+        }
+
+        client.RequestCount = Exchanges.Count(e => string.Equals(
+            e.Client.Length == 0 ? Loc.Get("Proxy_Client_Unknown") : e.Client, name, StringComparison.OrdinalIgnoreCase));
+        client.TotalBytes = Exchanges
+            .Where(e => string.Equals(e.Client.Length == 0 ? Loc.Get("Proxy_Client_Unknown") : e.Client, name, StringComparison.OrdinalIgnoreCase))
+            .Sum(e => (long)e.ResponseSize);
+        client.LastActivity = row.Exchange.StartTime;
     }
 
     /// <summary>Returns the sidebar group for a host, creating it in alphabetical position.</summary>

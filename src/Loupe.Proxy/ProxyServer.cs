@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
@@ -164,6 +164,35 @@ public sealed class ProxyServer : IDisposable
         }
     }
 
+
+    /// <summary>
+    /// Says what actually went wrong in a failed handshake with a client.
+    ///
+    /// SslStream reports every server-side failure as "Authentication failed, see inner
+    /// exception", which tells the reader nothing and sends them looking for an inner exception
+    /// they have no way to see. The two cases that matter are worth naming outright: the client
+    /// does not trust our root, or the client checks for a specific certificate and will not
+    /// accept a substitute no matter what is installed - which is most banking and messaging
+    /// apps, and is not something this or any other proxy can talk it out of.
+    /// </summary>
+    private static string DescribeClientHandshakeFailure(string host, Exception exception)
+    {
+        var messages = new List<string>();
+        for (var current = exception; current is not null; current = current.InnerException)
+            messages.Add(current.Message);
+
+        string detail = string.Join(" - ", messages.Distinct());
+        bool clientRefused = messages.Any(m =>
+            m.Contains("certificate", StringComparison.OrdinalIgnoreCase)
+            || m.Contains("forcibly closed", StringComparison.OrdinalIgnoreCase)
+            || m.Contains("received an unexpected", StringComparison.OrdinalIgnoreCase)
+            || m.Contains("alert", StringComparison.OrdinalIgnoreCase));
+
+        return clientRefused
+            ? $"{host}: the client rejected Loupe's certificate. Either it does not trust the root yet, or it pins its own certificate and cannot be intercepted. ({detail})"
+            : $"TLS handshake with client failed for {host}: {detail}";
+    }
+
     private async Task InterceptTransparentTlsAsync(Stream clientStream, string host, CancellationToken ct)
     {
         var leafCertificate = _leafCertificates.GetOrCreate(host);
@@ -180,7 +209,7 @@ public sealed class ProxyServer : IDisposable
         }
         catch (Exception ex)
         {
-            ConnectionError?.Invoke(this, $"TLS handshake with client failed for {host}: {ex.Message}");
+            ConnectionError?.Invoke(this, DescribeClientHandshakeFailure(host, ex));
             return;
         }
 
@@ -269,8 +298,7 @@ public sealed class ProxyServer : IDisposable
         }
         catch (Exception ex)
         {
-            // Almost always means the client doesn't trust our root CA yet.
-            ConnectionError?.Invoke(this, $"TLS handshake with client failed for {host}: {ex.Message}");
+            ConnectionError?.Invoke(this, DescribeClientHandshakeFailure(host, ex));
             return;
         }
 
