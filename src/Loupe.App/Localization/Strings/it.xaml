@@ -253,4 +253,8 @@
     <sys:String x:Key="Proxy_Clients">App</sys:String>
     <sys:String x:Key="Proxy_Client_Browser">browser</sys:String>
     <sys:String x:Key="Proxy_Client_Unknown">Altro dispositivo</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerate">Crea un nuovo certificato</sys:String>
+    <sys:String x:Key="Set_Ca_RegenerateConfirm">Il certificato radice viene sostituito con uno nuovo e i vecchi rimossi dall'archivio attendibile. Ciò che ora viene decifrato con il vecchio si ferma finché i browser non vengono riavviati. Windows chiederà prima di fidarsi del nuovo. Continuare?</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerated">Nuovo certificato creato; radici vecchie rimosse: {0}</sys:String>
+    <sys:String x:Key="Set_Ca_LegacyName">Questo certificato è stato creato prima che l'app cambiasse nome, quindi si presenta ancora come NetSniffer in ogni finestra dei certificati. Crearne uno nuovo sistema il nome.</sys:String>
 </ResourceDictionary>

@@ -106,12 +106,26 @@
                 <Border Style="{StaticResource Card}" Padding="16,14" Margin="0,0,8,8">
                     <StackPanel>
                         <TextBlock Text="{DynamicResource Nav_Proxy}" Style="{StaticResource SettingsGroupTitle}" />
-                        <TextBlock Text="{DynamicResource Proxy_CaLabel}" FontSize="12.5"
-                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Text="{Binding CaName}" FontSize="12.5" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="{DynamicResource Proxy_CaLabel}" FontSize="12"
+                                   Margin="0,4,0,0" Foreground="{StaticResource TextSecondaryBrush}" />
                         <TextBlock Text="{Binding CaThumbprint}" FontFamily="Cascadia Mono, Consolas" FontSize="11.5"
-                                   TextWrapping="Wrap" Margin="0,3,0,0"
+                                   TextWrapping="Wrap" Margin="0,2,0,0"
                                    Foreground="{StaticResource TextPrimaryBrush}" />
                         <TextBlock Text="{DynamicResource Set_Ca_Note}" Style="{StaticResource SettingsNote}" />
+
+                        <!-- Only worth offering when the certificate still says the old name, or
+                             when someone deliberately wants a fresh key. -->
+                        <Border Background="{StaticResource SurfaceSunkenBrush}" CornerRadius="8" Padding="12,10" Margin="0,12,0,0"
+                                Visibility="{Binding CaHasLegacyName, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Text="{DynamicResource Set_Ca_LegacyName}" Style="{StaticResource SettingsNote}"
+                                       Margin="0" Foreground="{StaticResource WarnBrush}" />
+                        </Border>
+
+                        <ui:Button Content="{DynamicResource Set_Ca_Regenerate}" Icon="{ui:SymbolIcon ShieldKeyhole24}"
+                                   Style="{StaticResource AppButton}" HorizontalAlignment="Left" Margin="0,12,0,0"
+                                   Command="{Binding RegenerateCertificateCommand}" />
                     </StackPanel>
                 </Border>
 

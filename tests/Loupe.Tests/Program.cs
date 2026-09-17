@@ -151,6 +151,8 @@ StorageTests.Run();
 
 SessionTests.Run();
 
+CertificateTests.Run();
+
 HarTests.Run();
 
 await ProxyTests.RunAsync();

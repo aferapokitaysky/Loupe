@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Loupe.Proxy.Ca;
@@ -74,6 +74,89 @@ public sealed class RootCertificateAuthority
     }
 
     public string Thumbprint => Certificate.Thumbprint;
+
+    /// <summary>The name a person sees in the browser's certificate dialog, e.g. "Loupe Local CA".</summary>
+    public string CommonName
+    {
+        get
+        {
+            string name = Certificate.GetNameInfo(X509NameType.SimpleName, forIssuer: false);
+            return name.Length > 0 ? name : Certificate.Subject;
+        }
+    }
+
+    /// <summary>
+    /// True for a CA carried over from before the app was renamed, which still introduces itself
+    /// as NetSniffer in every certificate dialog. Harmless - trust is keyed on the thumbprint -
+    /// but a certificate that names something you have never heard of is exactly what a person
+    /// is supposed to be suspicious of.
+    /// </summary>
+    public bool HasLegacyName => Certificate.Subject.Contains("NetSniffer", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Throws the current CA away and makes a new one under the current name.
+    ///
+    /// Everything signed by the old key stops being trusted the moment its root leaves the
+    /// store, so this is only ever something the user asks for, and it ends with the new root
+    /// needing to be installed again - Windows asks for that separately, as it should.
+    /// </summary>
+    public void Regenerate()
+    {
+        lock (_lock)
+        {
+            TryUninstall();
+
+            foreach (string path in new[] { _pfxPath, _protectedPasswordPath })
+            {
+                try { File.Delete(path); }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            }
+
+            _certificate = CreateAndPersist();
+        }
+    }
+
+    private void TryUninstall()
+    {
+        try { UninstallForCurrentUser(); }
+        catch (Exception e) when (e is System.Security.Cryptography.CryptographicException or UnauthorizedAccessException)
+        {
+            // The old root stays trusted; harmless, and RemoveOldRoots can still take it out.
+        }
+    }
+
+    /// <summary>
+    /// Removes every root this app has ever installed for this user except the one in use -
+    /// the leftovers from earlier installs and from before the rename, which otherwise sit in
+    /// the trust store forever, trusted, with nobody holding the matching key any more.
+    /// </summary>
+    public int RemoveStaleRoots()
+    {
+        using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+        store.Open(OpenFlags.ReadWrite);
+
+        int removed = 0;
+        foreach (var candidate in store.Certificates)
+        {
+            bool ours = candidate.Subject.Contains("Loupe Local CA", StringComparison.OrdinalIgnoreCase)
+                        || candidate.Subject.Contains("NetSniffer Local CA", StringComparison.OrdinalIgnoreCase);
+
+            if (!ours || string.Equals(candidate.Thumbprint, Thumbprint, StringComparison.OrdinalIgnoreCase)) continue;
+
+            try
+            {
+                store.Remove(candidate);
+                removed++;
+            }
+            catch (Exception e) when (e is System.Security.Cryptography.CryptographicException or UnauthorizedAccessException)
+            {
+                // Refused (the user said no to Windows' prompt): leave the rest alone too.
+                break;
+            }
+        }
+
+        return removed;
+    }
 
     private X509Certificate2 LoadOrCreate()
     {

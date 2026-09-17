@@ -253,4 +253,8 @@
     <sys:String x:Key="Proxy_Clients">Programy</sys:String>
     <sys:String x:Key="Proxy_Client_Browser">przeglądarka</sys:String>
     <sys:String x:Key="Proxy_Client_Unknown">Inne urządzenie</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerate">Utwórz nowy certyfikat</sys:String>
+    <sys:String x:Key="Set_Ca_RegenerateConfirm">Certyfikat główny zostanie zastąpiony nowym, a stare usunięte z magazynu zaufania. To, co teraz jest odszyfrowywane starym, przestanie działać do czasu ponownego uruchomienia przeglądarek. Windows osobno zapyta o zaufanie nowemu. Kontynuować?</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerated">Utworzono nowy certyfikat; usunięto starych certyfikatów głównych: {0}</sys:String>
+    <sys:String x:Key="Set_Ca_LegacyName">Ten certyfikat powstał przed zmianą nazwy aplikacji, więc w oknach certyfikatów wciąż przedstawia się jako NetSniffer. Utworzenie nowego naprawia nazwę.</sys:String>
 </ResourceDictionary>

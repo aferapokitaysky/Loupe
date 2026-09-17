@@ -24,9 +24,9 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     private readonly ConcurrentQueue<HttpExchange> _incoming = new();
     private readonly Dictionary<long, HttpExchangeRowViewModel> _rowsById = [];
     private readonly DispatcherTimer _drainTimer;
-    // Explicit path rather than the proxy computing its own: the CA must land under the same
-    // storage root the rest of the app migrates, whatever order things happen to start in.
-    private readonly RootCertificateAuthority _ca = new(AppStorage.PathTo("ca"));
+    // Shared with the settings page, which can replace it: two instances over the same files
+    // would disagree the moment one of them regenerated.
+    private readonly RootCertificateAuthority _ca = CertificateAuthorityService.Instance;
 
     private ProxyServer? _server;
 

@@ -253,4 +253,8 @@
     <sys:String x:Key="Proxy_Clients">程序</sys:String>
     <sys:String x:Key="Proxy_Client_Browser">浏览器</sys:String>
     <sys:String x:Key="Proxy_Client_Unknown">其他设备</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerate">重新生成证书</sys:String>
+    <sys:String x:Key="Set_Ca_RegenerateConfirm">这会用新的根证书替换当前证书，并从你的信任存储中移除旧证书。目前依赖旧证书解密的连接会中断，直到浏览器重启。Windows 会另行询问是否信任新证书。继续吗？</sys:String>
+    <sys:String x:Key="Set_Ca_Regenerated">已生成新证书；移除的旧根证书：{0}</sys:String>
+    <sys:String x:Key="Set_Ca_LegacyName">这张证书是在应用改名之前生成的，因此在所有证书对话框中仍自称 NetSniffer。重新生成即可修正名称。</sys:String>
 </ResourceDictionary>
