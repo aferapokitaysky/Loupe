@@ -86,7 +86,17 @@ public sealed partial class FollowStreamViewModel : ObservableObject
     /// the only honest way to show it.</summary>
     [ObservableProperty] private bool _asHex;
 
-    partial void OnAsHexChanged(bool value) => Refresh();
+    /// <summary>
+    /// Wrap long lines. On for text, off the moment the panes switch to hex: a hex dump is a
+    /// grid of columns, and wrapping it turns it into mush.
+    /// </summary>
+    [ObservableProperty] private bool _wrapText = true;
+
+    partial void OnAsHexChanged(bool value)
+    {
+        if (value) WrapText = false;
+        Refresh();
+    }
 
     partial void OnModeChanged(string value) => Refresh();
 
