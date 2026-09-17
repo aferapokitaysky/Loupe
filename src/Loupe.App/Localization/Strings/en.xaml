@@ -185,4 +185,25 @@
     <sys:String x:Key="Proxy_SearchBodies_Tip">Also search inside request and response bodies</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly">Errors</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly_Tip">Show only 4xx, 5xx and requests that failed</sys:String>
+    <sys:String x:Key="Pkt_Follow">Follow TCP stream</sys:String>
+    <sys:String x:Key="Pkt_CopyRow">Copy row</sys:String>
+    <sys:String x:Key="Pkt_CopyAddress">Copy {0}</sys:String>
+    <sys:String x:Key="Pkt_CopyHex">Copy hex dump</sys:String>
+    <sys:String x:Key="Pkt_Presets">Presets</sys:String>
+    <sys:String x:Key="Pkt_Presets_Tip">Ready-made capture filters</sys:String>
+    <sys:String x:Key="Preset_All">All traffic</sys:String>
+    <sys:String x:Key="Preset_Web">Web (HTTP/HTTPS/QUIC)</sys:String>
+    <sys:String x:Key="Preset_Tls">HTTPS (TLS)</sys:String>
+    <sys:String x:Key="Preset_Quic">QUIC / HTTP3</sys:String>
+    <sys:String x:Key="Preset_Http">HTTP (plain)</sys:String>
+    <sys:String x:Key="Preset_Dns">DNS</sys:String>
+    <sys:String x:Key="Preset_NoNoise">No ARP or broadcast</sys:String>
+    <sys:String x:Key="Follow_Bytes">{0} bytes</sys:String>
+    <sys:String x:Key="Follow_Empty">Nothing reassembled this way</sys:String>
+    <sys:String x:Key="Follow_Hex">Hex</sys:String>
+    <sys:String x:Key="Follow_Hex_Tip">Show the bytes as a hex dump</sys:String>
+    <sys:String x:Key="Follow_Refresh">Re-read the stream</sys:String>
+    <sys:String x:Key="Follow_Copy">Copy</sys:String>
+    <sys:String x:Key="Follow_Save">Save…</sys:String>
+    <sys:String x:Key="Follow_Note">Each direction is reassembled on its own - how the two interleaved in time isn't recorded.</sys:String>
 </ResourceDictionary>

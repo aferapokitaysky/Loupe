@@ -183,4 +183,25 @@
     <sys:String x:Key="Proxy_SearchBodies_Tip">İstek ve yanıt gövdelerinin içinde de ara</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly">Hatalar</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly_Tip">Yalnızca 4xx, 5xx ve başarısız istekleri göster</sys:String>
+    <sys:String x:Key="Pkt_Follow">TCP akışını izle</sys:String>
+    <sys:String x:Key="Pkt_CopyRow">Satırı kopyala</sys:String>
+    <sys:String x:Key="Pkt_CopyAddress">{0} kopyala</sys:String>
+    <sys:String x:Key="Pkt_CopyHex">Hex dökümünü kopyala</sys:String>
+    <sys:String x:Key="Pkt_Presets">Hazır filtreler</sys:String>
+    <sys:String x:Key="Pkt_Presets_Tip">Hazır yakalama filtreleri</sys:String>
+    <sys:String x:Key="Preset_All">Tüm trafik</sys:String>
+    <sys:String x:Key="Preset_Web">Web (HTTP/HTTPS/QUIC)</sys:String>
+    <sys:String x:Key="Preset_Tls">HTTPS (TLS)</sys:String>
+    <sys:String x:Key="Preset_Quic">QUIC / HTTP3</sys:String>
+    <sys:String x:Key="Preset_Http">HTTP (şifresiz)</sys:String>
+    <sys:String x:Key="Preset_Dns">DNS</sys:String>
+    <sys:String x:Key="Preset_NoNoise">ARP ve yayın hariç</sys:String>
+    <sys:String x:Key="Follow_Bytes">{0} bayt</sys:String>
+    <sys:String x:Key="Follow_Empty">Bu yönde birleştirilen veri yok</sys:String>
+    <sys:String x:Key="Follow_Hex">Hex</sys:String>
+    <sys:String x:Key="Follow_Hex_Tip">Baytları hex döküm olarak göster</sys:String>
+    <sys:String x:Key="Follow_Refresh">Akışı yeniden oku</sys:String>
+    <sys:String x:Key="Follow_Copy">Kopyala</sys:String>
+    <sys:String x:Key="Follow_Save">Kaydet…</sys:String>
+    <sys:String x:Key="Follow_Note">Her yön ayrı ayrı birleştirilir; zaman içinde nasıl sıralandıkları kaydedilmez.</sys:String>
 </ResourceDictionary>

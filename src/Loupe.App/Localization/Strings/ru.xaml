@@ -183,4 +183,25 @@
     <sys:String x:Key="Proxy_SearchBodies_Tip">Искать и внутри тел запросов и ответов</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly">Ошибки</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly_Tip">Показывать только 4xx, 5xx и неудавшиеся запросы</sys:String>
+    <sys:String x:Key="Pkt_Follow">Показать поток TCP</sys:String>
+    <sys:String x:Key="Pkt_CopyRow">Копировать строку</sys:String>
+    <sys:String x:Key="Pkt_CopyAddress">Копировать {0}</sys:String>
+    <sys:String x:Key="Pkt_CopyHex">Копировать hex-дамп</sys:String>
+    <sys:String x:Key="Pkt_Presets">Шаблоны</sys:String>
+    <sys:String x:Key="Pkt_Presets_Tip">Готовые фильтры захвата</sys:String>
+    <sys:String x:Key="Preset_All">Весь трафик</sys:String>
+    <sys:String x:Key="Preset_Web">Веб (HTTP/HTTPS/QUIC)</sys:String>
+    <sys:String x:Key="Preset_Tls">HTTPS (TLS)</sys:String>
+    <sys:String x:Key="Preset_Quic">QUIC / HTTP3</sys:String>
+    <sys:String x:Key="Preset_Http">HTTP (без шифрования)</sys:String>
+    <sys:String x:Key="Preset_Dns">DNS</sys:String>
+    <sys:String x:Key="Preset_NoNoise">Без ARP и широковещания</sys:String>
+    <sys:String x:Key="Follow_Bytes">{0} байт</sys:String>
+    <sys:String x:Key="Follow_Empty">В эту сторону ничего не собрано</sys:String>
+    <sys:String x:Key="Follow_Hex">Hex</sys:String>
+    <sys:String x:Key="Follow_Hex_Tip">Показать байты как hex-дамп</sys:String>
+    <sys:String x:Key="Follow_Refresh">Перечитать поток</sys:String>
+    <sys:String x:Key="Follow_Copy">Копировать</sys:String>
+    <sys:String x:Key="Follow_Save">Сохранить…</sys:String>
+    <sys:String x:Key="Follow_Note">Каждое направление собрано отдельно: как они чередовались во времени, захват не хранит.</sys:String>
 </ResourceDictionary>

@@ -1,4 +1,4 @@
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -142,6 +142,8 @@ T.Section("TCP REASSEMBLY");
     T.Eq("both directions share one stream key",
         1, new TcpStreamKey("1.1.1.1", 80, "2.2.2.2", 9) == new TcpStreamKey("2.2.2.2", 9, "1.1.1.1", 80) ? 1 : 0);
 }
+
+FollowTests.Run();
 
 NamingTests.Run();
 

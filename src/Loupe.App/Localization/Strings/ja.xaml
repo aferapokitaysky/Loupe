@@ -183,4 +183,25 @@
     <sys:String x:Key="Proxy_SearchBodies_Tip">リクエストとレスポンスの本文も検索します</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly">エラー</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly_Tip">4xx、5xx と失敗したリクエストだけを表示</sys:String>
+    <sys:String x:Key="Pkt_Follow">TCP ストリームを追跡</sys:String>
+    <sys:String x:Key="Pkt_CopyRow">行をコピー</sys:String>
+    <sys:String x:Key="Pkt_CopyAddress">{0} をコピー</sys:String>
+    <sys:String x:Key="Pkt_CopyHex">16 進ダンプをコピー</sys:String>
+    <sys:String x:Key="Pkt_Presets">プリセット</sys:String>
+    <sys:String x:Key="Pkt_Presets_Tip">よく使うキャプチャフィルター</sys:String>
+    <sys:String x:Key="Preset_All">すべての通信</sys:String>
+    <sys:String x:Key="Preset_Web">Web (HTTP/HTTPS/QUIC)</sys:String>
+    <sys:String x:Key="Preset_Tls">HTTPS (TLS)</sys:String>
+    <sys:String x:Key="Preset_Quic">QUIC / HTTP3</sys:String>
+    <sys:String x:Key="Preset_Http">HTTP (平文)</sys:String>
+    <sys:String x:Key="Preset_Dns">DNS</sys:String>
+    <sys:String x:Key="Preset_NoNoise">ARP とブロードキャストを除く</sys:String>
+    <sys:String x:Key="Follow_Bytes">{0} バイト</sys:String>
+    <sys:String x:Key="Follow_Empty">この方向には再構成できたデータがありません</sys:String>
+    <sys:String x:Key="Follow_Hex">16 進</sys:String>
+    <sys:String x:Key="Follow_Hex_Tip">バイトを 16 進ダンプで表示</sys:String>
+    <sys:String x:Key="Follow_Refresh">ストリームを読み直す</sys:String>
+    <sys:String x:Key="Follow_Copy">コピー</sys:String>
+    <sys:String x:Key="Follow_Save">保存…</sys:String>
+    <sys:String x:Key="Follow_Note">方向ごとに別々に再構成しています。時間的にどう交互したかは記録していません。</sys:String>
 </ResourceDictionary>

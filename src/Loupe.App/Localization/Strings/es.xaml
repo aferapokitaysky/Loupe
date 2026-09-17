@@ -183,4 +183,25 @@
     <sys:String x:Key="Proxy_SearchBodies_Tip">Buscar también dentro de los cuerpos de solicitudes y respuestas</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly">Errores</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly_Tip">Mostrar solo 4xx, 5xx y las solicitudes fallidas</sys:String>
+    <sys:String x:Key="Pkt_Follow">Seguir el flujo TCP</sys:String>
+    <sys:String x:Key="Pkt_CopyRow">Copiar la fila</sys:String>
+    <sys:String x:Key="Pkt_CopyAddress">Copiar {0}</sys:String>
+    <sys:String x:Key="Pkt_CopyHex">Copiar el volcado hex</sys:String>
+    <sys:String x:Key="Pkt_Presets">Predefinidos</sys:String>
+    <sys:String x:Key="Pkt_Presets_Tip">Filtros de captura listos para usar</sys:String>
+    <sys:String x:Key="Preset_All">Todo el tráfico</sys:String>
+    <sys:String x:Key="Preset_Web">Web (HTTP/HTTPS/QUIC)</sys:String>
+    <sys:String x:Key="Preset_Tls">HTTPS (TLS)</sys:String>
+    <sys:String x:Key="Preset_Quic">QUIC / HTTP3</sys:String>
+    <sys:String x:Key="Preset_Http">HTTP (sin cifrar)</sys:String>
+    <sys:String x:Key="Preset_Dns">DNS</sys:String>
+    <sys:String x:Key="Preset_NoNoise">Sin ARP ni difusión</sys:String>
+    <sys:String x:Key="Follow_Bytes">{0} bytes</sys:String>
+    <sys:String x:Key="Follow_Empty">Nada reensamblado en este sentido</sys:String>
+    <sys:String x:Key="Follow_Hex">Hex</sys:String>
+    <sys:String x:Key="Follow_Hex_Tip">Mostrar los bytes como volcado hex</sys:String>
+    <sys:String x:Key="Follow_Refresh">Releer el flujo</sys:String>
+    <sys:String x:Key="Follow_Copy">Copiar</sys:String>
+    <sys:String x:Key="Follow_Save">Guardar…</sys:String>
+    <sys:String x:Key="Follow_Note">Cada sentido se reensambla por separado: cómo se alternaron en el tiempo no queda registrado.</sys:String>
 </ResourceDictionary>

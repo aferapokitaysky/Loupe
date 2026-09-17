@@ -183,4 +183,25 @@
     <sys:String x:Key="Proxy_SearchBodies_Tip">Szukaj także w treściach żądań i odpowiedzi</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly">Błędy</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly_Tip">Pokaż tylko 4xx, 5xx i nieudane żądania</sys:String>
+    <sys:String x:Key="Pkt_Follow">Śledź strumień TCP</sys:String>
+    <sys:String x:Key="Pkt_CopyRow">Kopiuj wiersz</sys:String>
+    <sys:String x:Key="Pkt_CopyAddress">Kopiuj {0}</sys:String>
+    <sys:String x:Key="Pkt_CopyHex">Kopiuj zrzut szesnastkowy</sys:String>
+    <sys:String x:Key="Pkt_Presets">Gotowe filtry</sys:String>
+    <sys:String x:Key="Pkt_Presets_Tip">Gotowe filtry przechwytywania</sys:String>
+    <sys:String x:Key="Preset_All">Cały ruch</sys:String>
+    <sys:String x:Key="Preset_Web">Sieć (HTTP/HTTPS/QUIC)</sys:String>
+    <sys:String x:Key="Preset_Tls">HTTPS (TLS)</sys:String>
+    <sys:String x:Key="Preset_Quic">QUIC / HTTP3</sys:String>
+    <sys:String x:Key="Preset_Http">HTTP (bez szyfrowania)</sys:String>
+    <sys:String x:Key="Preset_Dns">DNS</sys:String>
+    <sys:String x:Key="Preset_NoNoise">Bez ARP i rozgłoszeń</sys:String>
+    <sys:String x:Key="Follow_Bytes">{0} bajtów</sys:String>
+    <sys:String x:Key="Follow_Empty">W tę stronę nic nie złożono</sys:String>
+    <sys:String x:Key="Follow_Hex">Hex</sys:String>
+    <sys:String x:Key="Follow_Hex_Tip">Pokaż bajty jako zrzut szesnastkowy</sys:String>
+    <sys:String x:Key="Follow_Refresh">Odczytaj strumień ponownie</sys:String>
+    <sys:String x:Key="Follow_Copy">Kopiuj</sys:String>
+    <sys:String x:Key="Follow_Save">Zapisz…</sys:String>
+    <sys:String x:Key="Follow_Note">Każdy kierunek składany jest osobno; ich przeplot w czasie nie jest zapisywany.</sys:String>
 </ResourceDictionary>

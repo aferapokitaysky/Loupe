@@ -33,6 +33,11 @@ public partial class MainWindow : FluentWindow
 
         LanguageList.SelectedItem = LocalizationService.CurrentLanguage;
         ShowCurrentFlag();
+
+        // Loaded, not here: reading starts a background task that reports through the view
+        // model, and there is nothing to report into until the window is actually up.
+        if (App.StartupCapturePath is { } capture)
+            Loaded += (_, _) => PacketsPage.ViewModel.LoadCaptureFile(capture);
     }
 
     /// <summary>

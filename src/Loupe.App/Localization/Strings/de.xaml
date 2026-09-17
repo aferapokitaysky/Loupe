@@ -183,4 +183,25 @@
     <sys:String x:Key="Proxy_SearchBodies_Tip">Auch in Anfrage- und Antwortinhalten suchen</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly">Fehler</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly_Tip">Nur 4xx, 5xx und fehlgeschlagene Anfragen zeigen</sys:String>
+    <sys:String x:Key="Pkt_Follow">TCP-Stream verfolgen</sys:String>
+    <sys:String x:Key="Pkt_CopyRow">Zeile kopieren</sys:String>
+    <sys:String x:Key="Pkt_CopyAddress">{0} kopieren</sys:String>
+    <sys:String x:Key="Pkt_CopyHex">Hex-Dump kopieren</sys:String>
+    <sys:String x:Key="Pkt_Presets">Vorlagen</sys:String>
+    <sys:String x:Key="Pkt_Presets_Tip">Fertige Aufzeichnungsfilter</sys:String>
+    <sys:String x:Key="Preset_All">Gesamter Verkehr</sys:String>
+    <sys:String x:Key="Preset_Web">Web (HTTP/HTTPS/QUIC)</sys:String>
+    <sys:String x:Key="Preset_Tls">HTTPS (TLS)</sys:String>
+    <sys:String x:Key="Preset_Quic">QUIC / HTTP3</sys:String>
+    <sys:String x:Key="Preset_Http">HTTP (unverschlüsselt)</sys:String>
+    <sys:String x:Key="Preset_Dns">DNS</sys:String>
+    <sys:String x:Key="Preset_NoNoise">Ohne ARP und Broadcast</sys:String>
+    <sys:String x:Key="Follow_Bytes">{0} Bytes</sys:String>
+    <sys:String x:Key="Follow_Empty">In dieser Richtung nichts zusammengesetzt</sys:String>
+    <sys:String x:Key="Follow_Hex">Hex</sys:String>
+    <sys:String x:Key="Follow_Hex_Tip">Bytes als Hex-Dump zeigen</sys:String>
+    <sys:String x:Key="Follow_Refresh">Stream neu einlesen</sys:String>
+    <sys:String x:Key="Follow_Copy">Kopieren</sys:String>
+    <sys:String x:Key="Follow_Save">Speichern…</sys:String>
+    <sys:String x:Key="Follow_Note">Jede Richtung wird für sich zusammengesetzt; wie sie sich zeitlich abwechselten, ist nicht festgehalten.</sys:String>
 </ResourceDictionary>

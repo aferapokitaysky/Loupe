@@ -183,4 +183,25 @@
     <sys:String x:Key="Proxy_SearchBodies_Tip">同时搜索请求和响应的正文</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly">错误</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly_Tip">只显示 4xx、5xx 和失败的请求</sys:String>
+    <sys:String x:Key="Pkt_Follow">追踪 TCP 流</sys:String>
+    <sys:String x:Key="Pkt_CopyRow">复制该行</sys:String>
+    <sys:String x:Key="Pkt_CopyAddress">复制 {0}</sys:String>
+    <sys:String x:Key="Pkt_CopyHex">复制十六进制转储</sys:String>
+    <sys:String x:Key="Pkt_Presets">预设</sys:String>
+    <sys:String x:Key="Pkt_Presets_Tip">现成的抓包过滤器</sys:String>
+    <sys:String x:Key="Preset_All">全部流量</sys:String>
+    <sys:String x:Key="Preset_Web">网页 (HTTP/HTTPS/QUIC)</sys:String>
+    <sys:String x:Key="Preset_Tls">HTTPS (TLS)</sys:String>
+    <sys:String x:Key="Preset_Quic">QUIC / HTTP3</sys:String>
+    <sys:String x:Key="Preset_Http">HTTP（明文）</sys:String>
+    <sys:String x:Key="Preset_Dns">DNS</sys:String>
+    <sys:String x:Key="Preset_NoNoise">排除 ARP 与广播</sys:String>
+    <sys:String x:Key="Follow_Bytes">{0} 字节</sys:String>
+    <sys:String x:Key="Follow_Empty">该方向没有可重组的数据</sys:String>
+    <sys:String x:Key="Follow_Hex">十六进制</sys:String>
+    <sys:String x:Key="Follow_Hex_Tip">以十六进制显示字节</sys:String>
+    <sys:String x:Key="Follow_Refresh">重新读取该流</sys:String>
+    <sys:String x:Key="Follow_Copy">复制</sys:String>
+    <sys:String x:Key="Follow_Save">保存…</sys:String>
+    <sys:String x:Key="Follow_Note">两个方向各自重组；它们在时间上如何交替并未记录。</sys:String>
 </ResourceDictionary>

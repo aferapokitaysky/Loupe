@@ -183,4 +183,25 @@
     <sys:String x:Key="Proxy_SearchBodies_Tip">Chercher aussi dans les corps des requêtes et des réponses</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly">Erreurs</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly_Tip">N'afficher que les 4xx, 5xx et les requêtes en échec</sys:String>
+    <sys:String x:Key="Pkt_Follow">Suivre le flux TCP</sys:String>
+    <sys:String x:Key="Pkt_CopyRow">Copier la ligne</sys:String>
+    <sys:String x:Key="Pkt_CopyAddress">Copier {0}</sys:String>
+    <sys:String x:Key="Pkt_CopyHex">Copier le dump hexa</sys:String>
+    <sys:String x:Key="Pkt_Presets">Préréglages</sys:String>
+    <sys:String x:Key="Pkt_Presets_Tip">Filtres de capture prêts à l'emploi</sys:String>
+    <sys:String x:Key="Preset_All">Tout le trafic</sys:String>
+    <sys:String x:Key="Preset_Web">Web (HTTP/HTTPS/QUIC)</sys:String>
+    <sys:String x:Key="Preset_Tls">HTTPS (TLS)</sys:String>
+    <sys:String x:Key="Preset_Quic">QUIC / HTTP3</sys:String>
+    <sys:String x:Key="Preset_Http">HTTP (en clair)</sys:String>
+    <sys:String x:Key="Preset_Dns">DNS</sys:String>
+    <sys:String x:Key="Preset_NoNoise">Sans ARP ni diffusion</sys:String>
+    <sys:String x:Key="Follow_Bytes">{0} octets</sys:String>
+    <sys:String x:Key="Follow_Empty">Rien de réassemblé dans ce sens</sys:String>
+    <sys:String x:Key="Follow_Hex">Hexa</sys:String>
+    <sys:String x:Key="Follow_Hex_Tip">Afficher les octets en hexadécimal</sys:String>
+    <sys:String x:Key="Follow_Refresh">Relire le flux</sys:String>
+    <sys:String x:Key="Follow_Copy">Copier</sys:String>
+    <sys:String x:Key="Follow_Save">Enregistrer…</sys:String>
+    <sys:String x:Key="Follow_Note">Chaque sens est réassemblé séparément : leur alternance dans le temps n'est pas conservée.</sys:String>
 </ResourceDictionary>

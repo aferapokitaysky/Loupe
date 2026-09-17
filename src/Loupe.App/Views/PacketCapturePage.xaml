@@ -100,6 +100,15 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- The same filters everyone ends up typing, spelled out once. Picking one
+                         fills the box beside it, so the syntax stays visible instead of hidden
+                         behind a menu. -->
+                    <ComboBox MinWidth="126" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="11.5"
+                              ItemsSource="{Binding FilterPresets}" SelectedItem="{Binding SelectedFilterPreset}"
+                              DisplayMemberPath="Label"
+                              ToolTip="{DynamicResource Pkt_Presets_Tip}"
+                              AutomationProperties.Name="{DynamicResource Pkt_Presets}" />
+
                     <!-- Capture filter: applied by the driver before a packet is ever copied,
                          which is why it sits up here and not with the display search. -->
                     <ui:TextBox MinWidth="170" MaxWidth="230" VerticalAlignment="Center" Margin="0,0,8,0"

@@ -183,4 +183,25 @@
     <sys:String x:Key="Proxy_SearchBodies_Tip">Cerca anche nei corpi di richieste e risposte</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly">Errori</sys:String>
     <sys:String x:Key="Proxy_ErrorsOnly_Tip">Mostra solo 4xx, 5xx e richieste non riuscite</sys:String>
+    <sys:String x:Key="Pkt_Follow">Segui il flusso TCP</sys:String>
+    <sys:String x:Key="Pkt_CopyRow">Copia la riga</sys:String>
+    <sys:String x:Key="Pkt_CopyAddress">Copia {0}</sys:String>
+    <sys:String x:Key="Pkt_CopyHex">Copia il dump esadecimale</sys:String>
+    <sys:String x:Key="Pkt_Presets">Preimpostati</sys:String>
+    <sys:String x:Key="Pkt_Presets_Tip">Filtri di cattura pronti</sys:String>
+    <sys:String x:Key="Preset_All">Tutto il traffico</sys:String>
+    <sys:String x:Key="Preset_Web">Web (HTTP/HTTPS/QUIC)</sys:String>
+    <sys:String x:Key="Preset_Tls">HTTPS (TLS)</sys:String>
+    <sys:String x:Key="Preset_Quic">QUIC / HTTP3</sys:String>
+    <sys:String x:Key="Preset_Http">HTTP (in chiaro)</sys:String>
+    <sys:String x:Key="Preset_Dns">DNS</sys:String>
+    <sys:String x:Key="Preset_NoNoise">Senza ARP né broadcast</sys:String>
+    <sys:String x:Key="Follow_Bytes">{0} byte</sys:String>
+    <sys:String x:Key="Follow_Empty">Niente ricomposto in questa direzione</sys:String>
+    <sys:String x:Key="Follow_Hex">Esa</sys:String>
+    <sys:String x:Key="Follow_Hex_Tip">Mostra i byte come dump esadecimale</sys:String>
+    <sys:String x:Key="Follow_Refresh">Rileggi il flusso</sys:String>
+    <sys:String x:Key="Follow_Copy">Copia</sys:String>
+    <sys:String x:Key="Follow_Save">Salva…</sys:String>
+    <sys:String x:Key="Follow_Note">Ogni direzione è ricomposta per conto suo: come si siano alternate nel tempo non è registrato.</sys:String>
 </ResourceDictionary>
