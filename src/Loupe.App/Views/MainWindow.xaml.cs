@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Input;
@@ -13,8 +13,10 @@ public partial class MainWindow : FluentWindow
     public MainWindow()
     {
         InitializeComponent();
+        RestorePlacement();
         Closed += (_, _) =>
         {
+            SavePlacement();
             PacketsPage.ViewModel.Dispose();
             ProxyPageControl.ViewModel.Dispose();
         };
@@ -39,6 +41,55 @@ public partial class MainWindow : FluentWindow
         if (App.StartupCapturePath is { } capture)
             Loaded += (_, _) => PacketsPage.ViewModel.LoadCaptureFile(capture);
     }
+
+
+    /// <summary>
+    /// Puts the window back where it was left. Checked against the current screens first: a
+    /// position saved on a monitor that is no longer attached would open the window off-screen,
+    /// where it cannot be dragged back.
+    /// </summary>
+    private void RestorePlacement()
+    {
+        var saved = Services.AppSettings.Current;
+        if (double.IsNaN(saved.WindowWidth) || double.IsNaN(saved.WindowHeight)) return;
+
+        double virtualLeft = SystemParameters.VirtualScreenLeft;
+        double virtualTop = SystemParameters.VirtualScreenTop;
+        double virtualRight = virtualLeft + SystemParameters.VirtualScreenWidth;
+        double virtualBottom = virtualTop + SystemParameters.VirtualScreenHeight;
+
+        Width = Math.Clamp(saved.WindowWidth, MinWidth, SystemParameters.VirtualScreenWidth);
+        Height = Math.Clamp(saved.WindowHeight, MinHeight, SystemParameters.VirtualScreenHeight);
+
+        // At least a title bar's worth has to stay on a screen for the window to be usable.
+        bool onScreen = !double.IsNaN(saved.WindowLeft) && !double.IsNaN(saved.WindowTop)
+                        && saved.WindowLeft + 120 < virtualRight && saved.WindowLeft + Width - 120 > virtualLeft
+                        && saved.WindowTop + 60 < virtualBottom && saved.WindowTop >= virtualTop - 8;
+
+        if (onScreen)
+        {
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Left = saved.WindowLeft;
+            Top = saved.WindowTop;
+        }
+
+        if (saved.WindowMaximized) WindowState = WindowState.Maximized;
+    }
+
+    private void SavePlacement() => Services.AppSettings.Update(settings =>
+    {
+        // RestoreBounds, not Left/Width: while maximized those describe the maximized frame,
+        // and restoring from them would leave the window unable to become small again.
+        var bounds = WindowState == WindowState.Normal
+            ? new Rect(Left, Top, Width, Height)
+            : RestoreBounds;
+
+        settings.WindowLeft = bounds.Left;
+        settings.WindowTop = bounds.Top;
+        settings.WindowWidth = bounds.Width;
+        settings.WindowHeight = bounds.Height;
+        settings.WindowMaximized = WindowState == WindowState.Maximized;
+    });
 
     /// <summary>
     /// Shortcuts that act on whichever page is in front, so the same key does the obvious thing
@@ -68,8 +119,20 @@ public partial class MainWindow : FluentWindow
                 e.Handled = true;
                 break;
 
+            // Repeat the selected request, the shortcut you want while watching one endpoint fail.
+            case Key.R when control:
+                if (ProxyPageControl.Visibility == Visibility.Visible)
+                    ProxyPageControl.ViewModel.ReplayCommand.Execute(ProxyPageControl.ViewModel.SelectedExchange);
+                e.Handled = true;
+                break;
+
             case Key.F5:
                 if (SessionsPageControl.Visibility == Visibility.Visible) SessionsPageControl.ViewModel.Refresh();
+                e.Handled = true;
+                break;
+
+            case Key.F1:
+                SettingsNavButton.IsChecked = true;
                 e.Handled = true;
                 break;
         }
@@ -99,6 +162,14 @@ public partial class MainWindow : FluentWindow
 
     private void OnProxyNavChecked(object sender, RoutedEventArgs e) => ShowPage(ProxyPageControl);
 
+    private void OnSettingsNavChecked(object sender, RoutedEventArgs e)
+    {
+        // What is on disk can change while the app runs (sessions saved, icons cached), so the
+        // page recounts on the way in rather than showing a figure from startup.
+        SettingsPageControl?.ViewModel.RefreshUsageCommand.Execute(null);
+        ShowPage(SettingsPageControl);
+    }
+
     private void OnSessionsNavChecked(object sender, RoutedEventArgs e)
     {
         // Sessions are files on disk that the other pages write; re-read them on the way in
@@ -111,7 +182,8 @@ public partial class MainWindow : FluentWindow
     private void ShowPage(FrameworkElement? target)
     {
         // Checked fires while XAML is still being parsed, before the later siblings exist.
-        if (PacketsPage is null || ProxyPageControl is null || SessionsPageControl is null || target is null) return;
+        if (PacketsPage is null || ProxyPageControl is null || SessionsPageControl is null
+            || SettingsPageControl is null || target is null) return;
 
         if (target.Visibility == Visibility.Visible && target.Opacity > 0.99)
             return; // already showing - don't replay the animation, e.g. on startup
@@ -121,7 +193,7 @@ public partial class MainWindow : FluentWindow
         target.Visibility = Visibility.Visible;
         target.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(180)) { EasingFunction = easeOut });
 
-        foreach (var page in new FrameworkElement[] { PacketsPage, ProxyPageControl, SessionsPageControl })
+        foreach (var page in new FrameworkElement[] { PacketsPage, ProxyPageControl, SessionsPageControl, SettingsPageControl })
         {
             if (ReferenceEquals(page, target) || page.Visibility != Visibility.Visible) continue;
 

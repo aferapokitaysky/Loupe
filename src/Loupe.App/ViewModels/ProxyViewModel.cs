@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows.Threading;
@@ -58,7 +58,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsPortValid))]
     [NotifyCanExecuteChangedFor(nameof(StartProxyCommand))]
-    private string _portText = "8080";
+    private string _portText = AppSettings.Current.ProxyPort.ToString();
 
     /// <summary>The parsed port, or 0 when the box doesn't hold a usable one.</summary>
     public int Port => int.TryParse(PortText, out int port) && port is > 0 and <= 65535 ? port : 0;
@@ -73,14 +73,14 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(TransparentPort))]
     [NotifyCanExecuteChangedFor(nameof(StartProxyCommand))]
-    private string _transparentPortText = "8443";
+    private string _transparentPortText = AppSettings.Current.TransparentPort.ToString();
 
     public int TransparentPort =>
         int.TryParse(TransparentPortText, out int port) && port is > 0 and <= 65535 ? port : 0;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(StartProxyCommand))]
-    private bool _transparentEnabled;
+    private bool _transparentEnabled = AppSettings.Current.TransparentProxy;
     [ObservableProperty] private bool _isRunning;
     [ObservableProperty] private string _statusMessage = "";
     [ObservableProperty] private HttpExchangeRowViewModel? _selectedExchange;
@@ -370,6 +370,15 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             server.Start();
             _server = server;
             IsRunning = true;
+
+            // Saved once they are known to work, not on every keystroke: a port that failed to
+            // bind is not the one to greet the next launch with.
+            AppSettings.Update(settings =>
+            {
+                settings.ProxyPort = Port;
+                settings.TransparentProxy = TransparentEnabled;
+                if (TransparentEnabled) settings.TransparentPort = TransparentPort;
+            });
             StatusMessage = TransparentEnabled
                 ? Loc.Format("Proxy_Status_ListeningTransparent", Port, TransparentPort)
                 : Loc.Format("Proxy_Status_Listening", Port);

@@ -27,9 +27,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>
     /// How many rows the grid keeps. Every row pins the packet's raw bytes, so this is really a
     /// memory setting: at ~1 KB a frame, 50k rows is around 50 MB. The old 250k quietly grew to
-    /// a third of a gigabyte on a busy link.
+    /// a third of a gigabyte on a busy link. Adjustable in settings, within sane bounds.
     /// </summary>
-    private const int MaxDisplayedPackets = 50_000;
+    private static int MaxDisplayedPackets => Math.Clamp(AppSettings.Current.MaxPackets, 5_000, 500_000);
 
     /// <summary>
     /// Ceiling on packets waiting to be parsed. A gigabit link can out-run any UI; without a
@@ -80,11 +80,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private CaptureDeviceInfo? _selectedAdapter;
     [ObservableProperty] private string _filterText = "";
     [ObservableProperty] private bool _isCapturing;
-    [ObservableProperty] private bool _autoScroll = true;
+    [ObservableProperty] private bool _autoScroll = AppSettings.Current.AutoScroll;
+
+    partial void OnAutoScrollChanged(bool value) => AppSettings.Update(s => s.AutoScroll = value);
 
     /// <summary>Fold runs of identical packets into one counted row. On by default: a bulk
     /// transfer is otherwise hundreds of lines that differ only in sequence number.</summary>
-    [ObservableProperty] private bool _collapseRepeats = true;
+    [ObservableProperty] private bool _collapseRepeats = AppSettings.Current.CollapseRepeats;
+
+    partial void OnCollapseRepeatsChanged(bool value) => AppSettings.Update(s => s.CollapseRepeats = value);
 
     /// <summary>Row highlighted in the hosts panel. Highlighting alone filters nothing - the
     /// tick boxes do that, so several hosts can be watched at once.</summary>
@@ -187,6 +191,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // installer shows its own wizard and Windows shows its own elevation prompt).
         if (!IsCaptureEngineAvailable)
             _ = EnsureNpcapAsync();
+        else if (AppSettings.Current.StartCaptureOnLaunch && SelectedAdapter is not null)
+            StartCapture();
     }
 
     [RelayCommand]
@@ -197,7 +203,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             // Clearing the collection makes the bound ComboBox null out SelectedAdapter, so
             // remember the user's pick by name and restore it instead of silently jumping
             // back to the default on every refresh.
-            string? previouslySelected = SelectedAdapter?.Name;
+            string? previouslySelected = SelectedAdapter?.Name ?? AppSettings.Current.LastAdapter;
 
             Adapters.Clear();
             foreach (var device in CaptureDeviceManager.ListDevices())
@@ -265,6 +271,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             NpcapBusy = false;
         }
+    }
+
+    partial void OnSelectedAdapterChanged(CaptureDeviceInfo? value)
+    {
+        if (value is not null) AppSettings.Update(s => s.LastAdapter = value.Name);
+        StartCaptureCommand.NotifyCanExecuteChanged();
     }
 
     private bool CanStart() => !IsCapturing && SelectedAdapter is not null;
