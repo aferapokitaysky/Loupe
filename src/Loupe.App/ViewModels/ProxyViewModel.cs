@@ -81,7 +81,9 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(StartProxyCommand))]
     private bool _transparentEnabled = AppSettings.Current.TransparentProxy;
-    [ObservableProperty] private bool _isRunning;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ToggleSystemProxyCommand))]
+    private bool _isRunning;
     [ObservableProperty] private string _statusMessage = "";
     [ObservableProperty] private HttpExchangeRowViewModel? _selectedExchange;
     /// <summary>Domain highlighted in the sidebar. The tick boxes do the filtering, so more than
@@ -319,7 +321,10 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     }
 
     [ObservableProperty] private bool _isCaInstalled;
-    [ObservableProperty] private bool _isSystemProxyEnabled;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ToggleSystemProxyCommand))]
+    private bool _isSystemProxyEnabled;
 
     public string CaThumbprint => _ca.Thumbprint;
 
@@ -664,8 +669,14 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     /// <summary>
     /// One switch for the system proxy rather than two buttons: it is a single piece of state
     /// with two directions, and a toolbar that shows both at once has to explain which applies.
+    ///
+    /// Turning it on needs the proxy to be listening. Pointing Windows at a port with nothing
+    /// behind it takes the whole machine offline, and the person it happens to has no reason to
+    /// connect that to a button in a packet tool.
     /// </summary>
-    [RelayCommand]
+    private bool CanToggleSystemProxy() => IsRunning || IsSystemProxyEnabled;
+
+    [RelayCommand(CanExecute = nameof(CanToggleSystemProxy))]
     private void ToggleSystemProxy()
     {
         if (IsSystemProxyEnabled) DisableSystemProxy();
