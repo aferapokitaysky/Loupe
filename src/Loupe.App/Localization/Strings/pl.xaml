@@ -257,4 +257,5 @@
     <sys:String x:Key="Set_Ca_RegenerateConfirm">Certyfikat główny zostanie zastąpiony nowym, a stare usunięte z magazynu zaufania. To, co teraz jest odszyfrowywane starym, przestanie działać do czasu ponownego uruchomienia przeglądarek. Windows osobno zapyta o zaufanie nowemu. Kontynuować?</sys:String>
     <sys:String x:Key="Set_Ca_Regenerated">Utworzono nowy certyfikat; usunięto starych certyfikatów głównych: {0}</sys:String>
     <sys:String x:Key="Set_Ca_LegacyName">Ten certyfikat powstał przed zmianą nazwy aplikacji, więc w oknach certyfikatów wciąż przedstawia się jako NetSniffer. Utworzenie nowego naprawia nazwę.</sys:String>
+    <sys:String x:Key="Set_Ca_Unrestricted">Ten certyfikat powstał, zanim Loupe zaczął ograniczać przeznaczenie swojego certyfikatu głównego. Po zainstalowaniu jest zaufany do wszystkich możliwych zastosowań - łącznie z podpisywaniem programów - a nie tylko do serwerów TLS. Utworzenie nowego to naprawia.</sys:String>
 </ResourceDictionary>

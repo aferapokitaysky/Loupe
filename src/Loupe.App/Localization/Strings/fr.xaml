@@ -257,4 +257,5 @@
     <sys:String x:Key="Set_Ca_RegenerateConfirm">Le certificat racine est remplacé par un nouveau et les anciens sont retirés de votre magasin de confiance. Ce qui se déchiffre avec l'ancien s'arrêtera jusqu'au redémarrage des navigateurs. Windows demandera avant de faire confiance au nouveau. Continuer ?</sys:String>
     <sys:String x:Key="Set_Ca_Regenerated">Nouveau certificat créé ; anciennes racines retirées : {0}</sys:String>
     <sys:String x:Key="Set_Ca_LegacyName">Ce certificat date d'avant le changement de nom de l'application : il se présente encore comme NetSniffer dans toutes les boîtes de dialogue. En créer un nouveau corrige le nom.</sys:String>
+    <sys:String x:Key="Set_Ca_Unrestricted">Ce certificat a été créé avant que Loupe ne limite l'usage de sa racine. Une fois installé, il est reconnu pour tous les usages possibles - y compris la signature de programmes - et pas seulement pour les serveurs TLS. En créer un nouveau corrige cela.</sys:String>
 </ResourceDictionary>

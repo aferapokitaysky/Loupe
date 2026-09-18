@@ -257,4 +257,5 @@
     <sys:String x:Key="Set_Ca_RegenerateConfirm">Das Stammzertifikat wird durch ein neues ersetzt und die alten aus Ihrem Vertrauensspeicher entfernt. Was gerade über das alte entschlüsselt wird, hört auf, bis Browser neu gestartet sind. Windows fragt vor dem Vertrauen in das neue. Fortfahren?</sys:String>
     <sys:String x:Key="Set_Ca_Regenerated">Neues Zertifikat erstellt; entfernte alte Stammzertifikate: {0}</sys:String>
     <sys:String x:Key="Set_Ca_LegacyName">Dieses Zertifikat stammt aus der Zeit vor der Umbenennung und stellt sich in jedem Zertifikatsdialog weiterhin als NetSniffer vor. Ein neues Zertifikat behebt den Namen.</sys:String>
+    <sys:String x:Key="Set_Ca_Unrestricted">Dieses Zertifikat entstand, bevor Loupe den Verwendungszweck seines Stammzertifikats einschränkte. Installiert wird ihm für jeden möglichen Zweck vertraut - auch zum Signieren von Programmen - statt nur für TLS-Server. Ein neues Zertifikat behebt das.</sys:String>
 </ResourceDictionary>

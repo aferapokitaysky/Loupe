@@ -137,6 +137,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>True while the certificate still carries the name from before the rename.</summary>
     public bool CaHasLegacyName => SafeCa(ca => ca.HasLegacyName ? "yes" : "") == "yes";
 
+    /// <summary>True for a certificate made before the purpose restriction existed.</summary>
+    public bool CaIsUnrestricted => SafeCa(ca => ca.IsUnrestricted ? "yes" : "") == "yes";
+
     /// <summary>
     /// Replaces the root certificate with a fresh one under the current name, and clears out
     /// the roots left behind by earlier ones.
@@ -167,6 +170,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             OnPropertyChanged(nameof(CaThumbprint));
             OnPropertyChanged(nameof(CaName));
             OnPropertyChanged(nameof(CaHasLegacyName));
+            OnPropertyChanged(nameof(CaIsUnrestricted));
             ToastService.Show(Loc.Format("Set_Ca_Regenerated", removed), "ShieldCheckmark24");
         }
         catch (Exception ex) when (ex is System.Security.Cryptography.CryptographicException

@@ -257,4 +257,5 @@
     <sys:String x:Key="Set_Ca_RegenerateConfirm">Isto troca o certificado raiz por um novo e remove os antigos do seu repositório de confiança. O que hoje é descriptografado pelo antigo para de funcionar até reiniciar os navegadores. O Windows vai perguntar antes de confiar no novo. Continuar?</sys:String>
     <sys:String x:Key="Set_Ca_Regenerated">Certificado novo criado; raízes antigas removidas: {0}</sys:String>
     <sys:String x:Key="Set_Ca_LegacyName">Este certificado foi criado antes de o app ser renomeado, então ainda se apresenta como NetSniffer nas caixas de diálogo. Criar um novo corrige o nome.</sys:String>
+    <sys:String x:Key="Set_Ca_Unrestricted">Este certificado foi criado antes de o Loupe limitar para que serve a sua raiz. Instalado, ele é confiável para todos os usos possíveis - inclusive assinar programas - e não só para servidores TLS. Criar um novo corrige isso.</sys:String>
 </ResourceDictionary>
