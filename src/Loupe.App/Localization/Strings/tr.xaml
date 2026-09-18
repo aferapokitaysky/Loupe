@@ -257,4 +257,5 @@
     <sys:String x:Key="Set_Ca_RegenerateConfirm">Bu, kök sertifikayı yenisiyle değiştirir ve eskileri güven deponuzdan kaldırır. Şu anda eski sertifikayla çözülen her şey, tarayıcılar yeniden başlatılana kadar durur. Windows yenisine güvenmeden önce ayrıca soracak. Devam edilsin mi?</sys:String>
     <sys:String x:Key="Set_Ca_Regenerated">Yeni sertifika oluşturuldu; kaldırılan eski kök sayısı: {0}</sys:String>
     <sys:String x:Key="Set_Ca_LegacyName">Bu sertifika uygulama yeniden adlandırılmadan önce oluşturuldu, bu yüzden sertifika pencerelerinde hâlâ kendini NetSniffer olarak tanıtıyor. Yenisini oluşturmak adı düzeltir.</sys:String>
+    <sys:String x:Key="Set_Ca_Unrestricted">Bu sertifika, Loupe kök sertifikasının kullanım amacını sınırlamaya başlamadan önce oluşturuldu. Kurulduğunda yalnızca TLS sunucuları için değil, program imzalama dahil her amaç için güvenilir sayılır. Yenisini oluşturmak bunu düzeltir.</sys:String>
 </ResourceDictionary>

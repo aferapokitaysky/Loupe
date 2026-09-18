@@ -20,6 +20,9 @@ public sealed class RootCertificateAuthority
 {
     private const string SubjectName = "CN=Loupe Local CA, O=Loupe (generated on this machine), OU=Do not trust outside Loupe";
 
+    /// <summary>id-kp-serverAuth: "this certificate may vouch for a TLS server".</summary>
+    private const string ServerAuthenticationOid = "1.3.6.1.5.5.7.3.1";
+
     private readonly string _pfxPath;
     private readonly string _protectedPasswordPath;
     private readonly object _lock = new();
@@ -92,6 +95,17 @@ public sealed class RootCertificateAuthority
     /// is supposed to be suspicious of.
     /// </summary>
     public bool HasLegacyName => Certificate.Subject.Contains("NetSniffer", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// True for a CA made before the purpose restriction existed: trusted, once installed, for
+    /// every use a certificate can have rather than for TLS servers alone. Worth replacing, and
+    /// worth saying so out loud rather than quietly regenerating behind the user - replacing it
+    /// invalidates the root they installed.
+    /// </summary>
+    public bool IsUnrestricted =>
+        !Certificate.Extensions
+            .OfType<X509EnhancedKeyUsageExtension>()
+            .Any(eku => eku.EnhancedKeyUsages.Cast<Oid>().Any(oid => oid.Value == ServerAuthenticationOid));
 
     /// <summary>
     /// Throws the current CA away and makes a new one under the current name.
@@ -188,8 +202,21 @@ public sealed class RootCertificateAuthority
 
         request.CertificateExtensions.Add(
             new X509BasicConstraintsExtension(certificateAuthority: true, hasPathLengthConstraint: true, pathLengthConstraint: 0, critical: true));
+
+        // Signing certificates and their revocation lists, and nothing else. A CA does not need
+        // to sign anything itself.
         request.CertificateExtensions.Add(
-            new X509KeyUsageExtension(X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign | X509KeyUsageFlags.DigitalSignature, critical: true));
+            new X509KeyUsageExtension(X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign, critical: true));
+
+        // Server authentication only - the single most important line in this file.
+        //
+        // A root in the trust store with no purpose named on it is trusted for every purpose
+        // there is: signing code Windows will run without a warning, signing e-mail, everything.
+        // This one may vouch for TLS servers and nothing else, so even if its key were taken off
+        // this machine, it could not be used to make Windows trust a program.
+        request.CertificateExtensions.Add(
+            new X509EnhancedKeyUsageExtension([new Oid(ServerAuthenticationOid)], critical: false));
+
         request.CertificateExtensions.Add(
             new X509SubjectKeyIdentifierExtension(request.PublicKey, critical: false));
 

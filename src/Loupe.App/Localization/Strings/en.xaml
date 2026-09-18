@@ -259,4 +259,5 @@
     <sys:String x:Key="Set_Ca_RegenerateConfirm">This replaces the root certificate with a new one and removes the old ones from your trust store. Anything currently decrypting through the old certificate stops until browsers are restarted. Windows will ask before trusting the new one. Continue?</sys:String>
     <sys:String x:Key="Set_Ca_Regenerated">New certificate created; {0} old root(s) removed</sys:String>
     <sys:String x:Key="Set_Ca_LegacyName">This certificate was created before the app was renamed, so it still introduces itself as NetSniffer in every certificate dialog. Creating a new one fixes the name.</sys:String>
+    <sys:String x:Key="Set_Ca_Unrestricted">This certificate was created before Loupe limited what its root may be used for. Once installed, it is trusted for every purpose a certificate can have - including signing programs - rather than for TLS servers alone. Creating a new one fixes that.</sys:String>
 </ResourceDictionary>

@@ -1,3 +1,4 @@
+﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Loupe.Proxy.Ca;
 
@@ -28,6 +29,19 @@ public static class CertificateTests
                 .OfType<X509KeyUsageExtension>()
                 .Any(e => e.KeyUsages.HasFlag(X509KeyUsageFlags.KeyCertSign)));
             T.Check("it keeps its private key", ca.Certificate.HasPrivateKey);
+
+            // The single most important property of a root this app asks people to trust: it may
+            // vouch for TLS servers and for nothing else. Without this, a root in the store is
+            // trusted for signing code Windows will run, and for signing mail.
+            var eku = ca.Certificate.Extensions.OfType<X509EnhancedKeyUsageExtension>().FirstOrDefault();
+            T.Check("the CA names a purpose at all", eku is not null);
+            T.Check("the CA is limited to server authentication",
+                eku is not null && eku.EnhancedKeyUsages.Cast<Oid>().All(o => o.Value == "1.3.6.1.5.5.7.3.1"),
+                string.Join(",", eku?.EnhancedKeyUsages.Cast<Oid>().Select(o => o.Value) ?? []));
+            T.Check("a restricted CA is not flagged for replacement", !ca.IsUnrestricted);
+            T.Check("the CA cannot sign anything but certificates and revocation lists",
+                ca.Certificate.Extensions.OfType<X509KeyUsageExtension>()
+                    .All(u => u.KeyUsages == (X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign)));
             T.Check("it is persisted", File.Exists(Path.Combine(dir, "loupe-root.pfx")));
 
             // Reopening the same folder must hand back the same identity: the user installed

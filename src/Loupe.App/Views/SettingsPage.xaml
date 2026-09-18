@@ -123,6 +123,12 @@
                                        Margin="0" Foreground="{StaticResource WarnBrush}" />
                         </Border>
 
+                        <Border Background="{StaticResource SurfaceSunkenBrush}" CornerRadius="8" Padding="12,10" Margin="0,8,0,0"
+                                Visibility="{Binding CaIsUnrestricted, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Text="{DynamicResource Set_Ca_Unrestricted}" Style="{StaticResource SettingsNote}"
+                                       Margin="0" Foreground="{StaticResource WarnBrush}" />
+                        </Border>
+
                         <ui:Button Content="{DynamicResource Set_Ca_Regenerate}" Icon="{ui:SymbolIcon ShieldKeyhole24}"
                                    Style="{StaticResource AppButton}" HorizontalAlignment="Left" Margin="0,12,0,0"
                                    Command="{Binding RegenerateCertificateCommand}" />

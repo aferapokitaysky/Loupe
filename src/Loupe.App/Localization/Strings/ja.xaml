@@ -257,4 +257,5 @@
     <sys:String x:Key="Set_Ca_RegenerateConfirm">ルート証明書を新しいものに置き換え、古いものを信頼ストアから削除します。古い証明書で復号している通信は、ブラウザーを再起動するまで止まります。新しい証明書を信頼するかは Windows が別途確認します。続けますか？</sys:String>
     <sys:String x:Key="Set_Ca_Regenerated">新しい証明書を作成しました。削除した古いルート: {0}</sys:String>
     <sys:String x:Key="Set_Ca_LegacyName">この証明書はアプリの改名前に作られたため、証明書のダイアログではいまも NetSniffer と名乗ります。作り直すと名前が直ります。</sys:String>
+    <sys:String x:Key="Set_Ca_Unrestricted">この証明書は、Loupe がルートの用途を制限するようになる前に作られました。インストールすると、TLS サーバーだけでなく、プログラムの署名を含むあらゆる用途で信頼されてしまいます。作り直すと解消します。</sys:String>
 </ResourceDictionary>
