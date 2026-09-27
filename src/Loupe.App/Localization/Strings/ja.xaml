@@ -4,6 +4,7 @@
 
     <sys:String x:Key="Nav_Packets">パケット</sys:String>
     <sys:String x:Key="Nav_Proxy">HTTP プロキシ</sys:String>
+    <sys:String x:Key="Nav_Browser">ブラウザー</sys:String>
     <sys:String x:Key="Nav_Language">言語</sys:String>
 
     <sys:String x:Key="Pkt_Adapter">アダプター:</sys:String>

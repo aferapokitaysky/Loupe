@@ -4,6 +4,7 @@
 
     <sys:String x:Key="Nav_Packets">Pacchetti</sys:String>
     <sys:String x:Key="Nav_Proxy">Proxy HTTP</sys:String>
+    <sys:String x:Key="Nav_Browser">Browser</sys:String>
     <sys:String x:Key="Nav_Language">Lingua</sys:String>
 
     <sys:String x:Key="Pkt_Adapter">Adattatore:</sys:String>

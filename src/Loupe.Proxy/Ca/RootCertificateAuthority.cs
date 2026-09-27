@@ -27,6 +27,11 @@ public sealed class RootCertificateAuthority
     private readonly string _protectedPasswordPath;
     private readonly object _lock = new();
     private X509Certificate2? _certificate;
+    private long _loadedPfxLength = -1;
+    private DateTime _loadedPfxWriteUtc;
+
+    /// <summary>Raised when the persisted CA changes, including replacement by another Loupe process.</summary>
+    public event EventHandler? CertificateChanged;
 
     public RootCertificateAuthority(string? storageDirectory = null)
     {
@@ -71,9 +76,64 @@ public sealed class RootCertificateAuthority
         {
             lock (_lock)
             {
-                return _certificate ??= LoadOrCreate();
+                if (_certificate is null)
+                {
+                    _certificate = LoadOrCreate();
+                    RememberPfxVersion();
+                }
+
+                return _certificate;
             }
         }
+    }
+
+    /// <summary>
+    /// Reloads a CA replaced while this process was already running. This matters when a user
+    /// regenerates the root from another Loupe instance: the next TLS handshake must use a leaf
+    /// signed by the root that is currently installed in Windows.
+    /// </summary>
+    public bool RefreshIfChanged()
+    {
+        bool changed;
+        lock (_lock)
+        {
+            if (_certificate is null || !HasPfxChanged()) return false;
+
+            try
+            {
+                // Unlike LoadOrCreate, this must never create/overwrite anything on a transient
+                // partial write. A failed read is retried by the next client connection.
+                var refreshed = LoadExisting();
+                changed = !string.Equals(_certificate.Thumbprint, refreshed.Thumbprint, StringComparison.OrdinalIgnoreCase);
+                _certificate = refreshed;
+                RememberPfxVersion();
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException
+                                          or CryptographicException or ArgumentException)
+            {
+                return false;
+            }
+        }
+
+        if (changed) CertificateChanged?.Invoke(this, EventArgs.Empty);
+        return changed;
+    }
+
+    private bool HasPfxChanged()
+    {
+        try
+        {
+            var info = new FileInfo(_pfxPath);
+            return info.Exists && (info.Length != _loadedPfxLength || info.LastWriteTimeUtc != _loadedPfxWriteUtc);
+        }
+        catch (IOException) { return false; }
+    }
+
+    private void RememberPfxVersion()
+    {
+        var info = new FileInfo(_pfxPath);
+        _loadedPfxLength = info.Exists ? info.Length : -1;
+        _loadedPfxWriteUtc = info.Exists ? info.LastWriteTimeUtc : default;
     }
 
     public string Thumbprint => Certificate.Thumbprint;
@@ -127,7 +187,10 @@ public sealed class RootCertificateAuthority
             }
 
             _certificate = CreateAndPersist();
+            RememberPfxVersion();
         }
+
+        CertificateChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void TryUninstall()
@@ -193,6 +256,21 @@ public sealed class RootCertificateAuthority
         }
 
         return CreateAndPersist();
+    }
+
+    private X509Certificate2 LoadExisting()
+    {
+        string password = UnprotectPassword(File.ReadAllBytes(_protectedPasswordPath));
+        var existing = new X509Certificate2(
+            _pfxPath, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
+
+        if (existing.NotAfter <= DateTime.Now.AddDays(1))
+        {
+            existing.Dispose();
+            throw new CryptographicException("The replacement root certificate has expired.");
+        }
+
+        return existing;
     }
 
     private X509Certificate2 CreateAndPersist()
