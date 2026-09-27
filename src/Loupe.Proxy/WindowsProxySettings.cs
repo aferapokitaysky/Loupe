@@ -21,6 +21,22 @@ public static class WindowsProxySettings
     private const int InternetOptionSettingsChanged = 39;
     private const int InternetOptionRefresh = 37;
 
+    /// <summary>
+    /// The user's proxy configuration before Loupe touched it.  A debugging tool must restore
+    /// this exact state, not merely turn proxying off: the user may rely on a corporate proxy
+    /// or a PAC-like local override before opening Loupe.
+    /// </summary>
+    public sealed record Snapshot(bool Enabled, string? ProxyServer, string? ProxyOverride);
+
+    public static Snapshot Capture()
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(InternetSettingsKey);
+        return new Snapshot(
+            (key?.GetValue("ProxyEnable") as int?) == 1,
+            key?.GetValue("ProxyServer") as string,
+            key?.GetValue("ProxyOverride") as string);
+    }
+
     public static bool IsEnabled()
     {
         using var key = Registry.CurrentUser.OpenSubKey(InternetSettingsKey);
@@ -53,6 +69,24 @@ public static class WindowsProxySettings
 
         key.SetValue("ProxyEnable", 0, RegistryValueKind.DWord);
         NotifySystem();
+    }
+
+    /// <summary>Restores the precise state observed by <see cref="Capture"/>.</summary>
+    public static void Restore(Snapshot snapshot)
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(InternetSettingsKey, writable: true)
+            ?? throw new InvalidOperationException("Could not open Internet Settings registry key.");
+
+        key.SetValue("ProxyEnable", snapshot.Enabled ? 1 : 0, RegistryValueKind.DWord);
+        SetOrDelete(key, "ProxyServer", snapshot.ProxyServer);
+        SetOrDelete(key, "ProxyOverride", snapshot.ProxyOverride);
+        NotifySystem();
+    }
+
+    private static void SetOrDelete(RegistryKey key, string name, string? value)
+    {
+        if (value is null) key.DeleteValue(name, throwOnMissingValue: false);
+        else key.SetValue(name, value, RegistryValueKind.String);
     }
 
     private static void NotifySystem()
