@@ -159,7 +159,17 @@ public partial class MainWindow : FluentWindow
 
     private void OnPacketsNavChecked(object sender, RoutedEventArgs e) => ShowPage(PacketsPage);
 
-    private void OnProxyNavChecked(object sender, RoutedEventArgs e) => ShowPage(ProxyPageControl);
+    private void OnProxyNavChecked(object sender, RoutedEventArgs e)
+    {
+        if (ProxyPageControl is not null) ProxyPageControl.ViewModel.BrowserOnly = false;
+        ShowPage(ProxyPageControl);
+    }
+
+    private void OnBrowserNavChecked(object sender, RoutedEventArgs e)
+    {
+        if (ProxyPageControl is not null) ProxyPageControl.ViewModel.ShowBrowserTraffic();
+        ShowPage(ProxyPageControl);
+    }
 
     private void OnSettingsNavChecked(object sender, RoutedEventArgs e)
     {

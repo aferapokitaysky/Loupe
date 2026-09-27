@@ -4,6 +4,7 @@
 
     <sys:String x:Key="Nav_Packets">数据包</sys:String>
     <sys:String x:Key="Nav_Proxy">HTTP 代理</sys:String>
+    <sys:String x:Key="Nav_Browser">浏览器</sys:String>
     <sys:String x:Key="Nav_Language">语言</sys:String>
 
     <sys:String x:Key="Pkt_Adapter">网卡：</sys:String>

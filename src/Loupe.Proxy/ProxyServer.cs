@@ -85,7 +85,11 @@ public sealed class ProxyServer : IDisposable
         _transparentListener = null;
     }
 
-    public void Dispose() => Stop();
+    public void Dispose()
+    {
+        Stop();
+        _leafCertificates.Dispose();
+    }
 
     private async Task AcceptLoopAsync(TcpListener listener, bool explicitProxy, CancellationToken ct)
     {
