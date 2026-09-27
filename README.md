@@ -111,6 +111,12 @@ an answer, and the search reaches into request and response bodies when asked to
 Upstream TLS is verified normally. The client can no longer check the server
 itself, so the proxy doing it is the only thing left.
 
+**Pinned apps stay safe.** A client that pins the origin certificate must reject
+a debugging certificate. Put its host in **TLS without decryption** (for example
+`*.tiktok.com`): Loupe then makes an opaque CONNECT tunnel and preserves the
+site's original TLS certificate and validation. The request keeps working, but
+its URL, headers and body are intentionally not shown as decrypted HTTP.
+
 ## Sessions
 
 <div align="center">

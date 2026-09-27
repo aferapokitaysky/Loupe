@@ -176,6 +176,18 @@
 
                 <TextBlock Text="{DynamicResource Proxy_Banner}" TextWrapping="Wrap" FontSize="11.5" Margin="2,6,0,0"
                            Foreground="{StaticResource TextTertiaryBrush}" />
+
+                <!-- Some clients correctly pin the server certificate.  A bypass is preferable
+                     to asking the user to weaken that check: it keeps the original TLS session
+                     intact and makes the limitation visible instead of looking like a failure. -->
+                <DockPanel Margin="2,10,2,0" LastChildFill="True">
+                    <TextBlock Text="TLS без расшифровки:" VerticalAlignment="Center" Margin="0,0,8,0"
+                               FontSize="11.5" Foreground="{StaticResource TextSecondaryBrush}"
+                               ToolTip="Домены, для которых Loupe оставляет исходный TLS-сертификат. Разделяйте запятыми; *.example.com включает поддомены. Такие запросы работают, но их URL и тело не расшифровываются." />
+                    <ui:TextBox Text="{Binding TlsTunnelHostsText, UpdateSourceTrigger=PropertyChanged}"
+                                FontSize="11.5" MinWidth="220"
+                                ToolTip="Например: *.tiktok.com, bank.example. Для этих доменов будет сохранена исходная проверка TLS." />
+                </DockPanel>
             </StackPanel>
         </Border>
 

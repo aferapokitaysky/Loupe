@@ -284,6 +284,16 @@ public sealed class ProxyServer : IDisposable
         byte[] ok = Encoding.Latin1.GetBytes("HTTP/1.1 200 Connection Established\r\n\r\n");
         await rawClientStream.WriteAsync(ok, ct).ConfigureAwait(false);
 
+        // Certificate-pinned clients are supposed to reject a substitute leaf certificate.
+        // Do not weaken their check: tunnel the original TLS session instead.  The connection
+        // keeps working, but it is deliberately absent from the decoded HTTP request list.
+        if (_options.ShouldTunnelTls?.Invoke(host) == true)
+        {
+            ConnectionError?.Invoke(this, $"{host}: TLS tunnelled without decryption by rule.");
+            await TunnelAsync(rawClientStream, host, port, ct).ConfigureAwait(false);
+            return;
+        }
+
         var leafCertificate = _leafCertificates.GetOrCreate(host);
 
         await using var sslStream = new SslStream(rawClientStream, leaveInnerStreamOpen: false);
@@ -304,6 +314,22 @@ public sealed class ProxyServer : IDisposable
 
         var tlsReader = new HttpLineReader(sslStream);
         await RelayHttpsLoopAsync(tlsReader, sslStream, host, port, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Relays opaque TLS bytes in both directions.  Disposing either stream after the first
+    /// direction ends is intentional: HTTP CONNECT is one bidirectional socket conversation,
+    /// so a closed side means its peer no longer has a useful session either.
+    /// </summary>
+    private static async Task TunnelAsync(Stream clientStream, string host, int port, CancellationToken ct)
+    {
+        using var upstreamClient = new TcpClient();
+        await upstreamClient.ConnectAsync(host, port, ct).ConfigureAwait(false);
+        await using var upstreamStream = upstreamClient.GetStream();
+
+        Task toUpstream = clientStream.CopyToAsync(upstreamStream, 81_920, ct);
+        Task toClient = upstreamStream.CopyToAsync(clientStream, 81_920, ct);
+        await Task.WhenAny(toUpstream, toClient).ConfigureAwait(false);
     }
 
     private async Task RelayHttpsLoopAsync(HttpLineReader clientReader, Stream clientStream, string host, int port, CancellationToken ct)
