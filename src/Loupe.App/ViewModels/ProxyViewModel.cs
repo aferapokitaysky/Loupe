@@ -285,6 +285,20 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         UpdateFilterSummary();
     }
 
+    /// <summary>Opens the dedicated browser view with no stale domain, client, or search filters.</summary>
+    public void ShowBrowserTraffic()
+    {
+        foreach (var domain in Domains.Where(d => d.IsChecked).ToList()) domain.IsChecked = false;
+        foreach (var client in Clients.Where(c => c.IsChecked).ToList()) client.IsChecked = false;
+
+        ResetDomainFilter();
+        ResetClientFilter();
+        SearchText = "";
+        ErrorsOnly = false;
+        BrowserOnly = true;
+        ApplyFilter();
+    }
+
     /// <summary>Called when a program is ticked or unticked in the sidebar.</summary>
     private void OnClientCheckedChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
@@ -608,7 +622,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(CanStop))]
     private void StopProxy()
     {
-        _server?.Stop();
+        _server?.Dispose();
         _server = null;
         IsRunning = false;
         RestoreSystemProxy();
@@ -1074,7 +1088,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     {
         _drainTimer.Stop();
         IgnoreListStore.Rules.Changed -= OnIgnoreRulesChanged;
-        _server?.Stop();
+        _server?.Dispose();
         RestoreSystemProxy();
         _favicons.Dispose();
         _replayer.Dispose();

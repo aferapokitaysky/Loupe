@@ -79,6 +79,11 @@ A Charles/Fiddler/Proxyman-style debugging proxy, organised by domain: pick a
 host, see its requests, open one for headers and body with JSON pretty-printed
 and `gzip`/`deflate`/`br` decompressed.
 
+The **Browser** tab in the left rail filters this same live capture to known
+browser processes and clears stale filters when opened. The browser still needs
+to be routed through the proxy (step 3 below); packet capture alone cannot show
+HTTPS request paths or bodies.
+
 Three things have to be true before a browser shows up here, and the page says
 which of them are done:
 

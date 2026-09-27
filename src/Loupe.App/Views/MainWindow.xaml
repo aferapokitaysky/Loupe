@@ -81,6 +81,15 @@
                             </StackPanel>
                         </RadioButton>
 
+                        <RadioButton x:Name="BrowserNavButton" GroupName="Nav" Style="{StaticResource NavButtonStyle}"
+                                     AutomationProperties.Name="{DynamicResource Nav_Browser}"
+                                     Checked="OnBrowserNavChecked">
+                            <StackPanel>
+                                <ui:SymbolIcon Symbol="Globe24" FontSize="22" HorizontalAlignment="Center" />
+                                <TextBlock Text="{DynamicResource Nav_Browser}" Style="{StaticResource NavLabel}" />
+                            </StackPanel>
+                        </RadioButton>
+
                         <RadioButton x:Name="SessionsNavButton" GroupName="Nav" Style="{StaticResource NavButtonStyle}"
                                      AutomationProperties.Name="{DynamicResource Nav_Sessions}"
                                      Checked="OnSessionsNavChecked">

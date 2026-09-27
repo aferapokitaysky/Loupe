@@ -444,14 +444,6 @@
                                         <TextBlock Text="{DynamicResource Proxy_SearchBodies}" FontSize="12" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </ToggleButton>
-                                <ToggleButton Style="{StaticResource ToolbarToggleButton}" IsChecked="{Binding BrowserOnly}"
-                                              ToolTip="{DynamicResource Proxy_BrowserOnly_Tip}"
-                                              AutomationProperties.Name="{DynamicResource Proxy_BrowserOnly}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <ui:SymbolIcon Symbol="Globe24" FontSize="15" Margin="0,0,6,0" />
-                                        <TextBlock Text="{DynamicResource Proxy_BrowserOnly}" FontSize="12" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                </ToggleButton>
                                 <ToggleButton Style="{StaticResource ToolbarToggleButton}" IsChecked="{Binding ErrorsOnly}"
                                               ToolTip="{DynamicResource Proxy_ErrorsOnly_Tip}"
                                               AutomationProperties.Name="{DynamicResource Proxy_ErrorsOnly}">

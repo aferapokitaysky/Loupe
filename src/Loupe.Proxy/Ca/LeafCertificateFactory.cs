@@ -10,11 +10,28 @@ namespace Loupe.Proxy.Ca;
 /// "real-looking" certificate for whatever host it is intercepting. Cached
 /// in memory only (not persisted) - regenerated each time the app starts.
 /// </summary>
-public sealed class LeafCertificateFactory(RootCertificateAuthority ca)
+public sealed class LeafCertificateFactory : IDisposable
 {
+    private readonly RootCertificateAuthority _ca;
+    private readonly object _cacheLock = new();
     private readonly ConcurrentDictionary<string, X509Certificate2> _cache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly EventHandler _certificateChangedHandler;
 
-    public X509Certificate2 GetOrCreate(string hostname) => _cache.GetOrAdd(hostname, Create);
+    public LeafCertificateFactory(RootCertificateAuthority ca)
+    {
+        _ca = ca;
+        _certificateChangedHandler = (_, _) => Clear();
+        ca.CertificateChanged += _certificateChangedHandler;
+    }
+
+    public X509Certificate2 GetOrCreate(string hostname)
+    {
+        lock (_cacheLock)
+        {
+            _ca.RefreshIfChanged();
+            return _cache.GetOrAdd(hostname, Create);
+        }
+    }
 
     private X509Certificate2 Create(string hostname)
     {
@@ -42,7 +59,7 @@ public sealed class LeafCertificateFactory(RootCertificateAuthority ca)
         var notAfter = DateTimeOffset.UtcNow.AddYears(1);
         byte[] serial = RandomNumberGenerator.GetBytes(16);
 
-        using var signed = request.Create(ca.Certificate, notBefore, notAfter, serial);
+        using var signed = request.Create(_ca.Certificate, notBefore, notAfter, serial);
         using var withKey = signed.CopyWithPrivateKey(key);
 
         // Round-trip through PKCS#12: SslStream on Windows needs the private
@@ -52,5 +69,11 @@ public sealed class LeafCertificateFactory(RootCertificateAuthority ca)
             withKey.Export(X509ContentType.Pfx), (string?)null, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
     }
 
-    public void Clear() => _cache.Clear();
+    public void Clear()
+    {
+        lock (_cacheLock)
+            _cache.Clear();
+    }
+
+    public void Dispose() => _ca.CertificateChanged -= _certificateChangedHandler;
 }
