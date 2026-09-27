@@ -92,6 +92,14 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(StartProxyCommand))]
     private bool _transparentEnabled = AppSettings.Current.TransparentProxy;
+
+    /// <summary>
+    /// Certificate-pinned apps have to keep their original TLS session.  This is a positive
+    /// opt-in list: adding a host makes it work through the proxy but intentionally removes its
+    /// request/body from the decrypted inspector.
+    /// </summary>
+    [ObservableProperty]
+    private string _tlsTunnelHostsText = AppSettings.Current.TlsTunnelHosts;
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ToggleSystemProxyCommand))]
     private bool _isRunning;
@@ -524,6 +532,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             {
                 Port = Port,
                 TransparentPort = TransparentEnabled ? TransparentPort : 0,
+                ShouldTunnelTls = BuildTlsTunnelMatcher(TlsTunnelHostsText),
                 ResolveClientApplication = endPoint =>
                     ProcessPortMap.Shared.LookupTcpClient(endPoint) is { } owner
                         ? new ClientApplication(owner.Name, owner.ImagePath)
@@ -549,6 +558,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
                 settings.ProxyPort = Port;
                 settings.TransparentProxy = TransparentEnabled;
                 if (TransparentEnabled) settings.TransparentPort = TransparentPort;
+                settings.TlsTunnelHosts = TlsTunnelHostsText;
             });
             StatusMessage = TransparentEnabled
                 ? Loc.Format("Proxy_Status_ListeningTransparent", Port, TransparentPort)
@@ -564,6 +574,33 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     }
 
     private bool CanStop() => IsRunning;
+
+    private static Func<string, bool>? BuildTlsTunnelMatcher(string? source)
+    {
+        string[] rules = (source ?? "")
+            .Split([',', ';', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(rule => rule.ToLowerInvariant())
+            .Where(rule => rule.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (rules.Length == 0) return null;
+
+        return host =>
+        {
+            string normalized = host.TrimEnd('.').ToLowerInvariant();
+            foreach (string rule in rules)
+            {
+                string suffix = rule.StartsWith("*.", StringComparison.Ordinal) ? rule[1..] : rule;
+                if (normalized.Equals(suffix.TrimStart('.'), StringComparison.OrdinalIgnoreCase)
+                    || (suffix.StartsWith(".", StringComparison.Ordinal)
+                        && normalized.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)))
+                    return true;
+            }
+
+            return false;
+        };
+    }
 
     [RelayCommand(CanExecute = nameof(CanStop))]
     private void StopProxy()
