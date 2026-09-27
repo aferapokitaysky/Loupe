@@ -101,6 +101,11 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     /// </summary>
     [ObservableProperty]
     private string _tlsTunnelHostsText = AppSettings.Current.TlsTunnelHosts;
+
+    // The matcher used by a running proxy closes over this property, so adding a pinned host is
+    // effective for the client's very next reconnect.  No proxy/browser restart is needed.
+    partial void OnTlsTunnelHostsTextChanged(string value) =>
+        AppSettings.Update(settings => settings.TlsTunnelHosts = value);
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ToggleSystemProxyCommand))]
     private bool _isRunning;
@@ -533,7 +538,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             {
                 Port = Port,
                 TransparentPort = TransparentEnabled ? TransparentPort : 0,
-                ShouldTunnelTls = BuildTlsTunnelMatcher(TlsTunnelHostsText),
+                ShouldTunnelTls = host => MatchesTlsTunnelHost(host, TlsTunnelHostsText),
                 ResolveClientApplication = endPoint =>
                     ProcessPortMap.Shared.LookupTcpClient(endPoint) is { } owner
                         ? new ClientApplication(owner.Name, owner.ImagePath)
@@ -576,7 +581,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
 
     private bool CanStop() => IsRunning;
 
-    private static Func<string, bool>? BuildTlsTunnelMatcher(string? source)
+    private static bool MatchesTlsTunnelHost(string host, string? source)
     {
         string[] rules = (source ?? "")
             .Split([',', ';', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -585,22 +590,19 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        if (rules.Length == 0) return null;
+        if (rules.Length == 0) return false;
 
-        return host =>
+        string normalized = host.TrimEnd('.').ToLowerInvariant();
+        foreach (string rule in rules)
         {
-            string normalized = host.TrimEnd('.').ToLowerInvariant();
-            foreach (string rule in rules)
-            {
-                string suffix = rule.StartsWith("*.", StringComparison.Ordinal) ? rule[1..] : rule;
-                if (normalized.Equals(suffix.TrimStart('.'), StringComparison.OrdinalIgnoreCase)
-                    || (suffix.StartsWith(".", StringComparison.Ordinal)
-                        && normalized.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)))
-                    return true;
-            }
+            string suffix = rule.StartsWith("*.", StringComparison.Ordinal) ? rule[1..] : rule;
+            if (normalized.Equals(suffix.TrimStart('.'), StringComparison.OrdinalIgnoreCase)
+                || (suffix.StartsWith(".", StringComparison.Ordinal)
+                    && normalized.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)))
+                return true;
+        }
 
-            return false;
-        };
+        return false;
     }
 
     [RelayCommand(CanExecute = nameof(CanStop))]
