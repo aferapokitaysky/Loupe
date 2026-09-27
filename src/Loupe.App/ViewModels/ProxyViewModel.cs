@@ -36,6 +36,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     /// proxy - including closing the app - has to undo our own change.
     /// </summary>
     private bool _weEnabledSystemProxy;
+    private WindowsProxySettings.Snapshot? _systemProxySnapshot;
 
     public ObservableCollection<HttpExchangeRowViewModel> Exchanges { get; } = [];
 
@@ -622,8 +623,12 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
 
         try
         {
-            WindowsProxySettings.Disable();
-            IsSystemProxyEnabled = false;
+            if (_systemProxySnapshot is { } snapshot)
+                WindowsProxySettings.Restore(snapshot);
+            else
+                WindowsProxySettings.Disable();
+
+            IsSystemProxyEnabled = WindowsProxySettings.IsEnabled();
         }
         catch
         {
@@ -632,6 +637,7 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
         finally
         {
             _weEnabledSystemProxy = false;
+            _systemProxySnapshot = null;
         }
     }
 
@@ -880,12 +886,15 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     /// behind it takes the whole machine offline, and the person it happens to has no reason to
     /// connect that to a button in a packet tool.
     /// </summary>
-    private bool CanToggleSystemProxy() => IsRunning || IsSystemProxyEnabled;
+    // A checked Windows proxy may belong to a company/VPN tool.  It is status information until
+    // Loupe itself is running; we must not present a convenient way to turn somebody else's
+    // routing off.
+    private bool CanToggleSystemProxy() => IsRunning || _weEnabledSystemProxy;
 
     [RelayCommand(CanExecute = nameof(CanToggleSystemProxy))]
     private void ToggleSystemProxy()
     {
-        if (IsSystemProxyEnabled) DisableSystemProxy();
+        if (_weEnabledSystemProxy) DisableSystemProxy();
         else EnableSystemProxy();
     }
 
@@ -894,6 +903,9 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     {
         try
         {
+            // Snapshot once, before the first change.  Toggling off/on while the proxy is
+            // running should still return the person to the configuration they had on launch.
+            _systemProxySnapshot ??= WindowsProxySettings.Capture();
             WindowsProxySettings.Enable("127.0.0.1", Port);
             IsSystemProxyEnabled = true;
             _weEnabledSystemProxy = true;
@@ -908,11 +920,16 @@ public partial class ProxyViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void DisableSystemProxy()
     {
+        if (!_weEnabledSystemProxy) return;
+
         try
         {
-            WindowsProxySettings.Disable();
-            IsSystemProxyEnabled = false;
+            if (_systemProxySnapshot is { } snapshot)
+                WindowsProxySettings.Restore(snapshot);
+
+            IsSystemProxyEnabled = WindowsProxySettings.IsEnabled();
             _weEnabledSystemProxy = false;
+            _systemProxySnapshot = null;
             StatusMessage = Loc.Get("Proxy_Status_SystemProxyDisabled");
         }
         catch (Exception ex)
