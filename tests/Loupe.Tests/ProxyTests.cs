@@ -122,6 +122,44 @@ public static class ProxyTests
         }
 
         try { Directory.Delete(caDir, true); } catch { }
+
+        // A pinned client needs the original server certificate, not a substitute issued by
+        // Loupe.  The host rule must therefore tunnel CONNECT bytes unchanged and, just as
+        // importantly, not pretend that there is a decrypted HTTP exchange to inspect.
+        T.Section("TLS TUNNEL (preserves the origin certificate)");
+        string tunnelCaDir = Path.Combine(Path.GetTempPath(), "loupe-ca-tunnel-" + Guid.NewGuid().ToString("N"));
+        var tunnelCa = new RootCertificateAuthority(tunnelCaDir);
+        var tlsOrigin = new TlsEchoServer(tunnelCa.Certificate);
+        int tlsPort = tlsOrigin.Start();
+        var tunnelExchanges = new List<HttpExchange>();
+        var tunnelProxy = new ProxyServer(new ProxyOptions
+        {
+            Port = 18778,
+            ShouldTunnelTls = host => string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase),
+        }, tunnelCa);
+        tunnelProxy.ExchangeUpdated += (_, e) => tunnelExchanges.Add(e);
+        tunnelProxy.Start();
+
+        try
+        {
+            var tunnelHandler = new HttpClientHandler
+            {
+                Proxy = new WebProxy("http://127.0.0.1:18778"),
+                UseProxy = true,
+                ServerCertificateCustomValidationCallback = (_, certificate, _, _) =>
+                    certificate?.Thumbprint == tunnelCa.Certificate.Thumbprint,
+            };
+            using var tunnelClient = new HttpClient(tunnelHandler) { Timeout = TimeSpan.FromSeconds(10) };
+            string body = await tunnelClient.GetStringAsync($"https://localhost:{tlsPort}/tls");
+            T.Eq("tunnel keeps the origin TLS session usable", "tls-ok", body);
+            T.Eq("tunnel intentionally produces no decrypted exchange", 0, tunnelExchanges.Count);
+        }
+        finally
+        {
+            tunnelProxy.Stop();
+            tlsOrigin.Stop();
+            try { Directory.Delete(tunnelCaDir, true); } catch { }
+        }
     }
 }
 

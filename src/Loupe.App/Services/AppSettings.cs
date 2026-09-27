@@ -44,6 +44,9 @@ public sealed class AppSettings
     public int TransparentPort { get; set; } = 8443;
     public bool TransparentProxy { get; set; }
 
+    /// <summary>Comma/newline separated exact hosts or *.domain suffixes that stay opaque.</summary>
+    public string TlsTunnelHosts { get; set; } = "";
+
     // Window placement. Null means "never saved", so the first run still centres itself.
     // Deliberately not NaN: JSON has no way to write one, and the serializer throws rather
     // than guessing - which, from a settings write, means taking the window down with it.

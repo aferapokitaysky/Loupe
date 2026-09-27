@@ -31,6 +31,13 @@ public sealed class ProxyOptions
     public bool AllowInsecureUpstream { get; init; }
 
     /// <summary>
+    /// Hosts that must keep their original end-to-end TLS connection.  A client which pins a
+    /// certificate cannot accept a debugging proxy's replacement certificate; tunnelling those
+    /// hosts keeps the request working while intentionally leaving its HTTP contents private.
+    /// </summary>
+    public Func<string, bool>? ShouldTunnelTls { get; init; }
+
+    /// <summary>
     /// Optional: identifies the program behind an accepted connection, given the client's
     /// endpoint. Called once per connection, while the socket is still open (the OS forgets the
     /// owner the moment it closes). Left to the host because it is platform-specific.
